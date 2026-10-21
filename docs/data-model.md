@@ -4,7 +4,7 @@
 
 | 实体 | 核心字段 | 关系 / 权限 |
 | --- | --- | --- |
-| User | id、nickname、campusId、skillTags、bio | 各模块作者共用；公开资料不包含凭证、手机号等私有字段 |
+| User | id、nickname、campusId、skillTags、bio、avatarImageId | 各模块作者共用；公开资料不包含凭证、手机号等私有字段；avatarImageId 关联 Upload，展示时由服务解析出可访问地址（待群里确认） |
 | PetAppearance | userId、species、palette、feature、accessory、name、art? | 当前账号的宠物外观，userId 由服务端身份决定；独立于公开 User，预设搭配使用白名单，原创画稿按下文校验 |
 | Bulletin | id、title、body、createdAt、demo、kind、startAt、endAt、location、organizer、participation | 校园活动只读公告；本机种子明确标记演示，真实来源和报名待接入，不借用 event 实体 |
 | FishingState | userId、catchCount、fishBook、collection、equipped、activeCast | 当前身份钓获与抛竿；collection/equipped 保留旧三种装饰的兼容视图，拥有物与多槽穿戴以 WardrobeState 为准 |
@@ -14,14 +14,16 @@
 | Plan | id、ownerId、category、startAt、endAt、capacity、status | 关联作者、成员、邀请；检查校区、日期、时间和容量 |
 | Membership | planId、userId、status | 正式数据库建议独立记录，planId+userId 唯一 |
 | Invitation | id、senderId、recipientId、sourcePlanId、targetPlanId、status | 来源为被邀请人的单人计划，目标为邀请人的计划 |
-| MarketPost | id、ownerId、priceCents、status | 图片走公共上传；预约记录后续 Reservation |
-| LostFoundPost | id、ownerId、category、location、status | 类别为丢失 / 拾获；作者确认归还 |
+| MarketPost | id、ownerId、marketType(sell/buy)、title、body、category、imageIds、priceCents(闲置)、condition、handoverCampus、budgetCents(求购)、keywords、status | 闲置/求购两类；图片存 imageIds，读时由 upload 服务解析为 images；仅 active 可预约，已完成不可改/约 |
+| Reservation | id、contentId、buyerId、sellerId、status、createdAt | 本机二手交接预约；同一商品只允许一条pending，状态冲突返回CONFLICT；后续respond/complete仍待实现 |
+| LostFoundPost | id、ownerId、lostKind、category、images、location、status | lostKind 为丢失/拾获；category 为卡片/钥匙/杂物；1～3 张图片；作者确认完成 |
 | HelpPost | id、ownerId、category、body、status | category 首版为所需技能；后续匹配 User.skillTags |
 | Conversation | id、participantIds、contentType、contentId | 同一内容与参与者组合去重；仅参与者访问 |
 | Message | id、conversationId、senderId、body、createdAt | 发送者取登录态；会话权限由后端校验 |
+| Comment | id、contentType、contentId、authorId、body、createdAt | 首版用于失物公开评论；发布者收到站内通知 |
 | Notification | id、recipientId、contentType、contentId、read | 业务事件去重；本人读写；模板发送与业务事务分开 |
 | Favorite / Report | userId、contentType、contentId 等 | 收藏唯一；举报处理管理员专用 |
-| Upload | imageId、ownerId、usage、mime、size、status | 校验类型/大小/归属；确认后才能关联业务内容 |
+| Upload | imageId、ownerId、usage、mime、size、status、url | usage 为 content/avatar；create 返回 imageId 与可访问 url；confirm 后归属业务内容；业务服务校验 ownerId 与数量（≤3）（待群里确认） |
 
 内容通用字段及分页形状见 interfaces.md。MemberIds 数组仅是当前演示实现，不替代正式成员权限表。
 

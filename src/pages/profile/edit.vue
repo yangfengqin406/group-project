@@ -1,0 +1,139 @@
+<template>
+  <view class="page">
+    <DemoNotice />
+    <view class="title">编辑资料</view>
+    <view v-if="error" class="error">{{ error }}</view>
+    <view v-if="profile" class="panel">
+      <text class="label">头像</text>
+      <view class="actions" style="align-items: center">
+        <image
+          v-if="avatarUrl"
+          :src="avatarUrl"
+          mode="aspectFill"
+          class="avatar"
+          @tap="chooseAvatar"
+        />
+        <view v-else class="avatar placeholder" @tap="chooseAvatar">
+          <text>点击上传</text>
+        </view>
+        <button class="secondary" @tap="chooseAvatar">更换头像</button>
+      </view>
+      <text class="label">昵称</text>
+      <input
+        class="input"
+        v-model="form.nickname"
+        maxlength="12"
+        placeholder="1～12 个字"
+      />
+      <text class="label">简介</text>
+      <textarea
+        class="input textarea"
+        v-model="form.bio"
+        maxlength="200"
+        placeholder="一句话介绍自己"
+      />
+      <text class="label">技能标签</text>
+      <input
+        class="input"
+        v-model="skillInput"
+        placeholder="用逗号分隔，如：摄影,Python"
+      />
+      <view class="muted">最多 10 个标签</view>
+      <view class="actions">
+        <button class="primary" :disabled="saving" @tap="save">
+          {{ saving ? '保存中…' : '保存' }}
+        </button>
+      </view>
+    </view>
+  </view>
+</template>
+<script setup>
+import { reactive, ref } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
+import { upload, user } from '../../services/index.js'
+import { errorText } from '../../utils/errors.js'
+import DemoNotice from '../../components/DemoNotice.vue'
+const profile = ref(null),
+  form = reactive({
+    nickname: '',
+    bio: '',
+    skillTags: [],
+    avatarImageId: ''
+  }),
+  skillInput = ref(''),
+  avatarUrl = ref(''),
+  error = ref(''),
+  saving = ref(false)
+async function load() {
+  error.value = ''
+  try {
+    const p = await user.getProfile()
+    profile.value = p
+    form.nickname = p.nickname || ''
+    form.bio = p.bio || ''
+    form.skillTags = p.skillTags || []
+    form.avatarImageId = p.avatarImageId || ''
+    avatarUrl.value = p.avatarUrl || ''
+    skillInput.value = (p.skillTags || []).join(',')
+  } catch (e) {
+    error.value = errorText(e)
+  }
+}
+function chooseAvatar() {
+  uni.chooseImage({
+    count: 1,
+    sizeType: ['compressed'],
+    success: async (r) => {
+      try {
+        const result = await upload.create({
+          usage: 'avatar',
+          data: r.tempFilePaths[0]
+        })
+        form.avatarImageId = result.imageId
+        avatarUrl.value = result.url
+      } catch (e) {
+        error.value = errorText(e)
+      }
+    }
+  })
+}
+async function save() {
+  if (saving.value) return
+  saving.value = true
+  error.value = ''
+  try {
+    const tags = skillInput.value
+      .split(/[,，\s]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+    await user.updateProfile({
+      nickname: form.nickname,
+      bio: form.bio,
+      skillTags: tags,
+      avatarImageId: form.avatarImageId || undefined
+    })
+    uni.showToast({ title: '已保存', icon: 'success' })
+    setTimeout(() => uni.navigateBack(), 600)
+  } catch (e) {
+    error.value = errorText(e)
+  } finally {
+    saving.value = false
+  }
+}
+onShow(load)
+</script>
+<style scoped>
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: #eee;
+}
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 24rpx;
+}
+</style>

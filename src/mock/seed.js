@@ -98,7 +98,11 @@ export function createSeed(now = new Date()) {
           title: '闲置护眼台灯',
           body: '使用半年，灯光正常，校内当面查看。',
           category: '生活用品',
+          marketType: 'sell',
           priceCents: 3500,
+          condition: '九成新',
+          handoverCampus: '主校区',
+          imageIds: [],
           location: '图书馆门口',
           status: 'active'
         }
@@ -111,9 +115,34 @@ export function createSeed(now = new Date()) {
           type: 'lost_found',
           title: '图书馆捡到一个卡套',
           body: '请描述卡套外观确认归属，不公开卡内个人信息。',
-          category: '拾获',
+          category: 'card',
+          lostKind: 'found',
           location: '图书馆二楼',
           status: 'active'
+        },
+        {
+          ...common,
+          id: 'lost_demo_key',
+          ownerId: users[1].id,
+          type: 'lost_found',
+          title: '操场看台附近丢失钥匙',
+          body: '银色钥匙圈，有两把钥匙和一个蓝色小挂件。',
+          category: 'key',
+          lostKind: 'lost',
+          location: '东操场看台',
+          status: 'active'
+        },
+        {
+          ...common,
+          id: 'lost_demo_misc',
+          ownerId: users[0].id,
+          type: 'lost_found',
+          title: '食堂拾到一把折叠伞',
+          body: '请说明伞面颜色和伞柄特征后认领。',
+          category: 'misc',
+          lostKind: 'found',
+          location: '一食堂二楼',
+          status: 'returned'
         }
       ],
       help: [
@@ -133,9 +162,12 @@ export function createSeed(now = new Date()) {
     invitations: [],
     conversations: [],
     messages: [],
+    comments: [],
     notifications: [],
     favorites: [],
     reports: [],
+    uploads: [],
+    reservations: [],
     idempotency: {}
   }
 }

@@ -2,7 +2,7 @@
   <view class="card" @tap="openContent(item.type, item.id)">
     <view class="row">
       <text class="tag">
-        {{ contentNames[item.type] }} · {{ item.category }}
+        {{ contentNames[item.type] }} · {{ categoryLabel(item) }}
       </text>
       <text class="muted">{{ labels[item.status] || item.status }}</text>
     </view>
@@ -42,6 +42,12 @@ const labels = {
   returned: '已归还',
   reserved: '已预约',
   expired: '已过期'
+}
+const lostCategories = { card: '卡片', key: '钥匙', misc: '杂物' }
+const lostKinds = { lost: '丢失', found: '拾获' }
+function categoryLabel(item) {
+  if (item.type !== 'lost_found') return item.category
+  return `${lostKinds[item.lostKind] || '失物'} · ${lostCategories[item.category] || item.category}`
 }
 </script>
 <style scoped>

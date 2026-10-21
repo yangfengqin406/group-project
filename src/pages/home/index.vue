@@ -20,6 +20,7 @@
         </text>
       </view>
       <view class="actions">
+        <button class="secondary" @tap="editProfile">编辑资料</button>
         <button class="secondary" @tap="publicProfile">查看我的公开主页</button>
         <button class="secondary" @tap="askSubscription">接收匹配通知</button>
       </view>
@@ -51,6 +52,16 @@
       </view>
     </view>
     <view class="section-title">我的发布</view>
+    <view class="actions">
+      <button
+        v-for="f in filters"
+        :key="f.value"
+        :class="contentType === f.value ? 'primary' : 'secondary'"
+        @tap="setFilter(f.value)"
+      >
+        {{ f.label }}
+      </button>
+    </view>
     <ContentCard v-for="item in items" :key="item.id" :item="item" />
     <EmptyState v-if="!items.length && !error" title="还没有发布" />
     <button v-if="cursor" class="secondary" @tap="loadMore">加载更多</button>
@@ -73,12 +84,20 @@ const profile = ref(null),
   error = ref(''),
   users = ref([]),
   cursor = ref(null),
+  contentType = ref(''),
   isMock = config.apiMode === 'mock'
+const filters = [
+  { label: '全部', value: '' },
+  { label: '二手', value: 'market' },
+  { label: '搭子', value: 'plan' },
+  { label: '失物', value: 'lost_found' },
+  { label: '技能', value: 'help' }
+]
 async function load() {
   error.value = ''
   try {
     profile.value = await user.getProfile()
-    const r = await myContent.list()
+    const r = await myContent.list({ contentType: contentType.value })
     items.value = r.items
     cursor.value = r.nextCursor
     users.value = demoUsers()
@@ -88,15 +107,25 @@ async function load() {
 }
 async function loadMore() {
   try {
-    const r = await myContent.list({ cursor: cursor.value })
+    const r = await myContent.list({
+      contentType: contentType.value,
+      cursor: cursor.value
+    })
     items.value.push(...r.items)
     cursor.value = r.nextCursor
   } catch (e) {
     error.value = errorText(e)
   }
 }
+function setFilter(value) {
+  contentType.value = value
+  load()
+}
 function publicProfile() {
   openProfile(profile.value.id)
+}
+function editProfile() {
+  uni.navigateTo({ url: '/pages/profile/edit' })
 }
 function openPet() {
   uni.navigateTo({ url: '/pages/pet/index' })

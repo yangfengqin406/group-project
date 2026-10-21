@@ -8,6 +8,17 @@
       </view>
       <button class="primary" @tap="publish">发布</button>
     </view>
+    <view v-if="marketTypeOptions.length" class="content-switcher">
+      <button
+        v-for="opt in marketTypeOptions"
+        :key="opt.value"
+        class="content-tab"
+        :class="{ selected: marketType === opt.value }"
+        @tap="setMarketType(opt.value)"
+      >
+        {{ opt.label }}
+      </button>
+    </view>
     <view v-if="showFilters" class="content-switcher">
       <button
         class="content-tab"
@@ -26,6 +37,32 @@
         技能求助
       </button>
     </view>
+    <view v-if="showLostFilters" class="lost-filter-panel">
+      <view class="filter-label">物品分类</view>
+      <view class="filter-shortcuts">
+        <button
+          v-for="option in lostCategoryOptions"
+          :key="option.value"
+          class="filter-chip"
+          :class="{ selected: category === option.value }"
+          @tap="chooseCategory(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      </view>
+      <view class="filter-label">招领类型</view>
+      <view class="filter-shortcuts">
+        <button
+          v-for="option in lostKindOptions"
+          :key="option.value"
+          class="filter-chip"
+          :class="{ selected: lostKind === option.value }"
+          @tap="chooseLostKind(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      </view>
+    </view>
     <view class="panel">
       <input
         class="input"
@@ -34,6 +71,22 @@
         confirm-type="search"
         @confirm="load(true)"
       />
+      <view v-if="campusOptions.length" class="filter-fields">
+        <view class="category-field">
+          <text class="filter-label">交接校区</text>
+          <picker
+            :range="campusOptions"
+            range-key="label"
+            :value="campusIndex"
+            @change="chooseCampus"
+          >
+            <view class="input status-value">
+              {{ campusOptions[campusIndex]?.label || '全部校区' }}
+              <text>⌄</text>
+            </view>
+          </picker>
+        </view>
+      </view>
       <template v-if="showFilters">
         <view class="filter-shortcuts">
           <button
@@ -107,7 +160,7 @@
     <EmptyState
       v-if="!loading && !error && !items.length"
       :description="
-        showFilters
+        showFilters || showLostFilters
           ? '换个类别、状态或关键词试试，也可以发布一条新内容。'
           : undefined
       "
@@ -135,8 +188,11 @@ const props = defineProps({
   title: { required: true },
   subtitle: { default: '' },
   showFilters: { type: Boolean, default: false },
+  showLostFilters: { type: Boolean, default: false },
   categoryOptions: { type: Array, default: () => [] },
-  statusOptions: { type: Array, default: () => [] }
+  statusOptions: { type: Array, default: () => [] },
+  marketTypeOptions: { type: Array, default: () => [] },
+  campusOptions: { type: Array, default: () => [] }
 })
 const items = ref([]),
   keyword = ref(''),
@@ -144,11 +200,31 @@ const items = ref([]),
   loading = ref(false),
   cursor = ref(null),
   category = ref(''),
-  status = ref('')
+  status = ref(''),
+  marketType = ref(''),
+  campusId = ref(''),
+  lostKind = ref('')
+const lostCategoryOptions = [
+  { label: '全部', value: '' },
+  { label: '卡片', value: 'card' },
+  { label: '钥匙', value: 'key' },
+  { label: '杂物', value: 'misc' }
+]
+const lostKindOptions = [
+  { label: '全部', value: '' },
+  { label: '我丢失的', value: 'lost' },
+  { label: '我拾到的', value: 'found' }
+]
 const statusIndex = computed(() =>
   Math.max(
     0,
     props.statusOptions.findIndex((option) => option.value === status.value)
+  )
+)
+const campusIndex = computed(() =>
+  Math.max(
+    0,
+    props.campusOptions.findIndex((option) => option.value === campusId.value)
   )
 )
 let revision = 0
@@ -165,8 +241,18 @@ async function load(reset) {
     cursor.value = null
     appliedFilters = {
       keyword: keyword.value.trim(),
-      ...(props.showFilters
-        ? { category: category.value.trim(), status: status.value }
+      ...(props.type === 'market'
+        ? {
+            marketType: marketType.value || undefined,
+            campusId: campusId.value || undefined
+          }
+        : {}),
+      ...(props.showFilters || props.showLostFilters
+        ? {
+            category: category.value.trim(),
+            status: status.value,
+            ...(props.showLostFilters ? { lostKind: lostKind.value } : {})
+          }
         : {})
     }
   }
@@ -190,11 +276,26 @@ function publish() {
 function clear() {
   keyword.value = ''
   category.value = ''
+  lostKind.value = ''
   status.value = ''
+  marketType.value = ''
+  campusId.value = ''
   load(true)
 }
 function chooseCategory(value) {
   category.value = value
+  load(true)
+}
+function setMarketType(value) {
+  marketType.value = value
+  load(true)
+}
+function chooseCampus(event) {
+  campusId.value = props.campusOptions[Number(event.detail.value)]?.value || ''
+  load(true)
+}
+function chooseLostKind(value) {
+  lostKind.value = value
   load(true)
 }
 function chooseStatus(event) {
@@ -222,6 +323,13 @@ onUnmounted(() => {
   padding: 6rpx;
   margin-top: 28rpx;
   background: #e8eddf;
+  border-radius: 16rpx;
+}
+.lost-filter-panel {
+  margin-top: 24rpx;
+  padding: 20rpx 22rpx;
+  background: #fffef8;
+  border: 2rpx solid #e1e5d6;
   border-radius: 16rpx;
 }
 .content-switcher button {

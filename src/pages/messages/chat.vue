@@ -11,6 +11,9 @@
       <view class="link" style="margin-top: 14rpx">
         {{ current.contentTitle }} · 查看原内容 ↗
       </view>
+      <view v-if="current.peer" class="muted" style="margin-top: 8rpx">
+        与 {{ current.peer.nickname }} 联系
+      </view>
     </view>
     <view class="row">
       <text class="muted">当前为留言模式，点击刷新读取新消息</text>

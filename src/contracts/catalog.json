@@ -39,6 +39,10 @@
     "owner": "C",
     "methods": ["send", "list"]
   },
+  "comment": {
+    "owner": "C",
+    "methods": ["create", "list"]
+  },
   "notification": {
     "owner": "C",
     "methods": ["list", "markRead"]
@@ -83,6 +87,7 @@
       "get",
       "list",
       "close",
+      "complete",
       "reserve",
       "getCandidates"
     ]

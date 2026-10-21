@@ -13,6 +13,7 @@
       </view>
     </view>
     <view class="section-title">公开发布</view>
+    <view class="muted">共 {{ total }} 条</view>
     <ContentCard v-for="item in items" :key="item.id" :item="item" />
     <EmptyState v-if="!items.length && !error" />
     <button v-if="cursor" class="secondary" @tap="loadMore">加载更多</button>
@@ -29,14 +30,19 @@ import EmptyState from '../../components/EmptyState.vue'
 const userId = ref(''),
   profile = ref(null),
   items = ref([]),
+  total = ref(0),
   error = ref(''),
   cursor = ref(null)
 onLoad(async (options) => {
   userId.value = options.userId
   try {
     profile.value = await user.getProfile({ userId: userId.value })
-    const r = await user.listPublicContent({ userId: userId.value })
+    const r = await user.listPublicContent({
+      userId: userId.value,
+      pageSize: 50
+    })
     items.value = r.items
+    total.value = r.items.length
     cursor.value = r.nextCursor
   } catch (e) {
     error.value = errorText(e)

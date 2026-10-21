@@ -209,6 +209,8 @@ test('服务端身份约定不接收前端伪造 owner；保留接口明确报�
     title: '一本教材',
     body: '保存良好',
     category: '教材',
+    marketType: 'sell',
+    condition: '九成新',
     priceCents: 2500,
     ownerId: 'user_demo_c'
   })
@@ -218,11 +220,16 @@ test('服务端身份约定不接收前端伪造 owner；保留接口明确报�
       dispatch(db, 'market.create', {
         title: '错误价格',
         body: '',
+        marketType: 'sell',
         priceCents: 1.5
       }),
     'INVALID_ARGUMENT'
   )
-  failCode(() => dispatch(db, 'upload.create', {}), 'NOT_IMPLEMENTED')
-  failCode(() => dispatch(db, 'auth.login', {}), 'NOT_IMPLEMENTED')
+  failCode(() => dispatch(db, 'upload.create', {}), 'INVALID_ARGUMENT')
+  failCode(() => dispatch(db, 'auth.login', {}), 'INVALID_ARGUMENT')
+  failCode(
+    () => dispatch(db, 'auth.login', { type: 'wechat' }),
+    'NOT_IMPLEMENTED'
+  )
   failCode(() => dispatch(db, 'appraisal.estimate', {}), 'NOT_IMPLEMENTED')
 })
