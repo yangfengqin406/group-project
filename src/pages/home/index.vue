@@ -1,11 +1,12 @@
 <template>
-  <view class="page">
+  <view class="page village-page village-home">
+    <VillageHeader kind="home" title="自己的家" subtitle="在小屋里歇歇脚，整理你的校园生活。" />
     <DemoNotice />
-    <view class="title">自己的家</view>
     <view v-if="error" class="error">{{ error }}</view>
     <view v-if="profile" class="panel">
-      <view class="row">
-        <view>
+      <view class="row home-identity">
+        <image v-if="profile.avatarUrl" :src="profile.avatarUrl" class="profile-avatar" mode="aspectFill" />
+        <view class="identity-copy">
           <view class="section-title" style="margin-top: 0">
             {{ profile.nickname }}
           </view>
@@ -13,7 +14,7 @@
         </view>
         <view class="tag">个人空间</view>
       </view>
-      <view class="body" style="margin-top: 18rpx">{{ profile.bio }}</view>
+      <view class="body profile-bio">{{ profile.bio }}</view>
       <view class="actions">
         <text class="tag" v-for="skill in profile.skillTags" :key="skill">
           {{ skill }}
@@ -52,7 +53,7 @@
       </view>
     </view>
     <view class="section-title">我的发布</view>
-    <view class="actions">
+    <view class="actions village-filter-row">
       <button
         v-for="f in filters"
         :key="f.value"
@@ -79,6 +80,7 @@ import { requestSubscription } from '../../platform/subscription.js'
 import DemoNotice from '../../components/DemoNotice.vue'
 import ContentCard from '../../components/ContentCard.vue'
 import EmptyState from '../../components/EmptyState.vue'
+import VillageHeader from '../../components/village/VillageHeader.vue'
 const profile = ref(null),
   items = ref([]),
   error = ref(''),
@@ -160,3 +162,9 @@ async function askSubscription() {
 }
 onShow(load)
 </script>
+<style scoped>
+.home-identity { justify-content: flex-start; }
+.identity-copy { flex: 1; min-width: 0; }
+.profile-avatar { width: 64px; height: 64px; border: 3px solid #d7c7a3; border-radius: 50%; }
+.profile-bio { margin-top: 14px; }
+</style>
