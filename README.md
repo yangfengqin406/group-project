@@ -2,6 +2,8 @@
 
 这是可运行的源码骨架，不是只有文档的旧压缩包。技术方案依据课程要求改为 **uni-app + Vue 3 + JavaScript**，同一套源码构建 H5 和微信小程序。
 
+**[团队周报（监督查看）](docs/weekly-log.md)**：按周查看A/B/C完成内容、成果证据、问题和下一步。固定入口为[main分支周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)；详细测试过程见[验证记录](docs/verification.md)。
+
 ## 先跑起来
 
 1. 安装 Node.js **22.22.0**；三人统一这个版本（`.nvmrc`），本包也按此版本验证。
