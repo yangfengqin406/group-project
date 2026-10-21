@@ -1,7 +1,7 @@
 <template>
-  <view class="page village-page" :class="type === 'market' ? 'village-market' : type === 'lost_found' ? 'village-lost' : 'village-partner'">
-    <VillageHeader :kind="type" :title="'发布' + contentNames[type]" subtitle="把想分享的事写下来，贴到小屋的布告板。" compact />
+  <view class="page">
     <DemoNotice />
+    <view class="title">发布{{ contentNames[type] }}</view>
     <view class="panel">
       <text class="label">标题</text>
       <input
@@ -59,7 +59,7 @@
           <view class="input">{{ date || '选择日期' }}</view>
         </picker>
         <text class="label">开始 / 结束时间</text>
-        <view class="row time-fields">
+        <view class="row">
           <picker
             mode="time"
             :value="startTime"
@@ -171,7 +171,6 @@
 import { reactive, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import DemoNotice from '../../components/DemoNotice.vue'
-import VillageHeader from '../../components/village/VillageHeader.vue'
 import * as api from '../../services/index.js'
 import {
   contentNames,
@@ -306,7 +305,7 @@ async function save() {
 <style scoped>
 .choice-grid {
   display: grid;
-  gap: 8px;
+  gap: 12rpx;
 }
 .two-columns {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -316,15 +315,14 @@ async function save() {
 }
 .choice-button {
   min-height: 44px;
-  background: #eee9d7;
-  color: #626a56;
-  border: 1px solid #ddd1b3;
+  background: #edf0e5;
+  color: #52664f;
+  border: 2rpx solid transparent;
 }
 .choice-button.selected {
-  background: var(--room-tint);
-  border-color: var(--room-accent);
-  color: #354d3e;
+  background: #e2ecd7;
+  border-color: #7a9b67;
+  color: #304a3a;
   font-weight: 650;
 }
-.time-fields > picker { flex: 1; min-width: 0; }
 </style>

@@ -9,7 +9,6 @@
       :overview="overview"
       @enter="enter"
       @board="openBoard"
-      @guide="openGuide"
       @pond="openPond"
       @pavilion="openPavilion"
     />
@@ -100,27 +99,21 @@
         class="bulletin-panel"
         role="dialog"
         aria-modal="true"
-        :aria-label="boardTab === 'guide' ? '麦麦的广场指南' : '校园活动公告'"
+        aria-label="校园活动公告"
         @tap.stop
       >
         <view class="bulletin-heading">
           <view>
-            <view class="bulletin-title">{{ boardTab === 'guide' ? '麦麦的广场指南' : '校园活动公告' }}</view>
+            <view class="bulletin-title">校园活动公告</view>
             <text class="bulletin-subtitle">
-              {{ boardTab === 'guide' ? '初来小镇，慢慢认识每个地方' : '找一件喜欢的事，和同学一起参加' }}
+              找一件喜欢的事，和同学一起参加
             </text>
           </view>
           <button class="board-close" aria-label="关闭公告栏" @tap="closeBoard">
             ×
           </button>
         </view>
-        <view class="board-tabs">
-          <button :class="{ selected: boardTab === 'activities' }" :aria-pressed="boardTab === 'activities'" @tap="showActivities">校园活动</button>
-          <button :class="{ selected: boardTab === 'guide' }" :aria-pressed="boardTab === 'guide'" @tap="boardTab = 'guide'">麦麦的广场指南</button>
-        </view>
         <scroll-view class="bulletin-content" scroll-y>
-          <PlazaGuide v-if="boardTab === 'guide'" @go="guideWalk" />
-          <template v-else>
           <view v-if="boardLoading" class="bulletin-state">
             正在看看近期活动…
           </view>
@@ -174,7 +167,6 @@
           >
             更多活动
           </button>
-          </template>
         </scroll-view>
         <button class="mail-link" @tap="goMessages">
           <text>想找同学聊聊？</text>
@@ -234,7 +226,7 @@
   </view>
 </template>
 <script setup>
-import { nextTick, ref } from 'vue'
+import { ref } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { pet, bulletin, wardrobe } from '../../services/index.js'
 import { formatTime } from '../../utils/routes.js'
@@ -242,7 +234,6 @@ import { config } from '../../config/index.js'
 import { errorText } from '../../utils/errors.js'
 import PetAvatar from '../../components/pet/PetAvatar.vue'
 import PlazaScene from '../../components/plaza/PlazaScene.vue'
-import PlazaGuide from '../../components/plaza/PlazaGuide.vue'
 import FishingPond from '../../components/plaza/FishingPond.vue'
 import DiveAdventure from '../../components/plaza/DiveAdventure.vue'
 const scene = ref(null),
@@ -254,7 +245,6 @@ const scene = ref(null),
   navigating = ref(false),
   navigationError = ref('')
 const boardOpen = ref(false),
-  boardTab = ref('activities'),
   boardLoading = ref(false),
   boardError = ref(''),
   announcements = ref([]),
@@ -338,7 +328,7 @@ function navigate(url, tab = false) {
   const options = {
     url,
     fail: (e) => {
-      if (active.value) hidePlazaTabBar()
+      if (active.value) uni.hideTabBar({ animation: false })
       navigationError.value = `暂时没能进入，请再试一次。${e?.errMsg || ''}`
       scene.value?.releaseEntry()
     },
@@ -360,29 +350,9 @@ function goMessages() {
 function goHome() {
   navigate('/pages/home/index', true)
 }
-async function hidePlazaTabBar() {
-  // H5 缓存页重新激活时，等路由刷新后再调整底栏。
-  await nextTick()
-  if (active.value) uni.hideTabBar({ animation: false, fail: () => {} })
-}
 function openBoard() {
-  boardTab.value = 'activities'
   boardOpen.value = true
   loadBoard()
-}
-function openGuide() {
-  boardTab.value = 'guide'
-  boardOpen.value = true
-}
-function showActivities() {
-  boardTab.value = 'activities'
-  if (!announcements.value.length && !boardLoading.value) loadBoard()
-}
-async function guideWalk(id) {
-  closeBoard()
-  await nextTick()
-  const started = id === 'pond' ? scene.value?.walkToArea(id) : scene.value?.walkToHouse(id)
-  if (!started) navigationError.value = '伙伴还在准备，稍后再出发。'
 }
 function closeBoard() {
   boardOpen.value = false
@@ -417,7 +387,7 @@ async function loadBoard(more = false) {
 onShow(() => {
   active.value = true
   navigating.value = false
-  hidePlazaTabBar()
+  uni.hideTabBar({ animation: false })
   loadPet()
   loadOrnament()
 })
@@ -441,9 +411,6 @@ onUnload(() => {
 })
 </script>
 <style scoped>
-.board-tabs { display: flex; gap: 6px; margin: 0 0 15px; padding: 4px; background: #e9e5cf; border-radius: 8px; }
-.board-tabs button { flex: 1; min-height: 44px; padding: 10px 8px; background: transparent; color: #75806b; font-size: 14px; }
-.board-tabs button.selected { color: #3d5e47; background: #fff9e8; box-shadow: 0 2px 0 #cdbf9e; }
 .plaza-page {
   position: fixed;
   inset: 0;

@@ -1,26 +1,5 @@
 # 广场资源与迁移记录
 
-## 邻里向导与室内画（2026-10-21）
-
-本轮使用内置 imagegen 生成，参考已有广场底图与精绘兔子 atlas 的画风，不复制第三方游戏角色。最终运行文件位于 `src/static/village/`，原始生成 PNG 保留在本机 `.codex/generated_images/01a13a25-b0e8-7d03-8a72-e82e9b21fd33/`。只用 FFmpeg libwebp quality 88 转换传输格式，不裁切或改画，运行时按四象限显示室内图。
-
-| 运行文件 | 尺寸 | 字节 | 原生成文件 |
-| --- | --- | --- | --- |
-| room-interiors.webp | 1774×887 | 457,766 | exec-9eb45a41-f59f-47b7-9982-503ad1309411.png |
-| guide-puppy.webp | 1211×1299，有透明通道 | 238,430 | exec-a9646b44-bc50-4c69-97a9-923f9fdd8c67.png |
-
-合计 696,196 字节。室内图左上搭子、右上失物、左下二手、右下自己的家；小狗“麦麦”只作为指南角色，不加入宠物物种或公开 User。实际生成室内尺寸与请求的理想 2048×1024 不同，比例仍为 2:1，组件不依赖指定像素尺寸。
-
-室内图提示词：
-
-> Use case: illustration-story. Project asset: room-interiors.png, a precise 2 by 2 atlas of FOUR cozy storybook interiors, total wide 2:1 canvas ideally 2048x1024, equal quadrants each 2:1. No gutters or frames. Reference image 1 is ONLY the art style and palette of the existing campus plaza, reference image 2 its resident pet style. Paint a continuation of this warmly lit, finely brushed, whimsical hand painted village, no characters. Top left: lilac partner meeting cottage with lavender cushioned seats, little wooden table, paper activity noticeboard. Top right: terracotta orange lost-property cottage with rounded wooden reception counter, baskets and tidy storage cubbies. Bottom left: warm coral striped secondhand shop canopy interior with wooden shelves, books, small reused household goods. Bottom right: sage green personal home with arched window, soft rug, wardrobe and little writing desk. Each cell wide scene, same slightly elevated front view and scale, airy and quiet, soft daylight, wood and cream plaster, small potted greenery, gentle rounded forms. No letters, numbers, logos, no UI, no people, no pets, no watermarks. All four rooms fill their complete cell with no external margin. This is new asset; do not reproduce exterior buildings.
-
-小狗提示词：
-
-> Use case: illustration-story. New transparent character asset guide-puppy.png for cozy campus village game. Reference image 1 is plaza style only; reference image 2 is the exact desired refined soft-fur pet rendering quality. One adorable tiny cream and light caramel puppy, round head, floppy ears, shiny dark warm eyes, rosy cheeks, small friendly smile, short plump body, four little paws, moss green cloth scarf, gently waving one front paw in greeting. Standing three-quarter front view, full body, centered with small breathing space, soft painterly fur edges, warm delicate brown outlines, coherent anatomy, playful cozy woodland illustration. Transparent background, no ground scene, no text, no border, no shadow rectangle, no extra animals, no sticker outline. This puppy is a fixed bulletin guide, not a new selectable pet species.
-
-## 原有资源
-
 第一阶段保留 A 提供的旧广场构图与豆豆角色。业务页面继续使用项目的 uni-app + Vue 3 服务层，不直接嵌入原型的 HTML、DOM 脚本或业务存储。
 
 | 资源 | 来源与处理 | 交付文件 |

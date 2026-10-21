@@ -1,6 +1,5 @@
 <template>
-  <view class="page village-page" :class="type === 'market' ? 'village-market' : type === 'lost_found' ? 'village-lost' : 'village-partner'">
-    <VillageHeader :kind="type" :title="contentNames[type]" subtitle="读一读这张小纸条，和发布的同学聊聊。" compact />
+  <view class="page">
     <DemoNotice />
     <view v-if="error" class="error">{{ error }}</view>
     <view v-if="item" class="panel">
@@ -10,9 +9,10 @@
           {{ lostKindLabel(item.lostKind) }} · {{ lostCategoryLabel(item.category) }}
         </text>
       </view>
-      <view class="title detail-title">{{ item.title }}</view>
+      <view class="title" style="margin-top: 20rpx">{{ item.title }}</view>
       <view
-        class="link detail-owner"
+        class="link"
+        style="margin-top: 18rpx"
         @tap="openProfile(item.ownerId)"
       >
         {{ item.owner?.nickname }} 的主页 ↗
@@ -37,7 +37,7 @@
       <view v-if="type === 'market'" class="muted">
         参考估价后续提供
       </view>
-      <view class="body detail-body">{{ item.body }}</view>
+      <view class="body" style="margin-top: 26rpx">{{ item.body }}</view>
       <view class="actions">
         <image
           v-for="(image, index) in item.images"
@@ -135,7 +135,6 @@
 import { ref, computed } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import DemoNotice from '../../components/DemoNotice.vue'
-import VillageHeader from '../../components/village/VillageHeader.vue'
 import * as api from '../../services/index.js'
 import { session } from '../../utils/session.js'
 import {
@@ -326,24 +325,21 @@ const lostKindLabel = (kind) => lostKinds[kind] || '失物'
 </script>
 
 <style scoped>
-.detail-title { margin-top: 14px; }
-.detail-owner { margin-top: 12px; }
-.detail-body { margin-top: 20px; }
 .comment-title {
   margin-top: 0;
 }
 .comment-state {
-  padding: 18px 0;
+  padding: 28rpx 0;
 }
 .comment-item {
-  padding: 16px 0;
-  border-bottom: 1px dashed #ddd1b3;
+  padding: 22rpx 0;
+  border-bottom: 2rpx solid #edf0e5;
 }
 .comment-body {
-  margin-top: 8px;
+  margin-top: 10rpx;
 }
 .comment-item + .textarea,
 .comment-state + .textarea {
-  margin-top: 18px;
+  margin-top: 24rpx;
 }
 </style>

@@ -9,13 +9,12 @@ const isMock = config.apiMode === 'mock'
 </script>
 <style scoped>
 .demo-notice {
-  color: #807350;
-  background: #eee8d2;
-  border-left: 3px solid #baa474;
-  border-radius: 3px;
-  padding: 8px 12px;
-  font-size: 12px;
+  color: #8a7146;
+  background: #f2ecd9;
+  border-radius: 10rpx;
+  padding: 14rpx 18rpx;
+  font-size: 22rpx;
   line-height: 1.6;
-  margin: 14px 0 18px;
+  margin-bottom: 24rpx;
 }
 </style>

@@ -50,7 +50,7 @@
         <view v-if="person.id === 'self'" class="player-ground-mark"></view>
         <PetAvatar
           :appearance="person.id === 'self' ? appearance : person.appearance"
-          :walking="person.moving && greetingId !== person.id && (person.id === 'self' || !reducedMotion)"
+          :walking="person.moving && (person.id === 'self' || !reducedMotion)"
           :facing="
             person.id === 'self' && appearance.species === 'custom'
               ? 1
@@ -60,14 +60,6 @@
           :ornament="person.id === 'self' ? ornament : ''"
           :wardrobe="person.id === 'self' ? wardrobe : null"
         />
-        <button
-          v-if="person.id !== 'self'"
-          class="neighbor-hotspot"
-          :aria-label="'和' + PLAZA_NEIGHBORS[person.id].name + '打招呼'"
-          @touchstart.stop
-          @mousedown.stop
-          @tap.stop="greetNeighbor(person.id)"
-        ></button>
       </view>
       <button
         v-for="house in PLAZA_HOUSES"
@@ -117,23 +109,6 @@
       >
         <text class="board-label">公告</text>
       </button>
-      <button
-        class="guide-puppy"
-        :style="locate({ x: 0.61, y: 0.565 })"
-        aria-label="和小狗麦麦聊聊广场指南"
-        @touchstart.stop
-        @mousedown.stop
-        @tap.stop="openGuide"
-      >
-        <image src="/static/village/guide-puppy.webp" mode="aspectFit" />
-      </button>
-    </view>
-    <view v-if="neighborMessage" class="neighbor-message" role="status" @tap.stop @touchstart.stop @mousedown.stop>
-      <button class="neighbor-dismiss" aria-label="结束打招呼" @tap="closeGreeting">×</button>
-      <view class="neighbor-name">{{ neighborMessage.name }}<text>广场邻居</text></view>
-      <view class="neighbor-copy">{{ detailedGreeting ? neighborMessage.tip : neighborMessage.hello }}</view>
-      <button v-if="!detailedGreeting" class="neighbor-action" @tap="greetNeighbor(greetingId)">打个招呼，聊一聊</button>
-      <button v-else class="neighbor-action" @tap="walkToHouse(neighborMessage.destination)">{{ neighborMessage.action }} ›</button>
     </view>
     <view v-if="imageError" class="scene-image-error">
       场景图片暂未加载，请稍后重试。
@@ -156,7 +131,6 @@ import PetAvatar from '../pet/PetAvatar.vue'
 import PlazaLeisure from './PlazaLeisure.vue'
 import { defaultPet } from '../../utils/pet-appearance.js'
 import { createPlazaWalker } from '../../utils/plaza-motion.js'
-import { PLAZA_NEIGHBORS, createNeighborGreetings } from '../../utils/plaza-neighbors.js'
 import {
   createPlazaNavigator,
   PLAZA_HOUSES,
@@ -171,7 +145,7 @@ const props = defineProps({
   ornament: { type: String, default: '' },
   wardrobe: { type: Object, default: null }
 })
-const emit = defineEmits(['enter', 'board', 'guide', 'busy', 'pond', 'pavilion'])
+const emit = defineEmits(['enter', 'board', 'busy', 'pond', 'pavilion'])
 const instance = getCurrentInstance()
 const navigator = createPlazaNavigator()
 const player = ref(navigator.getState())
@@ -181,23 +155,6 @@ const dragging = ref(false)
 const imageError = ref(false)
 const reducedMotion = ref(false)
 const people = ref([])
-const greetingId = ref(null)
-const detailedGreeting = ref(false)
-const neighborMessage = computed(() => PLAZA_NEIGHBORS[greetingId.value] || null)
-const greetings = createNeighborGreetings()
-let greetingUntil = 0
-function closeGreeting() {
-  greetingId.value = null
-  detailedGreeting.value = false
-}
-function greetNeighbor(id) {
-  if (!props.active || entryLocked || dragging.value || Date.now() < suppressTapUntil) return
-  greetings.acknowledge(id, Date.now())
-  greetingId.value = id
-  detailedGreeting.value = true
-  navigator.cancelEntry()
-  refreshPeople()
-}
 const world = computed(() => {
   const ratios = [viewport.value.width / 1280, viewport.value.height / 801]
   const scale = props.overview ? Math.min(...ratios) : Math.max(...ratios)
@@ -371,7 +328,6 @@ function settleEntry() {
 }
 function walkToHouse(id) {
   if (!props.active || !props.appearance || entryLocked) return false
-  closeGreeting()
   navigator.enterHouse(id)
   followPlayer = true
   refreshPeople()
@@ -385,7 +341,6 @@ function releaseEntry() {
 }
 function walkToArea(id) {
   if (!props.active || !props.appearance || entryLocked) return false
-  closeGreeting()
   navigator.enterArea(id)
   followPlayer = true
   refreshPeople()
@@ -403,16 +358,8 @@ function chooseHouse(id) {
 function openBoard() {
   if (Date.now() < suppressTapUntil || dragging.value || entryLocked) return
   navigator.cancelEntry()
-  closeGreeting()
   refreshPeople()
   emit('board')
-}
-function openGuide() {
-  if (!props.active || Date.now() < suppressTapUntil || dragging.value || entryLocked) return
-  navigator.cancelEntry()
-  closeGreeting()
-  refreshPeople()
-  emit('guide')
 }
 function eventPoint(event) {
   const point = event.changedTouches?.[0] || event.touches?.[0] || event
@@ -434,7 +381,6 @@ function movePlayer(event) {
   const x = (point.x - viewport.value.left - camera.value.x) / world.value.width
   const y = (point.y - viewport.value.top - camera.value.y) / world.value.height
   if (x < 0 || x > 1 || y < 0 || y > 1) return
-  closeGreeting()
   navigator.moveTo({ x, y })
   followPlayer = true
   refreshPeople()
@@ -510,7 +456,6 @@ function startClock() {
     navigator.advance(elapsed)
     if (!reducedMotion.value)
       walkers.forEach((walker, index) => {
-        if (greetingId.value === residents[index].id) return
         if (!walker.getState().moving) {
           stopIndexes[index] = (stopIndexes[index] + 1) % stops.length
           walker.moveTo(stops[stopIndexes[index]])
@@ -518,15 +463,6 @@ function startClock() {
         walker.advance(elapsed)
       })
     refreshPeople()
-    if (greetingId.value && !detailedGreeting.value && now >= greetingUntil) closeGreeting()
-    if (props.appearance && !greetingId.value && !dragging.value && !player.value.entering && !entryLocked) {
-      const id = greetings.encounter(player.value.position, people.value, now)
-      if (id) {
-        greetingId.value = id
-        detailedGreeting.value = false
-        greetingUntil = now + 5500
-      }
-    }
     updateCamera()
     settleEntry()
   }, 33)
@@ -546,7 +482,6 @@ watch(
       nextTick(measureScene)
       startClock()
     } else {
-      closeGreeting()
       stopClock()
       cancelGesture()
       releaseEntry()
@@ -574,52 +509,6 @@ defineExpose({ walkToHouse, walkToArea, centerPlayer, releaseEntry })
 </script>
 
 <style scoped>
-.neighbor-hotspot {
-  position: absolute;
-  inset: 0;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  background: transparent;
-  pointer-events: auto;
-}
-.neighbor-hotspot::after, .guide-puppy::after, .neighbor-message button::after { border: 0; }
-.neighbor-hotspot:focus-visible, .guide-puppy:focus-visible { outline: 2px solid #fff5d9; outline-offset: 2px; }
-.guide-puppy {
-  position: absolute;
-  z-index: 900;
-  width: 49px;
-  height: 58px;
-  padding: 0;
-  margin: 0;
-  transform: translate(-50%, -92%);
-  background: transparent;
-}
-.guide-puppy image { width: 100%; height: 100%; }
-.neighbor-message {
-  position: absolute;
-  z-index: 2000;
-  left: 16px;
-  bottom: calc(88px + env(safe-area-inset-bottom));
-  width: 310px;
-  max-width: calc(100% - 32px);
-  box-sizing: border-box;
-  padding: 16px 18px 10px;
-  border: 1px solid #ae996e;
-  border-radius: 4px 17px 17px 17px;
-  background: #fff8e6;
-  box-shadow: 0 4px 0 #6a664c33;
-  color: #3e5946;
-  cursor: auto;
-}
-.neighbor-name { padding-right: 32px; font-size: 16px; font-weight: 700; }
-.neighbor-name text { margin-left: 9px; color: #82826a; font-size: 11px; font-weight: 400; }
-.neighbor-copy { margin-top: 8px; line-height: 1.7; font-size: 14px; }
-.neighbor-message button { min-height: 44px; margin: 0; font-size: 13px; line-height: 1.5; background: transparent; color: #3e654f; }
-.neighbor-dismiss { position: absolute; right: 2px; top: 0; width: 44px; padding: 9px; font-size: 23px !important; }
-.neighbor-action { padding: 10px 0 6px; text-align: left; font-weight: 600; }
 .plaza-scene {
   position: relative;
   z-index: 0;
