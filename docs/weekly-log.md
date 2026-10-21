@@ -1,10 +1,10 @@
 # 团队周报（监督查看）
 
-更新至：2026-10-21（北京时间） · 汇总负责人：A · 成员：A / B / C
+更新至：2026-10-21（北京时间） · 汇总负责人：A（yfq） · 成员：A（yfq） / B（姜澜） / C（孙瑞）
 
 固定查看：[main分支团队周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [项目首页](../README.md) · [详细验证记录](verification.md)
 
-本页按自然周记录三人的实际成果。已完成的阶段功能已经整合到团队main，可使用本机演示数据运行；真实账号、服务端数据、跨设备通信及微信真机验收仍待完成，不能据此认定最终版本已经交付。
+本页按自然周记录三人的实际成果。成员姓名依据[团队名单](../README-team.md)，A按用户确认的标识记为yfq。已完成的阶段功能已经整合到团队main，可使用本机演示数据运行；真实账号、服务端数据、跨设备通信及微信真机验收仍待完成，不能据此认定最终版本已经交付。
 
 ## 本周：2026-10-19—2026-10-25（进行中）
 
@@ -12,10 +12,21 @@
 
 | 成员 | 本周已有成果 | 完成程度 | 成果证据 |
 | --- | --- | --- | --- |
-| A | 整合广场、搭子与技能互助阶段流程；完善宠物选择/自绘、贴身装扮与衣柜；钓鱼和潜水可获得装扮与兑换奖励 | 本机阶段演示可用；真实数据和微信真机待验 | [PR #5](https://github.com/yangfengqin406/group-project/pull/5)、[宠物装扮截图](assets/pets-2026-10-20/natural-product-front.png) |
-| B | 提交二手闲置/求购的发布、图片、筛选、详情、预约和完成流程；补充账号资料、头像编辑及个人小屋 | 本机阶段演示可用；真实登录和公共云上传待接入 | [PR #6](https://github.com/yangfengqin406/group-project/pull/6)、[二手详情截图](assets/pr6-integration-2026-10-21/market-detail.png) |
-| C | 提交丢失/拾获的分类、照片发布、列表和详情；详情评论、站内通知及统一消息中心可关联原内容 | 本机阶段演示可用；真实消息、权限与跨设备联调待完成 | [PR #7](https://github.com/yangfengqin406/group-project/pull/7)、[失物详情截图](assets/pr6-integration-2026-10-21/lost-detail.png)、[消息中心截图](assets/pr6-integration-2026-10-21/messages.png) |
-| 团队整合（A负责） | 处理二手与失物共用页面、筛选、图片和消息的兼容问题；三人的现有业务成果已汇总到main；明确每人保留一个工作分支 | 当前整合版可演示；完整真实业务联调仍待完成 | [PR #10](https://github.com/yangfengqin406/group-project/pull/10)、[分工与协作约定](collaboration.md) |
+| A（yfq） | 整合广场、搭子与技能互助阶段流程；完善宠物、衣柜与池边玩法；本周继续完成石板路、邻居问候、小狗指南及四屋视觉统一 | 175c1e7功能已合入main；A分支随后经PR #13回退该功能，当前代码与成果历史分开看；真实数据和微信真机待验 | [PR #5](https://github.com/yangfengqin406/group-project/pull/5)、[更新175c1e7](https://github.com/yangfengqin406/group-project/commit/175c1e7e94b743ebeb9a2c2d58b54bde6caca3f8)、[PR #12](https://github.com/yangfengqin406/group-project/pull/12) |
+| B（姜澜） | 提交二手闲置/求购的发布、图片、筛选、详情、预约和完成流程；补充账号资料、头像编辑及个人小屋 | 本机阶段演示可用；真实登录和公共云上传待接入 | [PR #6](https://github.com/yangfengqin406/group-project/pull/6)、[二手详情截图](assets/pr6-integration-2026-10-21/market-detail.png) |
+| C（孙瑞） | 提交丢失/拾获的分类、照片发布、列表和详情；详情评论、站内通知及统一消息中心可关联原内容 | 本机阶段演示可用；真实消息、权限与跨设备联调待完成 | [PR #7](https://github.com/yangfengqin406/group-project/pull/7)、[失物详情截图](assets/pr6-integration-2026-10-21/lost-detail.png)、[消息中心截图](assets/pr6-integration-2026-10-21/messages.png) |
+| 团队整合（A / yfq负责） | 处理二手与失物共用页面、筛选、图片和消息的兼容问题；三人的现有业务成果已汇总到main；明确每人保留一个工作分支 | 当前整合版可演示；完整真实业务联调仍待完成 | [PR #10](https://github.com/yangfengqin406/group-project/pull/10)、[分工与协作约定](collaboration.md) |
+
+### 本周更新明细
+
+**2026-10-21 · 负责成员：A（yfq） · 温馨小镇邻里更新**
+
+- 实际完成：接通下方石板路；新增邻居靠近问候、点击提示和聊天停步；新增小狗麦麦的广场指南与带路进屋；统一四屋、内容详情/发布及资料页的室内插画、木牌和纸张画风，修正求购卡片预算显示。
+- 成果证据：[代码提交175c1e7](https://github.com/yangfengqin406/group-project/commit/175c1e7e94b743ebeb9a2c2d58b54bde6caca3f8)，共30个文件，包含代码、测试、插画、截图和文档；[指南截图](https://github.com/yangfengqin406/group-project/blob/175c1e7e94b743ebeb9a2c2d58b54bde6caca3f8/docs/assets/neighborhood-2026-10-21/guide.png)、[小屋截图](https://github.com/yangfengqin406/group-project/blob/175c1e7e94b743ebeb9a2c2d58b54bde6caca3f8/docs/assets/neighborhood-2026-10-21/lost-room.png)按已交付版本保存。
+- 实际验证：175c1e7版本全项目88/88测试、结构检查及H5/微信小程序构建通过；本轮新增6项导航/邻居测试。H5实际回归石板路、问候、带路进屋/返回、选图发布、筛选和统一消息联系，完整范围见[当次验证记录](https://github.com/yangfengqin406/group-project/blob/175c1e7e94b743ebeb9a2c2d58b54bde6caca3f8/docs/verification.md)。
+- 归属说明：本次交互、统一视觉与兼容验证由A（yfq）负责；二手、账号资料和个人小屋业务仍是B（姜澜）的成果，失物与消息业务仍是C（孙瑞）的成果，不重复记为A新开发的业务。
+- 仓库流转：代码已由[PR #12](https://github.com/yangfengqin406/group-project/pull/12)合入main；随后[PR #13](https://github.com/yangfengqin406/group-project/pull/13)回退了A分支中的该功能。完成历史保留，本次只补文档，不恢复回退，也不改main或B/C分支。
+- 剩余工作：真实后端、跨设备联调和微信真机仍待验；本次成员记录先同步A分支，监督人main固定入口需后续仅含文档的PR同步，避免把A中的功能回退一并带入main。
 
 ### 验证到了哪一步
 
@@ -37,9 +48,9 @@
 
 | 负责人 | 接下来要做 |
 | --- | --- |
-| A | 接入真实搭子与技能求助数据；联调推荐、邀请、双方确认、拒绝、取消、完成和满员状态，继续统一画风 |
-| B | 接入真实账号、资料、公共上传和二手数据，完善个人空间、公开主页、收藏及相关状态与权限 |
-| C | 接入真实失物和消息数据；联调归还、会话参与权限、留言、站内通知和举报，并贯通各模块联系入口 |
+| A（yfq） | 接入真实搭子与技能求助数据；联调推荐、邀请、双方确认、拒绝、取消、完成和满员状态，继续统一画风 |
+| B（姜澜） | 接入真实账号、资料、公共上传和二手数据，完善个人空间、公开主页、收藏及相关状态与权限 |
+| C（孙瑞） | 接入真实失物和消息数据；联调归还、会话参与权限、留言、站内通知和举报，并贯通各模块联系入口 |
 | A/B/C共同 | 使用两个账号/两台设备完成核心跨模块联调、自测与文档同步，再进行部署和小程序验收 |
 
 以上是计划，不计作已完成。进度有变化时补充实际结果和原因。
@@ -48,16 +59,18 @@
 
 | 成员 | 有记录支持的工作 | 证据与说明 |
 | --- | --- | --- |
-| 团队基础 / A集成 | 整理uni-app、Vue 3、JavaScript项目骨架、目录、Git/CI和文档交付规则 | 10月14日[PR #1](https://github.com/yangfengqin406/group-project/pull/1)、[PR #2](https://github.com/yangfengqin406/group-project/pull/2) |
-| A | 10月15日提交四栋房子的广场、入口、角色移动、搭子/技能求助列表发布筛选，以及演示推荐和邀请；随后继续宠物、原创与池边玩法的本机开发 | [PR #4](https://github.com/yangfengqin406/group-project/pull/4)及[10月15—16日验证记录](verification.md)；开发提交与下一周合并日期分别记录，最终视觉迭代于10月19—20日继续完善 |
-| B | 原阶段安排不要求20日前独立开发交付，A/C先按骨架接口开发 | [阶段要求](requirements.md)；本周未提供可核对的独立提交/验收记录，不据此推断线下工作情况 |
-| C | 本周的独立工作明细待本人补充 | 已知失物/消息首版提交发生在10月21日，已记入本周；不补写未经验证的完成情况 |
+| 团队基础 / A（yfq）集成 | 整理uni-app、Vue 3、JavaScript项目骨架、目录、Git/CI和文档交付规则 | 10月14日[PR #1](https://github.com/yangfengqin406/group-project/pull/1)、[PR #2](https://github.com/yangfengqin406/group-project/pull/2) |
+| A（yfq） | 10月15日提交四栋房子的广场、入口、角色移动、搭子/技能求助列表发布筛选，以及演示推荐和邀请；随后继续宠物、原创与池边玩法的本机开发 | [PR #4](https://github.com/yangfengqin406/group-project/pull/4)及[10月15—16日验证记录](verification.md)；开发提交与下一周合并日期分别记录，最终视觉迭代于10月19—20日继续完善 |
+| B（姜澜） | 原阶段安排不要求20日前独立开发交付，A/C先按骨架接口开发 | [阶段要求](requirements.md)；本周未提供可核对的独立提交/验收记录，不据此推断线下工作情况 |
+| C（孙瑞） | 本周的独立工作明细待本人补充 | 已知失物/消息首版提交发生在10月21日，已记入本周；不补写未经验证的完成情况 |
 
 ## 每周怎样更新与监督
 
-1. B/C向A提供本人“完成内容、成果证据、问题、下一步”；A负责汇总，成员真实姓名确认后可替换A/B/C代号。
+1. B（姜澜）/C（孙瑞）向A（yfq）提供本人“完成内容、成果证据、问题、下一步”；A负责汇总。成员映射以用户确认和团队名单为依据，不猜测姓名或工作归属。
 2. 每周在同一文件追加一节，保留旧周；周中标记“进行中”和更新日期，未提供的工作写“待补充”。
 3. 周报中的每项完成应能对应PR、截图或实际验证记录；演示可用、真实数据接入和真机验收分别标明，不编造工时或完成百分比。
 4. 周报通过文档PR审阅后合入main，监督人始终查看本页固定入口。监督反馈与需要补充的事项，由A记录到对应周的问题或下一步中。
+
+5. 每次正常更新在当周追加日期、负责成员、实际改动、提交或PR、验证与剩余工作、所在分支和是否合入main，保留旧条目；公共页面调整与原业务实现分别归属。
 
 详细测试过程保留在[verification.md](verification.md)，当前实现边界见[status.md](status.md)，任务拆分见[tasks.csv](../tasks.csv)。本页由团队维护，不会自动从聊天或提交生成。
