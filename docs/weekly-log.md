@@ -4,7 +4,7 @@
 
 ## 当前整合状态
 
-- 团队main：`cb6f03d`，对应[PR #10](https://github.com/yangfengqin406/group-project/pull/10)，已包含A、B、C当前三个工作分支的提交。2026-10-21逐一比较，三个分支均无main之外的提交。
+- 团队main：`cb6f03d`，对应[PR #10](https://github.com/yangfengqin406/group-project/pull/10)，已包含下列A、B、C恢复时的全部业务提交。2026-10-21逐一比较，`569cf80`、`20188dd`、`bb6033b`均为该main版本的祖先。本次新增的周报与协作约定先保存到A分支，尚未合入main。
 - A：`codex/a-plaza-partner-pets`，由`569cf80`恢复，包含早期广场提交`fc1f689`以及后续宠物、衣柜和小游戏。
 - B：`codex/b-market-personal-home`，保留`20188dd`，包含二手、账号资料、个人小屋和共享文件兼容处理。
 - C：`codex/c-lost-found-messages`，由`bb6033b`恢复，保留失物招领、评论和统一消息中心。
