@@ -54,6 +54,22 @@ export const PLAZA_AREAS = [
     door: { x: 0.49, y: 0.31 }
   }
 ]
+// 前景石板小路连接集市前与家门前；端点不使用门口，路过不会触发进入。
+export const PLAZA_GARDEN_PATH = [
+  { x: 0.34, y: 0.78 },
+  { x: 0.4, y: 0.79 },
+  { x: 0.45, y: 0.8 },
+  { x: 0.5, y: 0.812 },
+  { x: 0.55, y: 0.83 },
+  { x: 0.6, y: 0.852 },
+  { x: 0.65, y: 0.881 },
+  { x: 0.67, y: 0.892 },
+  { x: 0.7, y: 0.865 },
+  { x: 0.73, y: 0.84 },
+  { x: 0.75, y: 0.815 },
+  { x: 0.75, y: 0.78 },
+  { x: 0.74, y: 0.74 }
+]
 const destinations = [...PLAZA_HOUSES, ...PLAZA_AREAS]
 
 const aspect = 801 / 1280
@@ -95,6 +111,15 @@ for (const house of PLAZA_HOUSES) {
     edges.push([previous, next])
     previous = next
   }
+}
+let previousGardenNode = null
+for (const point of PLAZA_GARDEN_PATH) {
+  let node = nodes.findIndex(
+    (candidate) => candidate.x === point.x && candidate.y === point.y
+  )
+  if (node < 0) node = nodes.push(copy(point)) - 1
+  if (previousGardenNode !== null) edges.push([previousGardenNode, node])
+  previousGardenNode = node
 }
 const areaBranches = {
   pond: {
