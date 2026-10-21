@@ -1,5 +1,18 @@
 # 三人协作与 Git 规则
 
+## 三人固定工作分支（2026-10-21用户确认）
+
+| 用途 / 负责人 | 长期保留分支 | 工作范围 |
+| --- | --- | --- |
+| 团队集成 | main | 审阅后整合三人的成果 |
+| A | codex/a-plaza-partner-pets | 广场、搭子、技能互助、宠物与池边小游戏 |
+| B | codex/b-market-personal-home | 二手、账号资料、个人小屋及公共上传/请求层 |
+| C | codex/c-lost-found-messages | 失物、留言、消息、通知及对应权限 |
+
+按用户要求每人保留一个工作分支，main另外保留。每个分支保留完整项目以便运行，成员按模块分工修改；不能因已合并、暂时没有独有提交或没有开放PR，就删除A/B/C工作分支。旧的按任务命名分支可在明确用途、核对提交后清理；人员分支合并与删除须有明确授权。下方旧日期段落是当时快照，分支安排以本节为准。
+
+每周汇总入口为[weekly-log.md](weekly-log.md)，A根据三人提交/PR和实际验证维护；status.md/tasks.csv仍记录当前边界与总进度，verification.md保留详细验收记录，不把这些约定说成自动生成周报的程序。
+
 2026-10-20 用户已明确授权“保存成为新分支，然后提交到团队仓库”，此前暂不提交的要求作为历史保留。本次交付分支为 `codex/a-phase-one-pets-wardrobe`，包含既有整屏广场、宠物原创、钓鱼/衣柜/潜水、运行素材与对应文档；由 A 整理提交和推送，并通过草稿 PR 供队友审阅，不直接改 main。源码之外只补团队可读的提示/提取清单与验收截图，不纳入本机构建、原始大图或私有配置。
 
 2026-10-19 本轮按用户新批注调整自然发根、包脚鞋与背包前后，并取消新身份七件赠送，增加目录unlockLevel及服务端关卡兑换门槛。A协调共享显示组件、wardrobe目录/演示服务与验收文档；B/C业务不调整。已拥有物不删除，仍沿用本地分支，不暂存、提交或推送。接口新增字段与规则已先在interfaces.md登记。
@@ -18,23 +31,22 @@
 
 ## 每个任务的流程
 
-先运行 `git status`；有未提交改动时先在当前任务分支保存并提交，再切换到 main。以下命令用于开始一个新任务。
+先运行 `git status`；有未提交改动时先在当前分支保存并提交，再切换到本人的固定工作分支。以下以A为例；B/C替换为表中自己的分支，新电脑首次使用时先fetch并建立对应远程跟踪。
 
 ```bash
-git switch main
+git switch codex/a-plaza-partner-pets
 git pull --ff-only
-git switch -c feat/market-publish
 # 修改、验证
 git add <改动的文件>
-git commit -m "feat(market): 接入商品发布"
-git push -u origin feat/market-publish
+git commit -m "feat(plaza): 更新广场功能"
+git push origin codex/a-plaza-partner-pets
 ```
 
 在 GitHub 提 PR，由另一位队友检查接口影响和验收结果后合并。不要直接往 main 推日常功能；仓库管理员需在 GitHub Settings 中实际启用 main 的保护规则，文件本身不会自动开启保护。
 
-PR 合并后切 main 并 pull，再开下一个任务分支。每天至少整合一次，确保 main 能运行。出现冲突先看双方改动并沟通，不要直接选“全部保留我的”。解决后重新执行检查与两端构建。
+PR合并后仍保留A/B/C三个工作分支。需要查看团队整合版时保存本地工作、切main并pull；继续开发时回本人的工作分支，按团队协调同步main。每天检查是否有可审阅的整合成果，确保main能运行。出现冲突先看双方改动并沟通，不要直接选“全部保留我的”。解决后重新执行检查与两端构建。
 
-- 分支：feat/模块-功能、fix/模块-问题；短小任务，避免连续几天不合并。
+- 日常工作使用表中的人员分支，小步提交；确需临时分支时说明用途与清理时机，不擅自增加或删除人员分支。
 - 提交前检查 git diff；不要提交 node_modules、dist、令牌、AppSecret 和 .env。
 - package.json、package-lock.json、pages.json、manifest.json、请求层改动需提前通知调用方。新增页面由改动者登记路由并检查 tabBar。
 - 依赖版本锁定；队友默认 npm ci，新增依赖由一人统一处理，不各自升级。
