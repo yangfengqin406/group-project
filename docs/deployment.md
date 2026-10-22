@@ -4,7 +4,7 @@
 
 ## GitHub Pages 阶段演示（2026-10-22）
 
-部署入口：[校园生活广场 H5](https://yangfengqin406.github.io/group-project/#/)。首次发布是否完成及当前版本，以[发布工作流](https://github.com/yangfengqin406/group-project/actions/workflows/deploy-h5.yml)最近一次成功运行为准；仅开启 Pages 不代表网页已经可访问。
+部署入口：[校园生活广场 H5](https://yangfengqin406.github.io/group-project/#/)。10月22日[PR #17](https://github.com/yangfengqin406/group-project/pull/17)合入后，[首次发布](https://github.com/yangfengqin406/group-project/actions/runs/39803225930)的 build/deploy 均成功，HTTPS 首页实际返回200。以后当前版本以[发布工作流](https://github.com/yangfengqin406/group-project/actions/workflows/deploy-h5.yml)最近一次成功运行为准；详细验收见[验证记录](verification.md)。
 
 此站只展示 main 已审阅的 A/B/C 阶段成果，固定使用本机演示数据。页面中的账号、消息、发布和装扮记录只保存在各自浏览器，不能跨设备同步，不是真实校园业务上线。A 分支草稿 PR #15 不随本次发布合入 main。
 
