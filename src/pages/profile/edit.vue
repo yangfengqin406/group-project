@@ -1,7 +1,7 @@
 <template>
-  <view class="page">
+  <view class="page village-page village-home">
+    <VillageHeader kind="home" title="编辑资料" subtitle="留下你的名字，也分享一点擅长的事。" compact />
     <DemoNotice />
-    <view class="title">编辑资料</view>
     <view v-if="error" class="error">{{ error }}</view>
     <view v-if="profile" class="panel">
       <text class="label">头像</text>
@@ -53,6 +53,7 @@ import { onShow } from '@dcloudio/uni-app'
 import { upload, user } from '../../services/index.js'
 import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
+import VillageHeader from '../../components/village/VillageHeader.vue'
 const profile = ref(null),
   form = reactive({
     nickname: '',
@@ -124,16 +125,17 @@ onShow(load)
 </script>
 <style scoped>
 .avatar {
-  width: 120rpx;
-  height: 120rpx;
+  width: 64px;
+  height: 64px;
+  border: 3px solid #d7c7a3;
   border-radius: 50%;
-  background: #eee;
+  background: #eee9d7;
 }
 .placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
-  font-size: 24rpx;
+  color: #727760;
+  font-size: 12px;
 }
 </style>

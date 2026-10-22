@@ -1,7 +1,7 @@
 page {
   background: #f5f5eb;
   color: #26392e;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
   font-size: 28rpx;
 }
 view,
@@ -124,3 +124,5 @@ button::after {
   white-space: pre-wrap;
   line-height: 1.9;
 }
+
+@import './village.scss';

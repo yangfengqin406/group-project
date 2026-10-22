@@ -1,11 +1,12 @@
 <template>
-  <view class="page">
+  <view class="page village-page village-home">
+    <VillageHeader kind="home" :title="profile ? profile.nickname + ' 的主页' : '同学的主页'" subtitle="认识这位同学，看看 TA 分享的校园日常。" compact />
     <DemoNotice />
     <view v-if="error" class="error">{{ error }}</view>
     <view v-if="profile" class="panel">
-      <view class="title">{{ profile.nickname }} 的主页</view>
+      <image v-if="profile.avatarUrl" :src="profile.avatarUrl" class="profile-avatar" mode="aspectFill" />
       <view class="muted">{{ profile.campusName }}</view>
-      <view class="body" style="margin-top: 18rpx">{{ profile.bio }}</view>
+      <view class="body profile-bio">{{ profile.bio }}</view>
       <view class="actions">
         <text v-for="skill in profile.skillTags" :key="skill" class="tag">
           {{ skill }}
@@ -27,6 +28,7 @@ import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
 import ContentCard from '../../components/ContentCard.vue'
 import EmptyState from '../../components/EmptyState.vue'
+import VillageHeader from '../../components/village/VillageHeader.vue'
 const userId = ref(''),
   profile = ref(null),
   items = ref([]),
@@ -61,3 +63,7 @@ async function loadMore() {
   }
 }
 </script>
+<style scoped>
+.profile-avatar { width: 64px; height: 64px; margin-bottom: 12px; border: 3px solid #d7c7a3; border-radius: 50%; }
+.profile-bio { margin-top: 14px; }
+</style>

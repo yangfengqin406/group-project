@@ -1,13 +1,9 @@
 <template>
-  <view class="page" :class="{ 'feed-page-filtered': showFilters }">
-    <DemoNotice />
-    <view class="row">
-      <view>
-        <view class="title">{{ title }}</view>
-        <view class="subtitle">{{ subtitle }}</view>
-      </view>
+  <view class="page village-page" :class="[roomClass, { 'feed-page-filtered': showFilters }]">
+    <VillageHeader :kind="type" :title="title" :subtitle="subtitle">
       <button class="primary" @tap="publish">发布</button>
-    </view>
+    </VillageHeader>
+    <DemoNotice />
     <view v-if="marketTypeOptions.length" class="content-switcher">
       <button
         v-for="opt in marketTypeOptions"
@@ -183,6 +179,7 @@ import { errorText } from '../utils/errors.js'
 import DemoNotice from './DemoNotice.vue'
 import ContentCard from './ContentCard.vue'
 import EmptyState from './EmptyState.vue'
+import VillageHeader from './village/VillageHeader.vue'
 const props = defineProps({
   type: { required: true },
   title: { required: true },
@@ -194,6 +191,9 @@ const props = defineProps({
   marketTypeOptions: { type: Array, default: () => [] },
   campusOptions: { type: Array, default: () => [] }
 })
+const roomClass = computed(() =>
+  `village-${props.type === 'lost_found' ? 'lost' : props.type === 'market' ? 'market' : 'partner'}`
+)
 const items = ref([]),
   keyword = ref(''),
   error = ref(''),
@@ -319,18 +319,18 @@ onUnmounted(() => {
 <style scoped>
 .content-switcher {
   display: flex;
-  gap: 8rpx;
-  padding: 6rpx;
-  margin-top: 28rpx;
-  background: #e8eddf;
-  border-radius: 16rpx;
+  gap: 4px;
+  padding: 4px;
+  margin-top: 14px;
+  background: #e9e1ca;
+  border-radius: 7px;
 }
 .lost-filter-panel {
-  margin-top: 24rpx;
-  padding: 20rpx 22rpx;
-  background: #fffef8;
-  border: 2rpx solid #e1e5d6;
-  border-radius: 16rpx;
+  margin-top: 18px;
+  padding: 12px 18px 18px;
+  background: #fffbec;
+  border: 1px solid #d8cbaa;
+  border-radius: 3px 3px 10px 3px;
 }
 .content-switcher button {
   flex: 1;
@@ -339,30 +339,30 @@ onUnmounted(() => {
   align-items: center;
   min-height: 44px;
   background: transparent;
-  color: #65765f;
-  font-size: 26rpx;
+  color: #696b58;
+  font-size: 14px;
   line-height: 1.4;
 }
 .content-switcher button.selected {
-  background: #fffef8;
-  color: #304a3a;
+  background: #fffbec;
+  color: #354d3e;
   font-weight: 650;
 }
 .filter-shortcuts {
   display: flex;
   flex-wrap: wrap;
-  gap: 10rpx;
-  margin-top: 18rpx;
+  gap: 6px;
+  margin-top: 10px;
 }
 .filter-shortcuts button {
   display: flex;
   align-items: center;
   min-height: 44px;
-  font-size: 24rpx;
-  padding: 8rpx 15rpx;
-  background: #edf0e5;
-  color: #52664f;
-  border: 2rpx solid transparent;
+  font-size: 14px;
+  padding: 8px 14px;
+  background: #eee9d7;
+  color: #626a56;
+  border: 1px solid #ddd1b3;
   line-height: 1.4;
 }
 .content-tab::after,
@@ -371,23 +371,23 @@ onUnmounted(() => {
 }
 .feed-page-filtered .primary,
 .feed-page-filtered .secondary {
-  font-size: 26rpx;
+  font-size: 14px;
   line-height: 1.5;
-  border-radius: 12rpx;
+  border-radius: 7px;
 }
 .feed-page-filtered .primary::after,
 .feed-page-filtered .secondary::after {
   border: 0;
 }
 .filter-shortcuts button.selected {
-  background: #e2ecd7;
-  border-color: #7a9b67;
-  color: #304a3a;
+  background: var(--room-tint);
+  border-color: var(--room-accent);
+  color: #354d3e;
 }
 .filter-fields {
   display: flex;
-  gap: 16rpx;
-  margin-top: 10rpx;
+  gap: 12px;
+  margin-top: 10px;
 }
 .category-field {
   flex: 1;
@@ -399,9 +399,9 @@ onUnmounted(() => {
 }
 .filter-label {
   display: block;
-  font-size: 23rpx;
-  color: #65765f;
-  padding: 16rpx 0 10rpx;
+  font-size: 13px;
+  color: #727760;
+  padding: 10px 0 6px;
 }
 .feed-page-filtered .input {
   min-height: 44px;
@@ -410,16 +410,20 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4rpx;
-  font-size: 25rpx;
+  gap: 4px;
+  font-size: 14px;
 }
 .feed-page-filtered .actions button {
   flex: 1;
   min-height: 44px;
 }
 .filter-result {
-  font-size: 24rpx;
-  color: #65765f;
-  margin: 16rpx 0;
+  font-size: 13px;
+  color: #727760;
+  margin: 12px 0;
+}
+@media (max-width: 380px) {
+  .filter-fields { flex-direction: column; }
+  .status-field { width: 100%; }
 }
 </style>
