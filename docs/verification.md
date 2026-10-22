@@ -1,12 +1,22 @@
 # 交付验证记录
 
-## H5 公网阶段演示准备：2026-10-22
+## H5 公网阶段演示：2026-10-22
 
 A（杨凤琴）在 main `8bba7a4` 的独立副本准备 GitHub Pages 托管配置，保留 A/B/C 工作分支及 root 工作目录未提交的小程序 AppID。未合入 A 第二阶段草稿 PR #15。
 
 实际运行 Node.js22.22.0，沿用本机锁定依赖（独立副本通过目录链接复用 node_modules，本地未重跑 npm ci）：check通过（14页面/70接口），88/88测试通过；`VITE_API_MODE=mock`、`UNI_H5_BASE=/group-project/` 的 H5 构建及普通微信构建均通过。GitHub Actions 工作流另用 npm ci 重建依赖、重新检查测试与双端构建，成功后才部署。
 
-仓库 Pages API 从404变为201，已配置 `build_type=workflow`；仅表示启用托管。子路径浏览器验收、PR/CI和首次公网访问结果待本次发布补充，不提前计为成功。微信工具、真机、审核及真实后端/跨设备未验收。
+仓库 Pages API 从404变为201，启用 `build_type=workflow`。[PR #17](https://github.com/yangfengqin406/group-project/pull/17)的 GitHub 检查通过后合入 main `344c31a`；[首次发布工作流](https://github.com/yangfengqin406/group-project/actions/runs/39803225930)实际 npm ci、check、88项测试、双端构建、产物上传和 deploy 均成功。[公网首页](https://yangfengqin406.github.io/group-project/#/)的独立 HTTPS 请求返回200。
+
+| 实际验收 | 结果与范围 |
+| --- | --- |
+| 本机模拟 Pages 子目录 | 12项通过：仅挂 /group-project/，根 /static 确认404；入口JS/CSS、广场、四屋真实点按步行进门、四宠七类衣柜图片、390px手机深层hash刷新与广场均通过。124个唯一资源、116次图片响应；无应用HTTP错误、坏图、运行异常、console错误或网络失败 |
+| 首次公网独立 Edge | 12项核心流程均通过，四屋、四宠七类衣柜及手机深层hash刷新实际有图；运行异常和console错误为0。但出现2次浏览器自动请求根 favicon.ico 的404及1次图片请求超时，因此不能写成“全部网络请求无错误”；公网加载等待按每个 uni-image 实际出现且完成解码判断 |
+| 公网禁缓存定位复测 | 8项精简检查通过，37次图片响应/76个唯一资源；应用HTTP错误、运行/console异常及网络失败为0，只剩根favicon.ico的404。初验图片超时未再现，因初版脚本未关联失败请求URL，无法追溯具体图片，不推断为资源路径错误；原始报告保留，未覆盖成“零错误” |
+| 图标修正 | index.html显式内嵌现有181字节广场底栏PNG作为浏览器图标，避免浏览器请求项目外的根favicon.ico。修正后再次实际运行check、88项测试、H5子目录与微信构建均通过，构建HTML保留内嵌图标及项目资源前缀。没有更换宠物、背景或业务图片，也没有把网络错误从验收记录过滤掉 |
+| 交付文档 | README提供公网入口与演示边界；deployment说明main自动更新/微信独立发布；status拆分H5阶段站点与真实后端/微信审核；同一weekly-log按A（杨凤琴）记录 |
+
+浏览器截图与紧凑JSON保存在本机可视化目录的 h5-pages-qa / h5-pages-public-qa，未提交个人浏览器profile、产物或依赖。公网首次抽查不重新验收游戏通关、业务发布、真实登录或跨设备通信；监督人所在网络的可达性仍请其试开。微信工具、真机、审核及真实后端/跨设备未验收。
 
 ## 温馨小镇邻里：2026-10-21（A 工作分支交付）
 
