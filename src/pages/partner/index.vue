@@ -15,6 +15,7 @@ const statuses = [
   { label: '招募中', value: 'open' },
   { label: '已满员', value: 'full' },
   { label: '已完成', value: 'completed' },
-  { label: '已关闭', value: 'closed' }
+  { label: '已关闭', value: 'closed' },
+  { label: '已过期', value: 'expired' }
 ]
 </script>

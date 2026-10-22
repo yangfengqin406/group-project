@@ -53,8 +53,9 @@
           联系发布者
         </button>
         <button
-          v-if="isOwn && type === 'plan' && item.status === 'open'"
+          v-if="canManagePlan && item.status === 'open'"
           class="primary"
+          :disabled="busy"
           @tap="candidates"
         >
           查看相近计划
@@ -80,7 +81,7 @@
           标记交易完成
         </button>
         <button
-          v-if="isOwn && ['open', 'active', 'full'].includes(item.status)"
+          v-if="isOwn && (type === 'plan' ? canManagePlan : ['open', 'active', 'full'].includes(item.status))"
           class="secondary"
           :disabled="busy"
           @tap="finish"
@@ -92,6 +93,14 @@
                 ? '下架'
                 : '标记完成'
           }}
+        </button>
+        <button
+          v-if="canManagePlan"
+          class="secondary"
+          :disabled="busy"
+          @tap="cancelPlan"
+        >
+          取消计划
         </button>
       </view>
     </view>
@@ -132,8 +141,8 @@
   </view>
 </template>
 <script setup>
-import { ref, computed } from 'vue'
-import { onLoad, onShow } from '@dcloudio/uni-app'
+import { ref, computed, watch } from 'vue'
+import { onLoad, onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import DemoNotice from '../../components/DemoNotice.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
 import * as api from '../../services/index.js'
@@ -154,22 +163,39 @@ const type = ref('plan'),
   comments = ref([]),
   commentBody = ref(''),
   commentsLoading = ref(false),
-  commentSaving = ref(false)
+  commentSaving = ref(false),
+  planRefreshing = ref(false)
 const isOwn = computed(() => item.value?.ownerId === session.user?.id)
+const canManagePlan = computed(
+  () => isOwn.value && type.value === 'plan' &&
+    !planRefreshing.value && ['open', 'full'].includes(item.value?.status)
+)
+let loadVersion = 0
+let visible = false
 const service = () =>
   api[type.value === 'lost_found' ? 'lostFound' : type.value]
 onLoad((options) => {
   if (contentTypes.includes(options.type)) type.value = options.type
   id.value = options.id || ''
 })
-async function load() {
-  error.value = ''
+async function load({ preserveError = false } = {}) {
+  const version = ++loadVersion
+  const userId = session.user?.id
+  const contentType = type.value
+  const contentId = id.value
+  const current = () => version === loadVersion && (contentType !== 'plan' || userId === session.user?.id) &&
+    contentType === type.value && contentId === id.value
+  if (!preserveError) error.value = ''
+  if (contentType === 'plan') planRefreshing.value = true
   try {
-    item.value = await service().get({ id: id.value })
+    const result = await service().get({ id: contentId })
+    if (!current()) return
+    item.value = result
     selected.value = false
     let cursor = null
     do {
       const favorites = await api.favorite.list({ pageSize: 50, cursor })
+      if (!current()) return
       selected.value = favorites.items.some(
         (f) => f.contentType === type.value && f.contentId === id.value
       )
@@ -177,7 +203,11 @@ async function load() {
     } while (cursor && !selected.value)
     if (type.value === 'lost_found') await loadComments()
   } catch (e) {
-    error.value = errorText(e)
+    if (!current()) return
+    if (contentType === 'plan') item.value = null
+    if (!preserveError || !error.value) error.value = errorText(e)
+  } finally {
+    if (current()) planRefreshing.value = false
   }
 }
 async function loadComments() {
@@ -211,15 +241,41 @@ async function sendComment() {
     commentSaving.value = false
   }
 }
-onShow(load)
+watch(() => session.user?.id, () => {
+  if (type.value !== 'plan') return
+  ++loadVersion
+  item.value = null
+  selected.value = false
+  planRefreshing.value = false
+  error.value = ''
+  if (visible) load()
+})
+onShow(() => {
+  visible = true
+  load()
+})
+onHide(() => {
+  visible = false
+  ++loadVersion
+  planRefreshing.value = false
+})
+onUnload(() => {
+  ++loadVersion
+})
 async function run(fn) {
   if (busy.value) return
+  const userId = session.user?.id
+  const contentType = type.value
+  const contentId = id.value
   busy.value = true
   error.value = ''
   try {
     await fn()
   } catch (e) {
+    if (userId !== session.user?.id || contentType !== type.value || contentId !== id.value) return
     error.value = errorText(e)
+    if (type.value === 'plan' && ['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
+      await load({ preserveError: true })
   } finally {
     busy.value = false
   }
@@ -289,6 +345,10 @@ function report() {
   })
 }
 function finish() {
+  if (type.value === 'plan') {
+    confirmPlan('complete')
+    return
+  }
   uni.showModal({
     title: '确认操作',
     content: '确认更新这条内容的状态吗？',
@@ -306,6 +366,52 @@ function finish() {
     }
   })
 }
+function cancelPlan() {
+  confirmPlan('close')
+}
+function confirmPlan(action) {
+  if (!canManagePlan.value || busy.value) return
+  const planId = id.value
+  const userId = session.user?.id
+  const version = loadVersion
+  const current = () => visible && type.value === 'plan' && planId === id.value && userId === session.user?.id
+  const cancelling = action === 'close'
+  uni.showModal({
+    title: cancelling ? '取消整个计划？' : '确认计划完成',
+    content: cancelling
+      ? '取消后，所有成员的这次活动安排将结束，尚未处理的邀请会失效，计划不能重新开启。这不是退出个人组队。'
+      : '确认这次活动已经完成？完成后停止招募，未处理的邀请会失效，计划不能重新开启。',
+    confirmText: cancelling ? '取消计划' : '确认完成',
+    cancelText: cancelling ? '保留计划' : '再想一下',
+    success: (result) => {
+      if (result.confirm && version === loadVersion && current() && canManagePlan.value)
+        changePlan(action, planId, current)
+    }
+  })
+}
+async function changePlan(action, planId, current) {
+  if (busy.value) return
+  const version = ++loadVersion
+  busy.value = true
+  error.value = ''
+  try {
+    const updated = await api.plan[action]({ id: planId })
+    if (!current()) return
+    if (version === loadVersion) item.value = updated
+    else await load()
+  } catch (e) {
+    if (!current()) return
+    if (version !== loadVersion) {
+      await load()
+      return
+    }
+    error.value = errorText(e)
+    if (['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
+      await load({ preserveError: true })
+  } finally {
+    busy.value = false
+  }
+}
 function preview(image) {
   uni.previewImage({ current: image, urls: item.value.images })
 }
@@ -316,6 +422,7 @@ const statusLabels = {
   open: '进行中',
   full: '已满员',
   completed: '已完成',
+  expired: '已过期',
   reserved: '已预约'
 }
 const lostCategories = { card: '卡片', key: '钥匙', misc: '杂物' }

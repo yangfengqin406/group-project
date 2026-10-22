@@ -3,7 +3,7 @@
     <DemoNotice />
     <view class="row">
       <view class="title">消息中心</view>
-      <button class="secondary" :disabled="loading" @tap="load">刷新</button>
+      <button class="secondary" :disabled="loading || busy" @tap="load">刷新</button>
     </view>
     <view class="subtitle">二手、失物和搭子的联系都在这里</view>
     <view class="message-tools">
@@ -30,6 +30,9 @@
     <view v-for="i in invitations" :key="i.id" class="panel">
       <view>{{ i.sender.nickname }} 邀请 {{ i.recipient.nickname }}</view>
       <view class="muted">状态：{{ labels[i.status] || i.status }}</view>
+      <view v-if="i.status === 'expired'" class="muted invitation-tip">
+        这次邀请的计划安排已有变化，可能已结束、取消、满员或调整公开范围。可以查看目标计划，合适时再约一次。
+      </view>
       <view class="actions">
         <button class="secondary" @tap="openContent('plan', i.targetPlanId)">
           查看目标计划
@@ -38,23 +41,23 @@
           <template v-if="i.recipientId === session.user?.id">
             <button
               class="primary"
-              :disabled="busy"
+              :disabled="busy || loading"
               @tap="respond(i, 'accept')"
             >
               接受
             </button>
             <button
               class="secondary"
-              :disabled="busy"
+              :disabled="busy || loading"
               @tap="respond(i, 'reject')"
             >
               暂不接受
             </button>
           </template>
           <button
-            v-else
+            v-else-if="i.senderId === session.user?.id"
             class="secondary"
-            :disabled="busy"
+            :disabled="busy || loading"
             @tap="respond(i, 'cancel')"
           >
             取消邀请
@@ -62,7 +65,7 @@
         </template>
       </view>
     </view>
-    <button v-if="inviteCursor" class="secondary" @tap="moreInvites">
+    <button v-if="inviteCursor" class="secondary" :disabled="loading || busy" @tap="moreInvites">
       更多邀请
     </button>
     <view class="section-title">联系消息</view>
@@ -83,6 +86,7 @@
     <button
       v-if="conversationCursor"
       class="secondary"
+      :disabled="loading || busy"
       @tap="moreConversations"
     >
       更多会话
@@ -95,7 +99,7 @@
       </view>
       <text class="muted">{{ formatTime(n.createdAt) }} · 查看原内容 →</text>
     </view>
-    <button v-if="noteCursor" class="secondary" @tap="moreNotes">
+    <button v-if="noteCursor" class="secondary" :disabled="loading || busy" @tap="moreNotes">
       更多通知
     </button>
     <EmptyState
@@ -112,16 +116,16 @@
   </view>
 </template>
 <script setup>
-import { computed, ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { computed, ref, watch } from 'vue'
+import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { invitation, conversation, notification } from '../../services/index.js'
 import { session } from '../../utils/session.js'
 import {
   contentNames,
   openContent,
-  formatTime,
-  idempotencyKey
+  formatTime
 } from '../../utils/routes.js'
+import { runInvitationOperation } from '../../utils/invitation-operations.js'
 import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
 import EmptyState from '../../components/EmptyState.vue'
@@ -137,6 +141,8 @@ const invitations = ref([]),
   noteCursor = ref(null)
 const source = ref('')
 const subscriptionTip = ref('')
+let loadVersion = 0
+let visible = false
 const sourceOptions = [
   { label: '全部', value: '' },
   { label: '二手', value: 'market' },
@@ -155,16 +161,19 @@ const labels = {
   cancelled: '已取消',
   expired: '已失效'
 }
-async function load() {
-  if (loading.value) return
+async function load({ preserveError = false } = {}) {
+  const version = ++loadVersion
+  const userId = session.user?.id
+  const current = () => version === loadVersion && userId === session.user?.id
   loading.value = true
-  error.value = ''
+  if (!preserveError) error.value = ''
   try {
     const [i, c, n] = await Promise.all([
       invitation.list(),
       conversation.list(),
       notification.list()
     ])
+    if (!current()) return
     invitations.value = i.items
     inviteCursor.value = i.nextCursor
     conversations.value = c.items
@@ -172,18 +181,27 @@ async function load() {
     notifications.value = n.items
     noteCursor.value = n.nextCursor
   } catch (e) {
-    error.value = errorText(e)
+    if (current() && (!preserveError || !error.value)) error.value = errorText(e)
   } finally {
-    loading.value = false
+    if (current()) loading.value = false
   }
 }
 async function more(service, items, cursor) {
+  if (loading.value || busy.value || !cursor.value) return
+  const version = loadVersion
+  const userId = session.user?.id
+  const current = () => version === loadVersion && userId === session.user?.id
+  loading.value = true
   try {
     const r = await service.list({ cursor: cursor.value })
-    items.value.push(...r.items)
+    if (!current()) return
+    const known = new Set(items.value.map((item) => item.id))
+    items.value.push(...r.items.filter((item) => !known.has(item.id)))
     cursor.value = r.nextCursor
   } catch (e) {
-    error.value = errorText(e)
+    if (current()) error.value = errorText(e)
+  } finally {
+    if (current()) loading.value = false
   }
 }
 function moreInvites() {
@@ -218,31 +236,73 @@ async function subscribe() {
   }
 }
 async function respond(i, action) {
-  if (busy.value) return
+  if (busy.value || loading.value || i.status !== 'pending') return
+  const userId = session.user?.id
+  const version = loadVersion
+  const current = () => version === loadVersion && userId === session.user?.id
+  const sameAccount = () => visible && userId === session.user?.id
   busy.value = true
   error.value = ''
   try {
-    await invitation.respond({
-      invitationId: i.id,
-      action,
-      idempotencyKey: idempotencyKey()
-    })
-    await load()
+    await runInvitationOperation(
+      { userId, method: 'invitation.respond', params: { invitationId: i.id, action } },
+      invitation.respond
+    )
+    if (sameAccount()) await load()
   } catch (e) {
-    error.value = errorText(e)
+    if (!current()) {
+      if (sameAccount() && ['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code)) await load()
+      return
+    }
+    const message = errorText(e)
+    error.value = message
+    if (['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code)) {
+      invitations.value = []
+      inviteCursor.value = null
+      const refreshVersion = loadVersion + 1
+      await load({ preserveError: true })
+      if (refreshVersion === loadVersion && userId === session.user?.id) error.value = message
+    }
   } finally {
     busy.value = false
   }
 }
 async function read(n) {
+  const version = loadVersion
+  const userId = session.user?.id
+  const current = () => version === loadVersion && userId === session.user?.id
   try {
     await notification.markRead({ notificationId: n.id })
-    openContent(n.contentType, n.contentId)
+    if (current()) openContent(n.contentType, n.contentId)
   } catch (e) {
-    error.value = errorText(e)
+    if (current()) error.value = errorText(e)
   }
 }
-onShow(load)
+function clearMessages() {
+  invitations.value = []
+  conversations.value = []
+  notifications.value = []
+  inviteCursor.value = conversationCursor.value = noteCursor.value = null
+}
+watch(() => session.user?.id, () => {
+  ++loadVersion
+  clearMessages()
+  loading.value = false
+  error.value = ''
+  if (visible) load()
+})
+onShow(() => {
+  visible = true
+  load()
+})
+onHide(() => {
+  visible = false
+  ++loadVersion
+  loading.value = false
+})
+onUnload(() => {
+  ++loadVersion
+})
 </script>
 
 <style scoped>
@@ -282,6 +342,10 @@ onShow(load)
 }
 .subscription-tip {
   padding-top: 12rpx;
+}
+.invitation-tip {
+  margin-top: 14rpx;
+  line-height: 1.7;
 }
 @media (max-width: 420px) {
   .message-tools {

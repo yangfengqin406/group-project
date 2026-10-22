@@ -1,5 +1,6 @@
 import { ServiceError, requireThat } from '../utils/errors.js'
 import { findCandidates } from './matching.js'
+import { reconcilePlanState } from './plan-state.js'
 import { getPet, savePet } from './pet.js'
 import { listDemoBulletins } from './bulletin.js'
 import { dispatchFishing } from './fishing.js'
@@ -119,6 +120,7 @@ export function dispatch(db, method, p = {}) {
     }
   }
   me()
+  reconcilePlanState(db)
   if (method.startsWith('wardrobe.'))
     return dispatchWardrobe(db, me().id, method.slice(9), p)
   if (method.startsWith('dive.'))
@@ -267,23 +269,31 @@ export function dispatch(db, method, p = {}) {
         old = content(type, p.id)
         owned(old)
         requireThat(
-          ['open', 'active'].includes(old.status),
+          (type === 'plan' ? ['open', 'full'] : ['open', 'active']).includes(
+            old.status
+          ),
           'CONFLICT',
           '该内容不能再编辑'
         )
       }
       if (type === 'plan') {
+        const startAt = Date.parse(p.startAt)
+        const endAt = Date.parse(p.endAt)
+        const now = Date.now()
         requireThat(
-          Number.isFinite(Date.parse(p.startAt)) &&
-            Number.isFinite(Date.parse(p.endAt)) &&
-            Date.parse(p.startAt) < Date.parse(p.endAt),
+          Number.isFinite(startAt) && Number.isFinite(endAt) && startAt < endAt,
           'INVALID_ARGUMENT',
           '结束时间应晚于开始时间'
         )
         requireThat(
-          Date.parse(p.startAt) > Date.now(),
+          endAt > now,
           'INVALID_ARGUMENT',
-          '活动开始时间应在未来'
+          '活动结束时间应在未来'
+        )
+        requireThat(
+          startAt > now || (old && startAt === Date.parse(old.startAt)),
+          'INVALID_ARGUMENT',
+          old ? '开始时间只能保留原时刻或调整到未来' : '活动开始时间应在未来'
         )
         requireThat(
           Number.isInteger(p.capacity) && p.capacity >= 2 && p.capacity <= 10,
@@ -395,7 +405,8 @@ export function dispatch(db, method, p = {}) {
       if (type === 'plan') item.memberIds = old?.memberIds || [me().id]
       if (old) Object.assign(old, item)
       else db.contents[type].unshift(item)
-      return summarize(item)
+      if (type === 'plan') reconcilePlanState(db)
+      return summarize(old || item)
     }
     const item = content(type, p.id)
     owned(item)
@@ -411,6 +422,7 @@ export function dispatch(db, method, p = {}) {
         : action === 'close'
           ? 'closed'
           : 'completed'
+    if (type === 'plan') reconcilePlanState(db)
     return summarize(item)
   }
   if (method === 'market.reserve') {
@@ -554,6 +566,7 @@ export function dispatch(db, method, p = {}) {
           invite.targetPlanId
         )
       }
+      reconcilePlanState(db)
       return {
         invitation: clone(invite),
         targetPlan: summarize(content('plan', invite.targetPlanId))

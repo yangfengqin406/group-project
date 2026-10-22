@@ -57,4 +57,6 @@ Cast 仅持有 waiting/hooked 状态：抛竿后约 1.4～2.5 秒咬钩，咬钩
 
 状态约定：Plan open/full/closed/completed/expired；Invitation pending/accepted/rejected/cancelled/expired；Market active/reserved/completed/closed；Lost active/returned/closed；Help open/completed/closed。
 
+2026-10-22 A状态规则补齐：计划 `open/full` 由容量和成员数计算，到结束时间转 `expired`；`closed/completed/expired` 不因编辑容量恢复。待处理邀请不再满足公开性、来源单人、时间重叠、容量等推荐条件时永久转 `expired`。沿用既有状态，无新增字段；真实存储的事务校验仍待接入，详见interfaces.md。
+
 真实后端的索引建议：校区+类别+状态、作者+时间、会话参与者、conversationId+消息时间、recipientId+通知时间。把容量校验、来源计划关闭和成员写入放在一次事务中；不要让客户端控制状态流转。
