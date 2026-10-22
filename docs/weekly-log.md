@@ -37,7 +37,7 @@
 | 10月21日 | A（杨凤琴），跨模块集成 | 处理B/C共享页面、图片、筛选与消息的兼容，汇总阶段成果；B/C原业务仍分别归孙瑞、姜澜 | [PR #10](https://github.com/yangfengqin406/group-project/pull/10)，已合入main | 整合版本82项自动测试、结构检查和两端构建通过；真实跨模块联调待完成 |
 | 10月21日 | A（杨凤琴），广场与统一画风 | 补通下方石板路；邻居靠近问候、点击提醒；公告小狗指南；四屋及相关内页统一小镇画风，保留B/C业务契约；新增6项相关回归测试 | [提交175c1e7](https://github.com/yangfengqin406/group-project/commit/175c1e7e94b743ebeb9a2c2d58b54bde6caca3f8)、[PR #12](https://github.com/yangfengqin406/group-project/pull/12)，已合入main | 当时88项自动测试、结构检查及两端构建通过，并回归带路进屋/返回、选图发布、筛选与统一消息联系；微信真机与真实数据待验 |
 | 10月21日 | A（杨凤琴），周报汇总 | 按已确认姓名整理本周A/B/C分工、成果证据和后续目标；更正旧名单，统一main本页作为监督记录入口 | 本次为main既有周报与协作规则的文档更新 | 18处相对链接与文档差异检查通过；main独立副本check、88项测试及H5/微信小程序构建均通过；本次无业务功能改动，未重复人工流程验收 |
-| 10月22日 | A（杨凤琴），第二阶段首批 | 同步当前main界面；推荐排除私有计划；计划容量/到期状态归一，进行中扩容；取消计划确认；失效邀请、返回推荐恢复及同次网络重试编号 | `codex/a-plaza-partner-pets`，[A分支提交记录](https://github.com/yangfengqin406/group-project/commits/codex/a-plaza-partner-pets/)，功能待审阅，未合入main；本页作为main监督记录单独同步 | check、124项测试、H5/微信小程序构建通过；10项H5演示流程及二手/失物联系回归通过；真实后端、登录、数据库事务及双设备/微信真机待接入与验收 |
+| 10月22日 | A（杨凤琴），第二阶段首批 | 同步当前main界面；推荐排除私有计划；计划容量/到期状态归一，进行中扩容；取消计划确认；失效邀请、返回推荐恢复及同次网络重试编号 | `codex/a-plaza-partner-pets`，[提交144c286](https://github.com/yangfengqin406/group-project/commit/144c28608e916d19a93595d6f2a37b6e732ccc3d)、[草稿PR #15](https://github.com/yangfengqin406/group-project/pull/15)，功能待审阅，未合入main；本页作为main监督记录单独同步 | check、124项测试、H5/微信小程序构建通过；10项H5演示流程及二手/失物联系回归通过；真实后端、登录、数据库事务及双设备/微信真机待接入与验收 |
 
 ### 验证到了哪一步
 
