@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-10-23T14:36:58.907Z",
+  "measuredAt": "2026-10-23T15:31:17.580Z",
   "note": "目录原始字节统计，不代表压缩后的上传包或微信开发者工具验收结果。修改源码后应重新构建再测量。",
   "sourceStatic": {
     "fileCount": 167,
@@ -79,7 +79,7 @@
   "h5": {
     "built": true,
     "fileCount": 221,
-    "bytes": 4028311
+    "bytes": 4028611
   },
   "weixin": {
     "built": true,

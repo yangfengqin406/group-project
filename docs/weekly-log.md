@@ -39,7 +39,6 @@
 | 10月21日 | A（杨凤琴），周报汇总 | 按已确认姓名整理本周A/B/C分工、成果证据和后续目标；更正旧名单，统一main本页作为监督记录入口 | 本次为main既有周报与协作规则的文档更新 | 18处相对链接与文档差异检查通过；main独立副本check、88项测试及H5/微信小程序构建均通过；本次无业务功能改动，未重复人工流程验收 |
 | 10月22日 | A（杨凤琴），第二阶段首批 | 同步当前main界面；推荐排除私有计划；计划容量/到期状态归一，进行中扩容；取消计划确认；失效邀请、返回推荐恢复及同次网络重试编号 | `codex/a-plaza-partner-pets`，[提交144c286](https://github.com/yangfengqin406/group-project/commit/144c28608e916d19a93595d6f2a37b6e732ccc3d)、[草稿PR #15](https://github.com/yangfengqin406/group-project/pull/15)，功能待审阅，未合入main；本页作为main监督记录单独同步 | check、124项测试、H5/微信小程序构建通过；10项H5演示流程及二手/失物联系回归通过；真实后端、登录、数据库事务及双设备/微信真机待接入与验收 |
 | 10月22日 | A（杨凤琴），H5部署与交付 | 为main配置GitHub Pages，发布三人已整合的阶段演示；新增README浏览入口和自动更新说明，补浏览器图标；B/C原业务成果仍归本人 | [部署PR #17](https://github.com/yangfengqin406/group-project/pull/17)已合入main，[首次发布成功](https://github.com/yangfengqin406/group-project/actions/runs/39803225930)，[公网体验](https://yangfengqin406.github.io/group-project/#/)；A第二阶段草稿PR #15仍未合入 | check、88项测试、双端构建及12项本地子目录检查通过；公网首页200、12项核心流程可用。首次发现默认图标404与一次图片超时，实际情况及修正见[验证记录](verification.md)；真实后端/跨设备与微信工具/真机及审核仍未完成 |
-
 | 10月23日 | A（杨凤琴），质量与体验改进 | 补计划编辑/扩容、紧凑列表与完整计划信息、邀请摘要与确认、留言预览、表单保护；修商品终态/私有收藏预约/评论分页/旧响应覆盖/潜水切后台；下一关装扮预览、小狗素材压缩与体积报告；B/C原业务成果仍归本人 | `codex/a-plaza-partner-pets`，[草稿PR #15](https://github.com/yangfengqin406/group-project/pull/15)，功能未合入main；监督周报沿用本页单独同步 | check、148项测试、双端构建及10项H5实际点击通过，结果和截图见[A分支验证记录](https://github.com/yangfengqin406/group-project/blob/codex/a-plaza-partner-pets/docs/verification.md)；真实后端/双设备/微信真机未验，主包体积仍待继续处理 |
 
 ### 验证到了哪一步
