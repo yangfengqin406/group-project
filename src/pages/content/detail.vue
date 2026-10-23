@@ -61,6 +61,14 @@
           查看相近计划
         </button>
         <button
+          v-if="canManagePlan"
+          class="secondary"
+          :disabled="busy"
+          @tap="editPlan"
+        >
+          编辑计划 / 调整人数
+        </button>
+        <button
           v-if="!isOwn && type === 'market' && item.status === 'active'"
           class="primary"
           :disabled="busy"
@@ -122,6 +130,14 @@
         </view>
         <view class="body comment-body">{{ comment.body }}</view>
       </view>
+      <button
+        v-if="commentsCursor"
+        class="secondary comments-more"
+        :disabled="commentsLoading"
+        @tap="loadComments({ reset: false })"
+      >
+        {{ commentsLoading ? '正在读取…' : '更早的线索' }}
+      </button>
       <textarea
         class="input textarea"
         v-model="commentBody"
@@ -161,6 +177,7 @@ const type = ref('plan'),
   busy = ref(false),
   selected = ref(false),
   comments = ref([]),
+  commentsCursor = ref(null),
   commentBody = ref(''),
   commentsLoading = ref(false),
   commentSaving = ref(false),
@@ -171,6 +188,7 @@ const canManagePlan = computed(
     !planRefreshing.value && ['open', 'full'].includes(item.value?.status)
 )
 let loadVersion = 0
+let commentsVersion = 0
 let visible = false
 const service = () =>
   api[type.value === 'lost_found' ? 'lostFound' : type.value]
@@ -183,7 +201,7 @@ async function load({ preserveError = false } = {}) {
   const userId = session.user?.id
   const contentType = type.value
   const contentId = id.value
-  const current = () => version === loadVersion && (contentType !== 'plan' || userId === session.user?.id) &&
+  const current = () => visible && version === loadVersion && userId === session.user?.id &&
     contentType === type.value && contentId === id.value
   if (!preserveError) error.value = ''
   if (contentType === 'plan') planRefreshing.value = true
@@ -210,41 +228,66 @@ async function load({ preserveError = false } = {}) {
     if (current()) planRefreshing.value = false
   }
 }
-async function loadComments() {
+async function loadComments({ reset = true } = {}) {
+  if (type.value !== 'lost_found' || (!reset && (commentsLoading.value || !commentsCursor.value))) return
+  const version = ++commentsVersion
+  const pageVersion = loadVersion
+  const userId = session.user?.id
+  const contentId = id.value
+  const cursor = reset ? null : commentsCursor.value
+  const current = () => visible && version === commentsVersion && pageVersion === loadVersion &&
+    userId === session.user?.id && contentId === id.value && type.value === 'lost_found'
   commentsLoading.value = true
   try {
     const result = await api.comment.list({
-      contentType: type.value,
-      contentId: id.value,
-      pageSize: 50
+      contentType: 'lost_found',
+      contentId,
+      pageSize: 50,
+      cursor
     })
-    comments.value = result.items
+    if (!current()) return
+    const next = reset ? result.items : [...comments.value, ...result.items]
+    comments.value = next.filter((entry, index) => next.findIndex((other) => other.id === entry.id) === index)
+    commentsCursor.value = result.nextCursor
+  } catch (e) {
+    if (current()) error.value = errorText(e)
   } finally {
-    commentsLoading.value = false
+    if (current()) commentsLoading.value = false
   }
 }
 async function sendComment() {
   if (commentSaving.value || !commentBody.value.trim()) return
+  const userId = session.user?.id
+  const contentId = id.value
+  const body = commentBody.value.trim()
+  const pageVersion = loadVersion
+  const current = () => visible && pageVersion === loadVersion && userId === session.user?.id &&
+    contentId === id.value && type.value === 'lost_found'
   commentSaving.value = true
   error.value = ''
   try {
     await api.comment.create({
-      contentType: type.value,
-      contentId: id.value,
-      body: commentBody.value
+      contentType: 'lost_found',
+      contentId,
+      body
     })
-    commentBody.value = ''
+    if (!current()) return
+    if (commentBody.value.trim() === body) commentBody.value = ''
     await loadComments()
   } catch (e) {
-    error.value = errorText(e)
+    if (current()) error.value = errorText(e)
   } finally {
     commentSaving.value = false
   }
 }
 watch(() => session.user?.id, () => {
-  if (type.value !== 'plan') return
   ++loadVersion
+  ++commentsVersion
   item.value = null
+  comments.value = []
+  commentsCursor.value = null
+  commentsLoading.value = false
+  commentBody.value = ''
   selected.value = false
   planRefreshing.value = false
   error.value = ''
@@ -257,22 +300,28 @@ onShow(() => {
 onHide(() => {
   visible = false
   ++loadVersion
+  ++commentsVersion
+  commentsLoading.value = false
   planRefreshing.value = false
 })
 onUnload(() => {
   ++loadVersion
+  ++commentsVersion
 })
 async function run(fn) {
   if (busy.value) return
   const userId = session.user?.id
   const contentType = type.value
   const contentId = id.value
+  const version = loadVersion
+  const current = () => visible && version === loadVersion && userId === session.user?.id &&
+    contentType === type.value && contentId === id.value
   busy.value = true
   error.value = ''
   try {
-    await fn()
+    await fn(current)
   } catch (e) {
-    if (userId !== session.user?.id || contentType !== type.value || contentId !== id.value) return
+    if (!current()) return
     error.value = errorText(e)
     if (type.value === 'plan' && ['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
       await load({ preserveError: true })
@@ -281,12 +330,13 @@ async function run(fn) {
   }
 }
 function contact() {
-  run(async () => {
+  run(async (current) => {
     const c = await api.conversation.open({
       contentType: type.value,
       contentId: id.value,
       peerUserId: item.value.ownerId
     })
+    if (!current()) return
     uni.navigateTo({
       url: `/pages/messages/chat?id=${encodeURIComponent(c.id)}`
     })
@@ -297,48 +347,67 @@ function candidates() {
     url: `/pages/partner/candidates?planId=${encodeURIComponent(id.value)}`
   })
 }
-function reserve() {
-  run(async () => {
-    await api.market.reserve({ id: id.value })
-    uni.showToast({ title: '已提交预约', icon: 'success' })
-    load()
+function editPlan() {
+  if (!canManagePlan.value || busy.value) return
+  uni.navigateTo({
+    url: `/pages/content/publish?type=plan&id=${encodeURIComponent(id.value)}`
   })
 }
+function reserve() {
+  run(async (current) => {
+    await api.market.reserve({ id: id.value })
+    if (!current()) return
+    uni.showToast({ title: '已提交预约', icon: 'success' })
+    await load()
+  })
+}
+function confirmationCurrent() {
+  const version = loadVersion
+  const userId = session.user?.id
+  const contentType = type.value
+  const contentId = id.value
+  return () => visible && version === loadVersion && userId === session.user?.id &&
+    contentType === type.value && contentId === id.value
+}
 function complete() {
+  const same = confirmationCurrent()
   uni.showModal({
     title: '确认交易完成',
     content: '确认标记该商品已交易完成？完成后不可再预约或修改。',
     success: (r) => {
-      if (r.confirm)
-        run(async () => {
-          item.value = await api.market.complete({ id: id.value })
+      if (r.confirm && same())
+        run(async (current) => {
+          const updated = await api.market.complete({ id: id.value })
+          if (current()) item.value = updated
         })
     }
   })
 }
 function toggleFavorite() {
-  run(async () => {
+  run(async (current) => {
     const r = await api.favorite.set({
       contentType: type.value,
       contentId: id.value,
       selected: !selected.value
     })
-    selected.value = r.selected
+    if (current()) selected.value = r.selected
   })
 }
 function report() {
+  const same = confirmationCurrent()
   uni.showModal({
     title: '举报原因',
     editable: true,
     placeholderText: '请填写具体原因',
     success: (r) => {
-      if (r.confirm)
-        run(async () => {
+      if (r.confirm && same())
+        run(async (current) => {
           await api.report.create({
             contentType: type.value,
             contentId: id.value,
             reason: r.content || ''
           })
+          if (!current()) return
           uni.showToast({ title: '已保存举报', icon: 'none' })
         })
     }
@@ -349,19 +418,21 @@ function finish() {
     confirmPlan('complete')
     return
   }
+  const same = confirmationCurrent()
   uni.showModal({
     title: '确认操作',
     content: '确认更新这条内容的状态吗？',
     success: (r) => {
-      if (r.confirm)
-        run(async () => {
+      if (r.confirm && same())
+        run(async (current) => {
           const action =
             type.value === 'lost_found'
               ? 'markReturned'
               : type.value === 'market'
                 ? 'close'
                 : 'complete'
-          item.value = await service()[action]({ id: id.value })
+          const updated = await service()[action]({ id: id.value })
+          if (current()) item.value = updated
         })
     }
   })
@@ -453,4 +524,5 @@ const lostKindLabel = (kind) => lostKinds[kind] || '失物'
 .comment-state + .textarea {
   margin-top: 18px;
 }
+.comments-more { margin: 14px 0; }
 </style>

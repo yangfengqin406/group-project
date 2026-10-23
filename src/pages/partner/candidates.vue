@@ -1,9 +1,16 @@
 <template>
-  <view class="page">
+  <view class="page village-page village-partner">
+    <VillageHeader kind="partner" title="寻找合拍的邻居" subtitle="时间合得上，再一起商量去哪里。" compact />
     <DemoNotice />
     <view class="title">时间合拍的计划</view>
     <view class="subtitle">
       同一校区、同类活动、同一天且时间重叠。邀请后仍需对方确认。
+    </view>
+    <view v-if="target" class="panel my-plan-summary">
+      <text class="tag">我的计划 · 邀请对方加入这里</text>
+      <view class="section-title">{{ target.title }}</view>
+      <view class="muted">{{ formatTime(target.startAt) }} ～ {{ formatTime(target.endAt) }}</view>
+      <view class="muted">{{ target.location || '地点待商量' }} · 还可加入 {{ Math.max(0, target.capacity - (target.memberIds?.length || 0)) }} 人</view>
     </view>
     <view v-if="sent.length" class="panel">
       <view>邀请已发出，等待对方确认。</view>
@@ -28,6 +35,8 @@
         可共同安排：{{ formatTime(candidate.overlap.startAt) }} ～
         {{ formatTime(candidate.overlap.endAt) }}
       </view>
+      <view class="muted">{{ candidate.plan.location || '地点待商量' }} · 对方计划 {{ candidate.plan.memberIds?.length || 0 }}/{{ candidate.plan.capacity }} 人</view>
+      <view class="invitation-explainer">邀请的是这位发布者，接受后占用我的计划 1 个名额；不会自动带入对方整队。</view>
       <view class="actions">
         <text class="tag" v-for="reason in candidate.reasons" :key="reason">
           {{ reason }}
@@ -75,7 +84,9 @@ import {
 import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
 import EmptyState from '../../components/EmptyState.vue'
+import VillageHeader from '../../components/village/VillageHeader.vue'
 const planId = ref(''),
+  target = ref(null),
   items = ref([]),
   sent = ref([]),
   error = ref(''),
@@ -118,11 +129,13 @@ async function load(reset = true, { preserveError = false } = {}) {
     cursor.value = null
   }
   try {
-    const [r, pending] = await Promise.all([
+    const [r, pending, ownPlan] = await Promise.all([
       plan.getCandidates({ planId: targetPlanId, cursor: reset ? null : cursor.value }),
-      reset ? pendingSources(targetPlanId, userId, current) : Promise.resolve(null)
+      reset ? pendingSources(targetPlanId, userId, current) : Promise.resolve(null),
+      reset ? plan.get({ id: targetPlanId }) : Promise.resolve(target.value)
     ])
     if (!current()) return
+    target.value = ownPlan
     const known = new Set(reset ? [] : items.value.map((item) => item.candidatePlanId))
     items.value = [...(reset ? [] : items.value), ...r.items.filter((item) => !known.has(item.candidatePlanId))]
     if (pending) sent.value = pending
@@ -175,6 +188,7 @@ async function invite(candidate) {
 watch(() => session.user?.id, () => {
   ++loadVersion
   items.value = []
+  target.value = null
   sent.value = []
   cursor.value = null
   loading.value = false
@@ -194,3 +208,7 @@ onUnload(() => {
   ++loadVersion
 })
 </script>
+<style scoped>
+.my-plan-summary { border-left: 4px solid #9c8aaf; }
+.invitation-explainer { margin-top: 12px; color: #7e806b; font-size: 12px; line-height: 1.8; }
+</style>

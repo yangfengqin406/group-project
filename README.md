@@ -1,13 +1,15 @@
-# 校园像素生活广场 · uni-app 项目骨架
+# 校园生活广场 · uni-app 团队项目
 
-这是可运行的源码骨架，不是只有文档的旧压缩包。技术方案依据课程要求改为 **uni-app + Vue 3 + JavaScript**，同一套源码构建 H5 和微信小程序。
+使用 **uni-app + Vue 3 + JavaScript**，同一套源码构建H5和微信小程序。团队成员为A（杨凤琴）、B（孙瑞）、C（姜澜）。
+
+**[浏览main阶段演示](https://yangfengqin406.github.io/group-project/#/)**：已通过PR #17/#18发布；虚构数据只存在各浏览器，不能跨设备同步。10月22—23日A的质量与计划/邀请改进在草稿[PR #15](https://github.com/yangfengqin406/group-project/pull/15)，尚未更新到公网。成员分支经审阅合入main后才重新发布，说明见[部署文档](docs/deployment.md)。
 
 **[团队周报（监督查看）](docs/weekly-log.md)**：按周查看A/B/C完成内容、成果证据、问题和下一步。固定入口为[main分支周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)；详细测试过程见[验证记录](docs/verification.md)。
 
 ## 先跑起来
 
 1. 安装 Node.js **22.22.0**；三人统一这个版本（`.nvmrc`），本包也按此版本验证。
-2. 解压后用 VS Code 打开 `campus-plaza-starter` 这一层，确保能看到 package.json。
+2. clone团队仓库后，打开能看到package.json的项目根目录；已有仓库不要重新git init。
 3. 在这个文件夹的终端执行：
 
 ```bash
@@ -45,7 +47,7 @@ npm run dev:mp-weixin
 
 ## 还没有完成什么
 
-真实微信/H5 登录、数据库、跨用户在线通信、文件存储、服务端权限与事务、真实订阅通知、部署 URL 和审核发布均未接入。钓鱼、衣柜与潜水的真实后端、生产防作弊、真实校园活动来源和报名、亭子真人匹配与麻将仍待实现；当前小游戏和活动均为本机演示。10月20日本地版通过check、75项测试、两端构建及H5穿戴和闯关兑换走查，详见 [验证记录](docs/verification.md)。微信工具上传与真机尚未验收。框架构建成功不代表已经部署上线。
+真实微信/H5登录、数据库、跨用户在线通信、文件存储、服务端权限与事务、真实订阅通知和微信审核发布仍未接入。H5阶段演示已有公网入口。钓鱼、衣柜与潜水的真实后端、生产防作弊、真实校园活动来源和报名、亭子真人匹配与麻将仍待实现；当前小游戏和活动均为本机演示。10月20日本地版通过check、75项测试、两端构建及H5穿戴和闯关兑换走查，详见 [验证记录](docs/verification.md)。微信工具上传与真机尚未验收。框架构建成功不代表已经部署上线。
 
 二手等业务内容的演示图片使用本机临时地址，刷新或重启后可能失效；真实模式需接入公共上传。原创宠物的像素或 PNG 数据通过 pet 服务保存在本机演示身份下，导入文件不等于云上传；真实模式的原创保存明确返回未实现，预设宠物同步也需要后端支持。
 
@@ -59,9 +61,9 @@ npm run dev:mp-weixin
 
 | 目录 | 用途 | 协调人 |
 | --- | --- | --- |
-| src/pages/plaza、partner、help | 广场、搭子、技能互助 | A |
-| src/pages/market、home、profile | 二手、账号、个人资料 | B |
-| src/pages/lost、messages | 失物、留言、消息 | C |
+| src/pages/plaza、partner、help | 广场、搭子、技能互助 | A（杨凤琴） |
+| src/pages/market、home、profile | 二手、账号、个人资料 | B（孙瑞） |
+| src/pages/lost、messages | 失物、留言、消息 | C（姜澜） |
 | src/pages/content | 共用发布/详情，修改需同步 | A/B/C 协调 |
 | src/services | 模块接口调用，按模块归属 | 对应模块负责人 |
 | src/services/transport.js、config | 请求与环境配置 | B 协调 |
@@ -71,7 +73,7 @@ npm run dev:mp-weixin
 
 开始开发请看 [docs/start-here.md](docs/start-here.md)。后端接入看 [docs/backend.md](docs/backend.md)。最终提交看 [docs/deployment.md](docs/deployment.md)。
 
-需求、数据模型、接口、实现边界、验收与协作说明均在 docs/；tasks.csv 是按三人和两周划分的待办表，实际姓名需团队填写。
+需求、数据模型、接口、实现边界、验收与协作说明均在docs/；[tasks.csv](tasks.csv)按团队分工记录进度，监督人统一查看[main团队周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)。A对B/C共用页面的边界修复或画风协作不改写原业务归属。
 
 ## 上传 GitHub
 

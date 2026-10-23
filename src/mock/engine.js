@@ -29,12 +29,10 @@ export function dispatch(db, method, p = {}) {
   }
   const owned = (item) =>
     requireThat(item.ownerId === me().id, 'FORBIDDEN', '只有发布者可以修改')
+  const canView = (item) =>
+    item && (item.visibility === 'public' || item.ownerId === me().id)
   const visible = (item) =>
-    requireThat(
-      item.visibility === 'public' || item.ownerId === me().id,
-      'FORBIDDEN',
-      '无权查看内容'
-    )
+    requireThat(canView(item), 'FORBIDDEN', '无权查看内容')
   const user = (id) => {
     const u = db.users.find((x) => x.id === id)
     requireThat(u, 'NOT_FOUND', '找不到同学资料')
@@ -416,6 +414,8 @@ export function dispatch(db, method, p = {}) {
         'CONFLICT',
         '计划状态已变化'
       )
+    if (type === 'market')
+      requireThat(item.status === 'active', 'CONFLICT', '商品状态已变化')
     item.status =
       action === 'markReturned'
         ? 'returned'
@@ -426,14 +426,15 @@ export function dispatch(db, method, p = {}) {
     return summarize(item)
   }
   if (method === 'market.reserve') {
-    db.reservations = db.reservations || []
     const item = content('market', p.id)
+    visible(item)
     requireThat(
       item.ownerId !== me().id,
       'INVALID_ARGUMENT',
       '不能预约自己的商品'
     )
     requireThat(item.status === 'active', 'CONFLICT', '该商品当前不可预约')
+    db.reservations = db.reservations || []
     requireThat(
       !db.reservations.some(
         (r) => r.contentId === item.id && r.status === 'pending'
@@ -705,10 +706,12 @@ export function dispatch(db, method, p = {}) {
     return list(
       db.favorites
         .filter((f) => f.userId === me().id)
-        .map((f) => ({
-          ...f,
-          content: summarize(content(f.contentType, f.contentId))
-        }))
+        .flatMap((f) => {
+          const item = db.contents[f.contentType]?.find(
+            (c) => c.id === f.contentId
+          )
+          return canView(item) ? [{ ...f, content: summarize(item) }] : []
+        })
     )
   if (method === 'favorite.set') {
     const item = content(p.contentType, p.contentId)

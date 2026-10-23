@@ -1,8 +1,9 @@
 <template>
-  <view class="page">
+  <view class="page village-page village-messages">
+    <VillageHeader kind="home" title="邻里信箱" subtitle="每一次联系，都从一件校园小事开始。" compact />
     <DemoNotice />
     <view class="row">
-      <view class="title">消息中心</view>
+      <view class="section-title">消息中心</view>
       <button class="secondary" :disabled="loading || busy" @tap="load">刷新</button>
     </view>
     <view class="subtitle">二手、失物和搭子的联系都在这里</view>
@@ -29,6 +30,12 @@
     <view class="section-title">搭子邀请</view>
     <view v-for="i in invitations" :key="i.id" class="panel">
       <view>{{ i.sender.nickname }} 邀请 {{ i.recipient.nickname }}</view>
+      <view v-if="i.targetSummary" class="invitation-summary">
+        <view class="summary-title">一起去：{{ i.targetSummary.title }}</view>
+        <view>{{ formatTime(i.targetSummary.startAt) }} ～ {{ formatTime(i.targetSummary.endAt) }}</view>
+        <view>{{ i.targetSummary.location || '地点待商量' }} · {{ i.targetSummary.memberIds?.length || 0 }}/{{ i.targetSummary.capacity }} 人</view>
+      </view>
+      <view v-else class="muted invitation-tip">计划摘要暂不可用，请先查看目标计划。</view>
       <view class="muted">状态：{{ labels[i.status] || i.status }}</view>
       <view v-if="i.status === 'expired'" class="muted invitation-tip">
         这次邀请的计划安排已有变化，可能已结束、取消、满员或调整公开范围。可以查看目标计划，合适时再约一次。
@@ -82,6 +89,8 @@
       <text class="muted">
         {{ contentNames[c.contentType] }} · {{ peerName(c) }} · 保留原内容链接
       </text>
+      <view class="last-message">{{ c.lastMessage?.body || '还没有留言，来打个招呼吧。' }}</view>
+      <text v-if="c.lastMessage" class="muted">{{ formatTime(c.lastMessage.createdAt) }}</text>
     </view>
     <button
       v-if="conversationCursor"
@@ -118,7 +127,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
-import { invitation, conversation, notification } from '../../services/index.js'
+import { invitation, conversation, notification, plan } from '../../services/index.js'
 import { session } from '../../utils/session.js'
 import {
   contentNames,
@@ -129,6 +138,7 @@ import { runInvitationOperation } from '../../utils/invitation-operations.js'
 import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
 import EmptyState from '../../components/EmptyState.vue'
+import VillageHeader from '../../components/village/VillageHeader.vue'
 import { requestSubscription } from '../../platform/subscription.js'
 const invitations = ref([]),
   conversations = ref([]),
@@ -161,6 +171,13 @@ const labels = {
   cancelled: '已取消',
   expired: '已失效'
 }
+async function withSummaries(rows, current) {
+  const summaries = new Map()
+  await Promise.all([...new Set(rows.map((item) => item.targetPlanId))].map(async (id) => {
+    try { summaries.set(id, await plan.get({ id })) } catch { /* 不显示已无权限读取的内容。 */ }
+  }))
+  return current() ? rows.map((item) => ({ ...item, targetSummary: summaries.get(item.targetPlanId) || null })) : []
+}
 async function load({ preserveError = false } = {}) {
   const version = ++loadVersion
   const userId = session.user?.id
@@ -180,6 +197,8 @@ async function load({ preserveError = false } = {}) {
     conversationCursor.value = c.nextCursor
     notifications.value = n.items
     noteCursor.value = n.nextCursor
+    const summarized = await withSummaries(i.items, current)
+    if (current()) invitations.value = summarized
   } catch (e) {
     if (current() && (!preserveError || !error.value)) error.value = errorText(e)
   } finally {
@@ -194,6 +213,7 @@ async function more(service, items, cursor) {
   loading.value = true
   try {
     const r = await service.list({ cursor: cursor.value })
+    if (service === invitation) r.items = await withSummaries(r.items, current)
     if (!current()) return
     const known = new Set(items.value.map((item) => item.id))
     items.value.push(...r.items.filter((item) => !known.has(item.id)))
@@ -239,7 +259,17 @@ async function respond(i, action) {
   if (busy.value || loading.value || i.status !== 'pending') return
   const userId = session.user?.id
   const version = loadVersion
-  const current = () => version === loadVersion && userId === session.user?.id
+  const current = () => visible && version === loadVersion && userId === session.user?.id
+  if (action === 'accept') {
+    const title = i.targetSummary?.title || '对方的计划'
+    const confirmed = await new Promise((resolve) => uni.showModal({
+      title: '确认参加这次计划？',
+      content: `接受后，你将加入「${title}」并占用一个名额。你的原计划停止招募并保留记录，不会把整队成员一起合并。`,
+      confirmText: '确认加入',
+      success: (result) => resolve(result.confirm), fail: () => resolve(false)
+    }))
+    if (!confirmed || !current() || busy.value || loading.value || i.status !== 'pending') return
+  }
   const sameAccount = () => visible && userId === session.user?.id
   busy.value = true
   error.value = ''
@@ -347,6 +377,9 @@ onUnload(() => {
   margin-top: 14rpx;
   line-height: 1.7;
 }
+.invitation-summary { margin: 12px 0; padding: 12px 14px; border-left: 3px solid #a99b77; background: #f2eddb; color: #6c735f; font-size: 13px; line-height: 1.8; }
+.summary-title { color: #3b5742; font-weight: 600; }
+.last-message { margin: 12px 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #4c5e4d; font-size: 14px; }
 @media (max-width: 420px) {
   .message-tools {
     align-items: stretch;

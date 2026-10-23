@@ -1,6 +1,6 @@
 <template>
-  <view class="page village-page" :class="[roomClass, { 'feed-page-filtered': showFilters }]">
-    <VillageHeader :kind="type" :title="title" :subtitle="subtitle">
+  <view class="page village-page feed-page" :class="[roomClass, { 'feed-page-filtered': showFilters }]">
+    <VillageHeader :kind="type" :title="title" :subtitle="subtitle" compact>
       <button class="primary" @tap="publish">发布</button>
     </VillageHeader>
     <DemoNotice />
@@ -33,40 +33,56 @@
         技能求助
       </button>
     </view>
-    <view v-if="showLostFilters" class="lost-filter-panel">
-      <view class="filter-label">物品分类</view>
+    <view class="feed-search">
+      <input
+        class="input"
+        v-model="keyword"
+        placeholder="搜索标题或说明"
+        aria-label="搜索标题或说明"
+        confirm-type="search"
+        @confirm="load(true)"
+      />
+      <button class="secondary search-submit" @tap="load(true)">搜索</button>
+      <button
+        class="secondary filter-toggle"
+        :class="{ selected: filtersExpanded || extraFilterCount }"
+        :aria-expanded="filtersExpanded"
+        aria-controls="feed-extra-filters"
+        @tap="filtersExpanded = !filtersExpanded"
+      >
+        {{ filtersExpanded ? '收起' : '筛选' }}{{ extraFilterCount ? ` ${extraFilterCount}` : '' }}
+      </button>
+    </view>
+    <scroll-view v-if="showFilters || showLostFilters" class="category-strip" scroll-x>
       <view class="filter-shortcuts">
         <button
-          v-for="option in lostCategoryOptions"
+          v-for="option in quickCategories"
           :key="option.value"
           class="filter-chip"
           :class="{ selected: category === option.value }"
+          :aria-pressed="category === option.value"
           @tap="chooseCategory(option.value)"
         >
           {{ option.label }}
         </button>
       </view>
-      <view class="filter-label">招领类型</view>
-      <view class="filter-shortcuts">
-        <button
-          v-for="option in lostKindOptions"
-          :key="option.value"
-          class="filter-chip"
-          :class="{ selected: lostKind === option.value }"
-          @tap="chooseLostKind(option.value)"
-        >
-          {{ option.label }}
-        </button>
+    </scroll-view>
+    <view v-if="filtersExpanded" id="feed-extra-filters" class="panel extra-filters">
+      <view v-if="showLostFilters" class="lost-kind-filter">
+        <view class="filter-label">招领类型</view>
+        <view class="filter-shortcuts">
+          <button
+            v-for="option in lostKindOptions"
+            :key="option.value"
+            class="filter-chip"
+            :class="{ selected: lostKind === option.value }"
+            :aria-pressed="lostKind === option.value"
+            @tap="chooseLostKind(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </view>
       </view>
-    </view>
-    <view class="panel">
-      <input
-        class="input"
-        v-model="keyword"
-        placeholder="搜索标题或说明"
-        confirm-type="search"
-        @confirm="load(true)"
-      />
       <view v-if="campusOptions.length" class="filter-fields">
         <view class="category-field">
           <text class="filter-label">交接校区</text>
@@ -84,24 +100,6 @@
         </view>
       </view>
       <template v-if="showFilters">
-        <view class="filter-shortcuts">
-          <button
-            class="filter-chip"
-            :class="{ selected: !category }"
-            @tap="chooseCategory('')"
-          >
-            全部{{ type === 'help' ? '技能' : '类别' }}
-          </button>
-          <button
-            v-for="option in categoryOptions"
-            :key="option"
-            class="filter-chip"
-            :class="{ selected: category === option }"
-            @tap="chooseCategory(option)"
-          >
-            {{ option }}
-          </button>
-        </view>
         <view class="filter-fields">
           <view class="category-field">
             <text class="filter-label">
@@ -131,10 +129,13 @@
           </view>
         </view>
       </template>
+      <view v-if="!showFilters && !showLostFilters && !campusOptions.length" class="muted">
+        输入标题或说明中的关键词，找到想看的内容。
+      </view>
       <view class="actions">
-        <button class="secondary" @tap="load(true)">搜索</button>
+        <button class="primary" @tap="applyAndCollapse">应用筛选</button>
         <button class="secondary" @tap="clear">
-          {{ showFilters ? '重置筛选' : '清空' }}
+          重置筛选
         </button>
         <button
           v-if="type === 'plan' && !showFilters"
@@ -145,12 +146,15 @@
         </button>
       </view>
     </view>
-    <view v-if="showFilters && !loading && !error" class="filter-result">
-      已加载 {{ items.length }} 条{{
-        type === 'help' ? '技能求助' : '搭子计划'
-      }}
+    <view v-if="appliedSummary" class="applied-summary">当前筛选：{{ appliedSummary }}</view>
+    <view v-if="!loading && !error" class="filter-result">
+      <text>已加载 {{ items.length }} 条{{ contentLabel }}</text>
+      <button v-if="hasFilters" class="reset-link" @tap="clear">清除筛选</button>
     </view>
-    <view v-if="error" class="error">{{ error }}</view>
+    <view v-if="error" class="error">
+      <text>{{ error }}</text>
+      <button class="secondary" :disabled="loading" @tap="load(true)">重新读取</button>
+    </view>
     <view v-if="loading" class="muted">正在读取…</view>
     <ContentCard v-for="item in items" :key="item.id" :item="item" />
     <EmptyState
@@ -194,6 +198,7 @@ const props = defineProps({
 const roomClass = computed(() =>
   `village-${props.type === 'lost_found' ? 'lost' : props.type === 'market' ? 'market' : 'partner'}`
 )
+const filtersExpanded = ref(false)
 const items = ref([]),
   keyword = ref(''),
   error = ref(''),
@@ -215,6 +220,23 @@ const lostKindOptions = [
   { label: '我丢失的', value: 'lost' },
   { label: '我拾到的', value: 'found' }
 ]
+const quickCategories = computed(() =>
+  props.showLostFilters ? lostCategoryOptions : [
+    { label: `全部${props.type === 'help' ? '技能' : '类别'}`, value: '' },
+    ...props.categoryOptions.map((value) => ({ label: value, value }))
+  ]
+)
+const contentLabel = computed(() => ({
+  plan: '搭子计划', help: '技能求助', market: '二手信息', lost_found: '失物信息'
+})[props.type] || '内容')
+const extraFilterCount = computed(() =>
+  Number(Boolean(status.value)) + Number(Boolean(campusId.value)) + Number(Boolean(lostKind.value)) +
+  Number(Boolean(category.value && !props.categoryOptions.includes(category.value) && !props.showLostFilters))
+)
+const hasFilters = computed(() => Boolean(
+  keyword.value.trim() || category.value || status.value || lostKind.value || campusId.value || marketType.value
+))
+const appliedSummary = ref('')
 const statusIndex = computed(() =>
   Math.max(
     0,
@@ -255,6 +277,13 @@ async function load(reset) {
           }
         : {})
     }
+    appliedSummary.value = [
+      appliedFilters.keyword ? `“${appliedFilters.keyword}”` : '',
+      props.showLostFilters ? lostCategoryOptions.find((option) => option.value === appliedFilters.category)?.label : appliedFilters.category,
+      props.statusOptions.find((option) => option.value && option.value === appliedFilters.status)?.label,
+      lostKindOptions.find((option) => option.value && option.value === appliedFilters.lostKind)?.label,
+      props.campusOptions.find((option) => option.value && option.value === appliedFilters.campusId)?.label
+    ].filter(Boolean).filter((label) => label !== '全部').join('、')
   }
   try {
     const page = await service().list({
@@ -280,6 +309,10 @@ function clear() {
   status.value = ''
   marketType.value = ''
   campusId.value = ''
+  load(true)
+}
+function applyAndCollapse() {
+  filtersExpanded.value = false
   load(true)
 }
 function chooseCategory(value) {
@@ -317,20 +350,40 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.feed-page :deep(.demo-notice) {
+  margin: 10px 0;
+  padding: 7px 10px;
+  font-size: 11px;
+}
 .content-switcher {
   display: flex;
   gap: 4px;
   padding: 4px;
-  margin-top: 14px;
+  margin-top: 10px;
   background: #e9e1ca;
   border-radius: 7px;
 }
-.lost-filter-panel {
-  margin-top: 18px;
-  padding: 12px 18px 18px;
-  background: #fffbec;
-  border: 1px solid #d8cbaa;
-  border-radius: 3px 3px 10px 3px;
+.feed-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+.feed-search .input { flex: 1; min-width: 0; height: 44px; min-height: 44px; font-size: 14px; }
+.feed-search .secondary { flex: none; min-height: 44px; padding: 8px 10px; font-size: 13px; }
+.feed-search .filter-toggle.selected { color: #354d3e; border-color: var(--room-accent); background: var(--room-tint); }
+.category-strip { width: 100%; margin-top: 8px; white-space: nowrap; }
+.category-strip .filter-shortcuts { display: inline-flex; flex-wrap: nowrap; gap: 5px; margin: 0; }
+.category-strip .filter-chip { display: inline-flex; flex: none; padding: 8px 10px; font-size: 13px; }
+.feed-page .extra-filters { margin: 10px 0; padding: 12px; }
+.extra-filters .filter-fields { margin-top: 0; }
+.extra-filters .filter-label { padding-top: 0; }
+.extra-filters .actions button { flex: 1; }
+.applied-summary {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #626a56;
+  overflow-wrap: anywhere;
 }
 .content-switcher button {
   flex: 1;
@@ -418,12 +471,25 @@ onUnmounted(() => {
   min-height: 44px;
 }
 .filter-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 26px;
   font-size: 13px;
   color: #727760;
-  margin: 12px 0;
+  margin: 8px 0 0;
 }
-@media (max-width: 380px) {
-  .filter-fields { flex-direction: column; }
-  .status-field { width: 100%; }
+.filter-result .reset-link {
+  min-height: 44px;
+  padding: 8px 4px;
+  background: transparent;
+  color: #3e654f;
+  font-size: 12px;
+}
+.feed-page .error { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.feed-page .error button { flex: none; }
+@media (max-width: 360px) {
+  .feed-search .secondary { padding: 8px; }
 }
 </style>
