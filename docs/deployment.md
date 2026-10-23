@@ -60,3 +60,7 @@ Remove-Item Env:UNI_H5_BASE
 - https://uniapp.dcloud.net.cn/quickstart-cli.html
 - https://uniapp.dcloud.net.cn/tutorial/platform.html
 - https://cloud.tencent.com/document/product/876
+
+GitHub Pages 参考（2026-10-22 核对）：
+- [GitHub Pages 自定义工作流](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
+- [Vite 项目子目录部署](https://vite.dev/guide/static-deploy.html#github-pages)

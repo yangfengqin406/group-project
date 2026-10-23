@@ -27,7 +27,8 @@ main已通过PR #17/#18发布[H5阶段演示](https://yangfengqin406.github.io/g
 | account / upload / reservation / event | 账号/上传及二手预约有本机演示；真实登录/云上传/跨设备预约、reservation.respond/complete和event仍待接；本地PNG导入或临时地址不等于云上传 |
 | skill/wanted 自动匹配、估价 | 仅预留，不返回伪造候选/估价 |
 | 微信订阅 | 仅平台授权入口；模板、服务端发送未接入 |
-| 跨设备数据、H5 部署、小程序审核 | main的H5阶段演示已发布；跨设备真实数据、小程序包分析/真机/审核仍未完成 |
+| H5 阶段演示部署 | 10月22日通过 PR #17 配置 GitHub Pages，main 自动检查/测试/双端构建后部署；[在线体验](https://yangfengqin406.github.io/group-project/#/)，固定本机演示数据，不含待审阅 PR #15 |
+| 跨设备真实数据、小程序审核 | 未完成；真实账号、服务端数据/通信、微信工具与真机及审核仍需验收 |
 
 这里不是“首版需求全部完成”；是三个人在同一套结构上开发真实首版的起点。演示接口带 NOT_IMPLEMENTED 的项目不能计入完成。
 
