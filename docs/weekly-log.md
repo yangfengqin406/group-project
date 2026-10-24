@@ -1,12 +1,12 @@
 # 团队周报（监督查看）
 
-更新至：2026-10-23（北京时间） · 汇总负责人：A（杨凤琴）
+更新至：2026-10-24（北京时间） · 汇总负责人：A（杨凤琴）
 
 团队成员：**A（杨凤琴）、B（孙瑞）、C（姜澜）**。以下分别记录本人负责的业务、协作整合和待完成工作。
 
 固定查看：[main分支团队周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [项目首页](../README.md) · [详细验证记录](verification.md)
 
-本页按自然周记录三人的实际成果。10月21日及此前的阶段功能已经整合到团队main，可使用本机演示数据运行；10月22—23日A的计划/邀请与质量体验改进在A工作分支待审阅，功能尚未合入main。真实账号、服务端数据、跨设备通信及微信真机验收仍待完成，不能据此认定最终版本已经交付。
+本页按自然周记录三人的实际成果。10月21日及此前的阶段功能已经整合到团队main，可使用本机演示数据运行；10月22—24日A的计划/邀请与质量体验改进在A工作分支待审阅，功能尚未合入main。真实账号、服务端数据、跨设备通信及微信真机验收仍待完成，不能据此认定最终版本已经交付。
 
 ## 本周：2026-10-19—2026-10-25（进行中）
 
@@ -40,6 +40,7 @@
 | 10月22日 | A（杨凤琴），第二阶段首批 | 同步当前main界面；推荐排除私有计划；计划容量/到期状态归一，进行中扩容；取消计划确认；失效邀请、返回推荐恢复及同次网络重试编号 | `codex/a-plaza-partner-pets`，[提交144c286](https://github.com/yangfengqin406/group-project/commit/144c28608e916d19a93595d6f2a37b6e732ccc3d)、[草稿PR #15](https://github.com/yangfengqin406/group-project/pull/15)，功能待审阅，未合入main；本页作为main监督记录单独同步 | check、124项测试、H5/微信小程序构建通过；10项H5演示流程及二手/失物联系回归通过；真实后端、登录、数据库事务及双设备/微信真机待接入与验收 |
 | 10月22日 | A（杨凤琴），H5部署与交付 | 为main配置GitHub Pages，发布三人已整合的阶段演示；新增README浏览入口和自动更新说明，补浏览器图标；B/C原业务成果仍归本人 | [部署PR #17](https://github.com/yangfengqin406/group-project/pull/17)已合入main，[首次发布成功](https://github.com/yangfengqin406/group-project/actions/runs/39803225930)，[公网体验](https://yangfengqin406.github.io/group-project/#/)；A第二阶段草稿PR #15仍未合入 | check、88项测试、双端构建及12项本地子目录检查通过；公网首页200、12项核心流程可用。首次发现默认图标404与一次图片超时，实际情况及修正见[验证记录](verification.md)；真实后端/跨设备与微信工具/真机及审核仍未完成 |
 | 10月23日 | A（杨凤琴），质量与体验改进 | 补计划编辑/扩容、紧凑列表与完整计划信息、邀请摘要与确认、留言预览、表单保护；修商品终态/私有收藏预约/评论分页/旧响应覆盖/潜水切后台；下一关装扮预览、小狗素材压缩与体积报告；B/C原业务成果仍归本人 | `codex/a-plaza-partner-pets`，[草稿PR #15](https://github.com/yangfengqin406/group-project/pull/15)，功能未合入main；监督周报沿用本页单独同步 | check、148项测试、双端构建及10项H5实际点击通过，结果和截图见[A分支验证记录](https://github.com/yangfengqin406/group-project/blob/codex/a-plaza-partner-pets/docs/verification.md)；真实后端/双设备/微信真机未验，主包体积仍待继续处理 |
+| 10月24日 | A（杨凤琴），质量续修与包体优化 | 消息来源先筛后分页/活跃排序；原创正背撤销与活动笔画、离开/还原及冷启动保护；潜水同局回执恢复/双指跟踪；运行图重编码与CI包体预算。消息为对C（姜澜）的协作修复，B/C原成果归属不变 | `codex/a-plaza-partner-pets`，[草稿PR #15](https://github.com/yangfengqin406/group-project/pull/15)，功能未合入main；同一监督周报单独同步main | check、198项测试、双端构建和原始包体预算通过，主包2062368字节约1.97MiB；8项H5实际验收及4项潜水浏览器检查（部分松指为合成事件），截图见[A分支验证记录](https://github.com/yangfengqin406/group-project/blob/codex/a-plaza-partner-pets/docs/verification.md)。首次H5发现的宠物冷启动缺陷已修；潜水结算另由真实组件/服务脚本验证，真实后端/双设备/微信工具真机审核待验 |
 
 ### 验证到了哪一步
 
