@@ -65,7 +65,7 @@ test('二手和失物专属筛选互不串入搭子/技能列表，组合筛选�
     campusId: 'demo-campus',
     lostKind: 'lost'
   })
-  assert.equal(buys.items.length, 1)
+  assert.equal(buys.items.length, 2)
   assert.equal(buys.items[0].marketType, 'buy')
   const keys = dispatch(db, 'lostFound.list', {
     lostKind: 'lost',

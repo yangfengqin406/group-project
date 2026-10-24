@@ -34,8 +34,19 @@
         </template>
         <template v-else>关键词：{{ item.keywords }}</template>
       </view>
-      <view v-if="type === 'market'" class="muted">
-        参考估价后续提供
+      <view v-if="type === 'market' && item.marketType === 'sell' && item.appraisal" class="appraisal-panel">
+        <view class="appraisal-range">
+          参考估价：¥{{ (item.appraisal.minCents / 100).toFixed(2) }} ～
+          ¥{{ (item.appraisal.maxCents / 100).toFixed(2) }}
+        </view>
+        <view class="muted appraisal-note">{{ item.appraisal.note }}</view>
+        <view class="muted">
+          依据：{{ item.appraisal.basis?.category || '未指定类别' }} ·
+          {{ item.appraisal.basis?.condition || '未指定成色' }}（{{ item.appraisal.basis?.rule || '发布者参考' }}）
+        </view>
+      </view>
+      <view v-else-if="type === 'market' && item.marketType === 'sell'" class="muted">
+        发布者未附参考估价
       </view>
       <view class="body detail-body">{{ item.body }}</view>
       <view class="actions">
@@ -47,6 +58,27 @@
           class="thumb"
           @tap="preview(image)"
         />
+      </view>
+      <view v-if="isOwn && type === 'market' && item.marketType === 'buy'" class="panel">
+        <view class="section-title">为你匹配的闲置</view>
+        <view v-if="matchesLoading" class="muted">正在匹配…</view>
+        <view v-else-if="matchesError" class="error">{{ matchesError }}</view>
+        <view v-else-if="!matches.length" class="muted">
+          暂无符合类别、校区和预算的闲置；稍后再来看看，或在求购说明里补充更多关键词。
+        </view>
+        <button v-if="matchesError || matchesCursor" class="secondary" :disabled="matchesLoading" @tap="loadMatches({ reset: !matchesCursor })">
+          {{ matchesError ? '重新读取匹配' : '更多匹配' }}
+        </button>
+        <view v-for="m in matches" :key="m.id" class="match-item">
+          <view class="row">
+            <text class="link" @tap="goDetail(m.id)">{{ m.title }}</text>
+            <text class="muted">¥{{ (m.priceCents / 100).toFixed(2) }}</text>
+          </view>
+          <view class="muted">{{ m.condition }} · {{ m.campusName }}</view>
+          <view class="match-reasons">
+            <text v-for="(r, i) in m.reasons" :key="i" class="tag">{{ r }}</text>
+          </view>
+        </view>
       </view>
       <view class="actions">
         <button v-if="!isOwn" class="primary" :disabled="busy" @tap="contact">
@@ -166,6 +198,7 @@ import { session } from '../../utils/session.js'
 import {
   contentTypes,
   contentNames,
+  contentUrl,
   openProfile,
   formatTime
 } from '../../utils/routes.js'
@@ -181,6 +214,10 @@ const type = ref('plan'),
   commentBody = ref(''),
   commentsLoading = ref(false),
   commentSaving = ref(false),
+  matches = ref([]),
+  matchesLoading = ref(false),
+  matchesCursor = ref(null),
+  matchesError = ref(''),
   planRefreshing = ref(false)
 const isOwn = computed(() => item.value?.ownerId === session.user?.id)
 const canManagePlan = computed(
@@ -189,6 +226,7 @@ const canManagePlan = computed(
 )
 let loadVersion = 0
 let commentsVersion = 0
+let matchesVersion = 0
 let visible = false
 const service = () =>
   api[type.value === 'lost_found' ? 'lostFound' : type.value]
@@ -204,6 +242,11 @@ async function load({ preserveError = false } = {}) {
   const current = () => visible && version === loadVersion && userId === session.user?.id &&
     contentType === type.value && contentId === id.value
   if (!preserveError) error.value = ''
+  ++matchesVersion
+  matches.value = []
+  matchesCursor.value = null
+  matchesError.value = ''
+  matchesLoading.value = false
   if (contentType === 'plan') planRefreshing.value = true
   try {
     const result = await service().get({ id: contentId })
@@ -220,6 +263,8 @@ async function load({ preserveError = false } = {}) {
       cursor = favorites.nextCursor
     } while (cursor && !selected.value)
     if (type.value === 'lost_found') await loadComments()
+    if (isOwn.value && type.value === 'market' && item.value.marketType === 'buy')
+      await loadMatches()
   } catch (e) {
     if (!current()) return
     if (contentType === 'plan') item.value = null
@@ -227,6 +272,34 @@ async function load({ preserveError = false } = {}) {
   } finally {
     if (current()) planRefreshing.value = false
   }
+}
+async function loadMatches({ reset = true } = {}) {
+  if (!isOwn.value || type.value !== 'market' || item.value?.marketType !== 'buy' ||
+    (!reset && (matchesLoading.value || !matchesCursor.value))) return
+  const version = ++matchesVersion
+  const pageVersion = loadVersion
+  const userId = session.user?.id
+  const buyId = id.value
+  const cursor = reset ? null : matchesCursor.value
+  const current = () => visible && version === matchesVersion && pageVersion === loadVersion &&
+    userId === session.user?.id && buyId === id.value && isOwn.value
+  matchesLoading.value = true
+  matchesError.value = ''
+  if (reset) { matches.value = []; matchesCursor.value = null }
+  try {
+    const r = await api.market.matchCandidates({ buyId, cursor, pageSize: 20 })
+    if (!current()) return
+    const next = reset ? r.items : [...matches.value, ...r.items]
+    matches.value = next.filter((m, index) => next.findIndex((other) => other.id === m.id) === index)
+    matchesCursor.value = r.nextCursor
+  } catch (e) {
+    if (current()) matchesError.value = errorText(e)
+  } finally {
+    if (current()) matchesLoading.value = false
+  }
+}
+function goDetail(contentId) {
+  uni.redirectTo({ url: contentUrl('market', contentId) })
 }
 async function loadComments({ reset = true } = {}) {
   if (type.value !== 'lost_found' || (!reset && (commentsLoading.value || !commentsCursor.value))) return
@@ -283,6 +356,11 @@ async function sendComment() {
 watch(() => session.user?.id, () => {
   ++loadVersion
   ++commentsVersion
+  ++matchesVersion
+  matches.value = []
+  matchesCursor.value = null
+  matchesError.value = ''
+  matchesLoading.value = false
   item.value = null
   comments.value = []
   commentsCursor.value = null
@@ -301,12 +379,16 @@ onHide(() => {
   visible = false
   ++loadVersion
   ++commentsVersion
+  ++matchesVersion
+  matchesLoading.value = false
   commentsLoading.value = false
   planRefreshing.value = false
 })
 onUnload(() => {
+  visible = false
   ++loadVersion
   ++commentsVersion
+  ++matchesVersion
 })
 async function run(fn) {
   if (busy.value) return
@@ -524,5 +606,20 @@ const lostKindLabel = (kind) => lostKinds[kind] || '失物'
 .comment-state + .textarea {
   margin-top: 18px;
 }
+.appraisal-panel {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f6f1e3;
+  border: 1px dashed #ddd1b3;
+  border-radius: 8px;
+}
+.appraisal-range { font-size: 16px; font-weight: 650; color: #354d3e; }
+.appraisal-note { color: #8a6d3b; margin: 6px 0; }
+.match-item {
+  padding: 12px 0;
+  border-bottom: 1px dashed #ddd1b3;
+}
+.match-reasons { margin-top: 6px; }
+.match-reasons .tag { margin-right: 6px; margin-bottom: 4px; }
 .comments-more { margin: 14px 0; }
 </style>

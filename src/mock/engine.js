@@ -334,6 +334,23 @@ export function dispatch(db, method, p = {}) {
             '请填写关键词'
           )
         }
+        if (p.appraisal !== undefined) {
+          const estimate = p.appraisal
+          requireThat(
+            p.marketType === 'sell' &&
+              estimate &&
+              Number.isSafeInteger(estimate.minCents) &&
+              estimate.minCents >= 0 &&
+              Number.isSafeInteger(estimate.maxCents) &&
+              estimate.maxCents >= estimate.minCents &&
+              typeof estimate.basis?.category === 'string' &&
+              typeof estimate.basis?.condition === 'string' &&
+              estimate.basis?.rule === '类别+成色示例估价' &&
+              estimate.note === '参考估价，仅供参考，最终价格由发布者决定',
+            'INVALID_ARGUMENT',
+            '估价仅适用于闲置，需完整保留参考区间、依据与参考声明'
+          )
+        }
         if (p.imageIds !== undefined) {
           requireThat(
             Array.isArray(p.imageIds) && p.imageIds.length <= 3,
@@ -381,7 +398,8 @@ export function dispatch(db, method, p = {}) {
           'handoverCampus',
           'keywords',
           'budgetCents',
-          'imageIds'
+          'imageIds',
+          'appraisal'
         )
       if (type === 'lost_found') allowed.push('lostKind')
       const fields = {}
@@ -403,6 +421,8 @@ export function dispatch(db, method, p = {}) {
       if (type === 'plan') item.memberIds = old?.memberIds || [me().id]
       if (old) Object.assign(old, item)
       else db.contents[type].unshift(item)
+      if (type === 'market' && p.marketType === 'buy')
+        delete (old || item).appraisal
       if (type === 'plan') reconcilePlanState(db)
       return summarize(old || item)
     }
@@ -462,6 +482,86 @@ export function dispatch(db, method, p = {}) {
         .filter((r) => r.contentId === item.id && r.status === 'pending')
         .map(clone)
     )
+  }
+  if (method === 'market.matchCandidates') {
+    const buy = content('market', p.buyId)
+    owned(buy)
+    requireThat(
+      buy.marketType === 'buy',
+      'INVALID_ARGUMENT',
+      '只有求购可以匹配闲置'
+    )
+    const budget = Number(buy.budgetCents) || 0
+    const keyword = (buy.keywords || '').trim()
+    const matched = (db.contents.market || [])
+      .filter(
+        (c) =>
+          c.id !== buy.id &&
+          canView(c) &&
+          c.marketType === 'sell' &&
+          c.status === 'active' &&
+          c.ownerId !== me().id &&
+          c.category === buy.category &&
+          c.campusId === buy.campusId &&
+          Number(c.priceCents) <= budget
+      )
+      .map((c) => {
+        const reasons = ['同类别', '同校区', '价格在预算内']
+        if (
+          keyword &&
+          `${c.title} ${c.body}`.includes(keyword)
+        )
+          reasons.push('包含求购关键词')
+        return { ...summarize(c), reasons }
+      })
+    return list(matched)
+  }
+  if (method === 'appraisal.estimate') {
+    requireThat(
+      typeof p.imageId === 'string' && p.imageId.trim(),
+      'INVALID_ARGUMENT',
+      '请先上传物品照片'
+    )
+    const img = (db.uploads || []).find((u) => u.imageId === p.imageId)
+    requireThat(
+      img && img.ownerId === me().id,
+      'FORBIDDEN',
+      '照片不属于当前账号'
+    )
+    const category = typeof p.category === 'string' ? p.category.trim() : ''
+    const condition = typeof p.condition === 'string' ? p.condition.trim() : ''
+    const base = {
+      教材: [2000, 8000],
+      生活用品: [1000, 6000],
+      数码: [10000, 100000],
+      服饰: [500, 4000],
+      default: [1500, 10000]
+    }
+    const key = Object.keys(base).find((k) => category.includes(k)) || 'default'
+    let [lo, hi] = base[key]
+    const factor = /全新/.test(condition)
+      ? 1.2
+      : /九成/.test(condition)
+        ? 1
+        : /八成/.test(condition)
+          ? 0.8
+          : /七成/.test(condition)
+            ? 0.7
+            : /六成/.test(condition)
+              ? 0.6
+              : 1
+    lo = Math.round((lo * factor) / 100) * 100
+    hi = Math.round((hi * factor) / 100) * 100
+    return {
+      minCents: lo,
+      maxCents: hi,
+      basis: {
+        category: category || '未指定',
+        condition: condition || '未指定',
+        rule: '类别+成色示例估价'
+      },
+      note: '参考估价，仅供参考，最终价格由发布者决定'
+    }
   }
   if (method === 'plan.getCandidates') {
     const plan = content('plan', p.planId)

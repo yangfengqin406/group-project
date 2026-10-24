@@ -96,14 +96,14 @@
           <button
             class="content-tab"
             :class="{ selected: marketType === 'sell' }"
-            @tap="marketType = 'sell'"
+            @tap="setMarketType('sell')"
           >
             闲置出售
           </button>
           <button
             class="content-tab"
             :class="{ selected: marketType === 'buy' }"
-            @tap="marketType = 'buy'"
+            @tap="setMarketType('buy')"
           >
             求购
           </button>
@@ -134,6 +134,30 @@
             v-model="form.handoverCampus"
             placeholder="如 主校区图书馆"
           />
+          <view class="appraisal-box">
+            <button
+              class="secondary appraisal-btn"
+              :disabled="!imageIds.length || appraising || uploading || saving || !ready"
+              @tap="estimate"
+            >
+              {{ appraising ? '正在估价…' : '查看参考估价' }}
+            </button>
+            <view class="muted">本机演示按类别和成色给出示例区间，不识别照片内容；价格可自行填写。</view>
+            <view v-if="appraisal" class="appraisal-result">
+              <view class="appraisal-range">
+                参考估价：¥{{ (appraisal.minCents / 100).toFixed(2) }} ～
+                ¥{{ (appraisal.maxCents / 100).toFixed(2) }}
+              </view>
+              <view class="muted appraisal-note">{{ appraisal.note }}</view>
+              <view class="muted">
+                依据：{{ appraisal.basis.category }} · {{ appraisal.basis.condition }}
+                （{{ appraisal.basis.rule }}）
+              </view>
+              <button class="secondary small" @tap="useEstimatePrice">
+                用参考区间中位价填入
+              </button>
+            </view>
+          </view>
         </template>
         <template v-else>
           <text class="label">预算（元）</text>
@@ -222,23 +246,40 @@ const type = ref('plan'),
   previews = ref([]),
   imageIds = ref([]),
   error = ref(''),
-  saving = ref(false)
+  saving = ref(false),
+  appraisal = ref(null),
+  appraising = ref(false)
 const ready = computed(() => initialized.value && !loading.value && (!editId.value || !!sourcePlan.value))
 const baseline = ref('')
 const snapshot = () => JSON.stringify({
   ...form, date: date.value, endDate: endDate.value, startTime: startTime.value,
   endTime: endTime.value, capacity: capacity.value, price: price.value,
   budget: budget.value, marketType: marketType.value, imageIds: imageIds.value
+  , appraisal: appraisal.value
 })
 const dirty = computed(() => !!baseline.value && snapshot() !== baseline.value)
 useUnsavedChanges(dirty)
 let alive = true
 let loadVersion = 0
 let editorUserId = null
+let appraisalVersion = 0
+let appraisalKey = ''
+const estimateKey = () => JSON.stringify([marketType.value, imageIds.value[0], form.category.trim(), form.condition.trim()])
+function invalidateAppraisal() {
+  ++appraisalVersion
+  appraisal.value = null
+  appraisalKey = ''
+  appraising.value = false
+}
+watch(estimateKey, invalidateAppraisal)
 const lostKindOptions = [
   { label: '丢失物品', value: 'lost' },
   { label: '拾到物品', value: 'found' }
 ]
+function setMarketType(value) {
+  marketType.value = value
+  appraisal.value = null
+}
 const lostCategoryOptions = [
   { label: '卡片', value: 'card' },
   { label: '钥匙', value: 'key' },
@@ -316,11 +357,12 @@ async function loadPlan() {
 watch(() => session.user?.id, (userId) => {
   if (!editorUserId || userId === editorUserId) return
   ++loadVersion
+  invalidateAppraisal()
   sourcePlan.value = null
   loading.value = false
   error.value = '登录身份已改变，请返回后重新打开发布页面。'
 })
-onUnload(() => { alive = false; ++loadVersion })
+onUnload(() => { alive = false; ++loadVersion; invalidateAppraisal() })
 function chooseImages() {
   if (saving.value || uploading.value || !ready.value) return
   if (type.value !== 'market' && config.apiMode !== 'mock') {
@@ -365,6 +407,35 @@ function removeImage(index) {
   } else {
     form.images.splice(index, 1)
   }
+}
+async function estimate() {
+  if (!imageIds.value.length || marketType.value !== 'sell' || type.value !== 'market' ||
+    appraising.value || uploading.value || saving.value || !ready.value || editorUserId !== session.user?.id) return
+  const version = ++appraisalVersion
+  const userId = session.user?.id
+  const key = estimateKey()
+  const current = () => alive && version === appraisalVersion && key === estimateKey() && userId === session.user?.id
+  appraising.value = true
+  error.value = ''
+  try {
+    const result = await api.appraisal.estimate({
+      imageId: imageIds.value[0],
+      category: form.category.trim(),
+      condition: form.condition.trim()
+    })
+    if (!current()) return
+    appraisalKey = key
+    appraisal.value = result
+  } catch (e) {
+    if (current()) error.value = errorText(e)
+  } finally {
+    if (current()) appraising.value = false
+  }
+}
+function useEstimatePrice() {
+  if (!appraisal.value || appraisalKey !== estimateKey() || editorUserId !== session.user?.id) return
+  const mid = (appraisal.value.minCents + appraisal.value.maxCents) / 2 / 100
+  price.value = mid.toFixed(2)
 }
 async function save() {
   if (saving.value || uploading.value || !ready.value) return
@@ -415,6 +486,7 @@ async function save() {
         params.priceCents = Math.round(Number(price.value) * 100)
         params.condition = form.condition.trim()
         params.handoverCampus = form.handoverCampus.trim()
+        if (appraisal.value && appraisalKey === estimateKey()) params.appraisal = appraisal.value
       } else {
         if (!/^\d+(\.\d{1,2})?$/.test(budget.value))
           throw new Error('请填写最多两位小数的非负预算')
@@ -462,6 +534,17 @@ async function save() {
   font-weight: 650;
 }
 .time-fields > picker { flex: 1; min-width: 0; }
+.appraisal-box { margin-top: 10px; }
+.appraisal-result {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f6f1e3;
+  border: 1px dashed #ddd1b3;
+  border-radius: 8px;
+}
+.appraisal-range { font-size: 16px; font-weight: 650; color: #354d3e; }
+.appraisal-note { color: #8a6d3b; margin: 6px 0; }
+.small { font-size: 13px; padding: 6px 12px; margin-top: 8px; }
 .edit-note {
   margin-bottom: 18px;
   padding: 12px;

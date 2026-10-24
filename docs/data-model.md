@@ -15,7 +15,7 @@
 | Plan | id、ownerId、category、startAt、endAt、capacity、status | 关联作者、成员、邀请；检查校区、日期、时间和容量 |
 | Membership | planId、userId、status | 正式数据库建议独立记录，planId+userId 唯一 |
 | Invitation | id、senderId、recipientId、sourcePlanId、targetPlanId、status | 来源为被邀请人的单人计划，目标为邀请人的计划 |
-| MarketPost | id、ownerId、marketType(sell/buy)、title、body、category、imageIds、priceCents(闲置)、condition、handoverCampus、budgetCents(求购)、keywords、status | 闲置/求购两类；图片存 imageIds，读时由 upload 服务解析为 images；仅 active 可预约，已完成不可改/约 |
+| MarketPost | id、ownerId、marketType(sell/buy)、title、body、category、imageIds、priceCents(闲置)、condition、handoverCampus、budgetCents(求购)、keywords、appraisal?、status | 闲置/求购两类；图片存 imageIds，读时由 upload 服务解析为 images；appraisal仅闲置参考快照，区间/依据/固定参考声明校验见interfaces.md，不是鉴定凭证；改成求购删除旧快照。仅active可预约，已完成不可改/约 |
 | Reservation | id、contentId、buyerId、sellerId、status、createdAt | 本机二手交接预约；同一商品只允许一条pending，状态冲突返回CONFLICT；后续respond/complete仍待实现 |
 | LostFoundPost | id、ownerId、lostKind、category、images、location、status | lostKind 为丢失/拾获；category 为卡片/钥匙/杂物；1～3 张图片；作者确认完成 |
 | HelpPost | id、ownerId、category、body、status | category 首版为所需技能；后续匹配 User.skillTags |
