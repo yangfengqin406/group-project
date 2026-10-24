@@ -1,5 +1,7 @@
 # 交付验证记录
 
+合并状态补记（2026-10-24）：A PR #15已合入main（1936807）；B PR #20经审核修复、GitHub verify成功后合入main（bac9e15，审核头e0d39b8）。C没有新的开放PR，A/B/C原人员分支均保留。main的[检查](https://github.com/yangfengqin406/group-project/actions/runs/40102155645)和[H5部署](https://github.com/yangfengqin406/group-project/actions/runs/40102155643)均已成功。下文较早的“草稿/未合并”按当时执行状态保留，当前状态以此补记和团队周报为准。
+
 ## B第二版整合：2026-10-24（PR #20）
 
 B（孙瑞）提交参考估价、求购匹配、个人空间；A（杨凤琴）负责本次审核、冲突解决和边界修复，C（姜澜）原失物/消息业务归属不变。A的PR #15已于10月24日合入main（1936807），本次以该main审阅B的8a3708e，不把合并等同真实后端交付。

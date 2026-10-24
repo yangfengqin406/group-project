@@ -6,7 +6,7 @@
 
 部署入口：[校园生活广场 H5](https://yangfengqin406.github.io/group-project/#/)。10月22日[PR #17](https://github.com/yangfengqin406/group-project/pull/17)合入后，[首次发布](https://github.com/yangfengqin406/group-project/actions/runs/39803225930)的 build/deploy 均成功，HTTPS 首页实际返回200。以后当前版本以[发布工作流](https://github.com/yangfengqin406/group-project/actions/workflows/deploy-h5.yml)最近一次成功运行为准；详细验收见[验证记录](verification.md)。
 
-此站只展示 main 已审阅的 A/B/C 阶段成果，固定使用本机演示数据。页面中的账号、消息、发布和装扮记录只保存在各自浏览器，不能跨设备同步，不是真实校园业务上线。A 分支草稿 PR #15 不随本次发布合入 main。
+此站只展示 main 已审阅的 A/B/C 阶段成果，固定使用本机演示数据。页面中的账号、消息、发布和装扮记录只保存在各自浏览器，不能跨设备同步，不是真实校园业务上线。2026-10-24 A的PR #15及B的PR #20均已审阅合入main，自动重新部署的结果以对应Actions运行状态为准。
 
 ### 首次设置
 

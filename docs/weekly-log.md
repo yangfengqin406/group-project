@@ -6,7 +6,7 @@
 
 固定查看：[main分支团队周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [项目首页](../README.md) · [详细验证记录](verification.md)
 
-本页按自然周记录三人的实际成果。10月21日及此前的阶段功能已经整合到团队main，可使用本机演示数据运行；10月22—24日A的计划/邀请与质量体验改进已经通过PR #15合入main；下表较早记录的“未合并”是当时状态。B第二版PR #20本次审核中，合并后另更新状态。真实账号、服务端数据、跨设备通信及微信真机验收仍待完成，不能据此认定最终版本已经交付。
+本页按自然周记录三人的实际成果。10月21日及此前的阶段功能已经整合到团队main，可使用本机演示数据运行；10月22—24日A的计划/邀请与质量体验改进已经通过PR #15合入main；下表较早记录的“未合并”是当时状态。B第二版PR #20也已审阅合入main，C暂无新的待合并PR；最新状态以下方10月24日整合记录为准。真实账号、服务端数据、跨设备通信及微信真机验收仍待完成，不能据此认定最终版本已经交付。
 
 ## 本周：2026-10-19—2026-10-25（进行中）
 
@@ -23,7 +23,7 @@
 | 成员 | 本周已有成果 | 完成程度 | 成果证据 |
 | --- | --- | --- | --- |
 | A（杨凤琴） | 完成广场、搭子与技能互助阶段流程；宠物选择/自绘、贴身装扮、衣柜、钓鱼与潜水奖励；10月21日补通石板路、邻居问候、小狗指南和四屋统一画风 | 已合入main，本机阶段演示可用；真实数据和微信真机待验 | [PR #5](https://github.com/yangfengqin406/group-project/pull/5)、[PR #12](https://github.com/yangfengqin406/group-project/pull/12)、[宠物装扮截图](assets/pets-2026-10-20/natural-product-front.png)、[小狗指南截图](assets/neighborhood-2026-10-21/guide.png) |
-| B（孙瑞） | 提交二手闲置/求购的发布、图片、筛选、详情、预约和完成流程；补充账号资料、头像编辑及个人小屋 | 已合入main，本机阶段演示可用；真实登录和公共云上传待接入 | [PR #6](https://github.com/yangfengqin406/group-project/pull/6)、[二手详情截图](assets/pr6-integration-2026-10-21/market-detail.png) |
+| B（孙瑞） | 提交二手闲置/求购的发布、图片、筛选、详情、预约和完成流程；账号资料、头像编辑及个人小屋；10月24日第二版增加示例参考估价、公开候选匹配和个人空间统计/收藏/近期发布 | 已合入main，本机阶段演示可用；真实登录和公共云上传待接入 | [PR #6](https://github.com/yangfengqin406/group-project/pull/6)、[第二版PR #20](https://github.com/yangfengqin406/group-project/pull/20)、[二手详情截图](assets/pr6-integration-2026-10-21/market-detail.png) |
 | C（姜澜） | 提交丢失/拾获的分类、照片发布、列表和详情；详情评论、站内通知及统一消息中心可关联原内容 | 已合入main，本机阶段演示可用；真实消息、权限与跨设备联调待完成 | [PR #7](https://github.com/yangfengqin406/group-project/pull/7)、[失物详情截图](assets/pr6-integration-2026-10-21/lost-detail.png)、[消息中心截图](assets/pr6-integration-2026-10-21/messages.png) |
 | A（杨凤琴）· 团队整合 | 处理二手与失物共用页面、筛选、图片和消息的兼容问题；三人的现有业务成果已汇总到main；明确每人保留一个工作分支 | 当前整合版可演示；完整真实业务联调仍待完成 | [PR #10](https://github.com/yangfengqin406/group-project/pull/10)、[分工与协作约定](collaboration.md) |
 
@@ -41,8 +41,8 @@
 | 10月22日 | A（杨凤琴），H5部署与交付 | 为main配置GitHub Pages，发布三人已整合的阶段演示；新增README浏览入口和自动更新说明，补浏览器图标；B/C原业务成果仍归本人 | [部署PR #17](https://github.com/yangfengqin406/group-project/pull/17)已合入main，[首次发布成功](https://github.com/yangfengqin406/group-project/actions/runs/39803225930)，[公网体验](https://yangfengqin406.github.io/group-project/#/)；A第二阶段草稿PR #15仍未合入 | check、88项测试、双端构建及12项本地子目录检查通过；公网首页200、12项核心流程可用。首次发现默认图标404与一次图片超时，实际情况及修正见[验证记录](verification.md)；真实后端/跨设备与微信工具/真机及审核仍未完成 |
 | 10月23日 | A（杨凤琴），质量与体验改进 | 补计划编辑/扩容、紧凑列表与完整计划信息、邀请摘要与确认、留言预览、表单保护；修商品终态/私有收藏预约/评论分页/旧响应覆盖/潜水切后台；下一关装扮预览、小狗素材压缩与体积报告；B/C原业务成果仍归本人 | `codex/a-plaza-partner-pets`，[草稿PR #15](https://github.com/yangfengqin406/group-project/pull/15)，功能未合入main；监督周报沿用本页单独同步 | check、148项测试、双端构建及10项H5实际点击通过，结果和截图见[A分支验证记录](https://github.com/yangfengqin406/group-project/blob/codex/a-plaza-partner-pets/docs/verification.md)；真实后端/双设备/微信真机未验，主包体积仍待继续处理 |
 | 10月24日 | A（杨凤琴），质量续修与包体优化 | 消息来源先筛后分页/活跃排序；原创正背撤销与活动笔画、离开/还原及冷启动保护；潜水同局回执恢复/双指跟踪；运行图重编码与CI包体预算。消息为对C（姜澜）的协作修复，B/C原成果归属不变 | `codex/a-plaza-partner-pets`，[草稿PR #15](https://github.com/yangfengqin406/group-project/pull/15)，功能未合入main；同一监督周报单独同步main | check、198项测试、双端构建和原始包体预算通过，主包2062368字节约1.97MiB；8项H5实际验收及4项潜水浏览器检查（部分松指为合成事件），截图见[A分支验证记录](https://github.com/yangfengqin406/group-project/blob/codex/a-plaza-partner-pets/docs/verification.md)。首次H5发现的宠物冷启动缺陷已修；潜水结算另由真实组件/服务脚本验证，真实后端/双设备/微信工具真机审核待验 |
-
-| 10月24日 | B（孙瑞），A（杨凤琴）审核整合 | B提交二手类别/成色参考估价、求购匹配、个人空间统计/收藏/近期发布；A处理与main冲突并修可见性、估价快照与旧响应边界；原业务成果归B | [PR #20](https://github.com/yangfengqin406/group-project/pull/20)，本次审核后待合入main；A的PR #15已合入 | check、215项测试、两端构建和原始主包2075448字节预算通过；5项独立H5实际流程通过，证据见[验证记录](verification.md)；真实后端、云上传和微信真机待验 |
+| 10月24日 | B（孙瑞），A（杨凤琴）审核整合 | B提交二手类别/成色参考估价、求购匹配、个人空间统计/收藏/近期发布；A处理与main冲突并修可见性、估价快照与旧响应边界；原业务成果归B | [PR #20](https://github.com/yangfengqin406/group-project/pull/20)，已合入main（bac9e15）；同步回B固定分支`codex/b-market-personal-home`；A的PR #15已合入 | check、215项测试、两端构建和原始主包2075448字节预算通过；5项独立H5实际流程通过，证据见[验证记录](verification.md)；真实后端、云上传和微信真机待验 |
+| 10月24日 | A（杨凤琴），团队审核与周报汇总 | 核对全部PR及三人人员分支；A第二阶段PR #15已合入，审核修复并合并B第二版PR #20；确认C没有新的待合并提交，保留A/B/C分支 | PR #15 / #20均已合入main；本次仅同步同一团队周报、首页及状态说明 | GitHub对B整合提交e0d39b8的verify成功；main的[H5部署成功](https://github.com/yangfengqin406/group-project/actions/runs/40102155643)；本机215项测试、双端构建、原始包体及5项H5流程通过；真实数据/微信真机仍待验，不能当作最终真实版本完成 |
 
 ### 验证到了哪一步
 
