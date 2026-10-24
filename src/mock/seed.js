@@ -105,6 +105,37 @@ export function createSeed(now = new Date()) {
           imageIds: [],
           location: '图书馆门口',
           status: 'active'
+        },
+        {
+          ...common,
+          id: 'market_demo_book',
+          ownerId: users[1].id,
+          type: 'market',
+          title: '高等数学同济七版（上下册）',
+          body: '笔记较少，九成新，可单买可打包。',
+          category: '教材',
+          marketType: 'sell',
+          priceCents: 3000,
+          condition: '九成新',
+          handoverCampus: '主校区',
+          imageIds: [],
+          location: '主校区教学楼',
+          status: 'active'
+        },
+        {
+          ...common,
+          id: 'market_demo_buy_book',
+          ownerId: users[0].id,
+          type: 'market',
+          title: '求购高等数学教材',
+          body: '求一本同济七版高数教材，成色七成新以上即可。',
+          category: '教材',
+          marketType: 'buy',
+          budgetCents: 5000,
+          keywords: '高等数学',
+          imageIds: [],
+          location: '主校区',
+          status: 'active'
         }
       ],
       lost_found: [

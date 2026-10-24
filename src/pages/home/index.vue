@@ -35,6 +35,50 @@
         <button class="secondary" @tap="openPet">去搭配</button>
       </view>
     </view>
+    <view class="panel">
+      <view class="section-title" style="margin-top: 0">发布统计</view>
+      <view class="stats-row">
+        <view class="stat-cell">
+          <view class="stat-num">{{ stats.total }}</view>
+          <view class="muted">总发布</view>
+        </view>
+        <view class="stat-cell">
+          <view class="stat-num">{{ stats.active }}</view>
+          <view class="muted">在售 / 进行中</view>
+        </view>
+        <view class="stat-cell">
+          <view class="stat-num">{{ stats.completed }}</view>
+          <view class="muted">已完成</view>
+        </view>
+      </view>
+    </view>
+    <view class="panel">
+      <view class="row">
+        <view>
+          <view class="section-title" style="margin-top: 0">我的收藏</view>
+          <view class="muted">你收藏的闲置、搭子和失物。</view>
+        </view>
+      </view>
+      <view v-if="favLoading" class="muted">正在读取收藏…</view>
+      <view v-else-if="!favorites.length" class="muted">还没有收藏内容。</view>
+      <view
+        v-for="f in favorites"
+        :key="f.id"
+        class="fav-item link"
+        @tap="openFav(f)"
+      >
+        {{ contentNames[f.contentType] }} · {{ f.content?.title || '（内容已删除）' }}
+      </view>
+    </view>
+    <view class="panel">
+      <view class="section-title" style="margin-top: 0">最近动态</view>
+      <view v-if="!activities.length" class="muted">暂无动态。</view>
+      <view v-for="a in activities" :key="a.id" class="activity-item">
+        <text class="tag">{{ a.label }}</text>
+        <text class="activity-title">{{ a.title }}</text>
+        <text class="muted activity-time">{{ formatTime(a.createdAt) }}</text>
+      </view>
+    </view>
     <view v-if="isMock" class="panel">
       <view class="section-title" style="margin-top: 0">演示身份</view>
       <view class="muted">
@@ -71,10 +115,10 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { user, myContent } from '../../services/index.js'
+import { user, myContent, favorite } from '../../services/index.js'
 import { demoUsers, switchDemoUser, resetDemo } from '../../mock/index.js'
 import { config } from '../../config/index.js'
-import { openProfile } from '../../utils/routes.js'
+import { openProfile, contentNames, contentUrl, formatTime } from '../../utils/routes.js'
 import { errorText } from '../../utils/errors.js'
 import { requestSubscription } from '../../platform/subscription.js'
 import DemoNotice from '../../components/DemoNotice.vue'
@@ -87,7 +131,11 @@ const profile = ref(null),
   users = ref([]),
   cursor = ref(null),
   contentType = ref(''),
-  isMock = config.apiMode === 'mock'
+  isMock = config.apiMode === 'mock',
+  stats = ref({ total: 0, active: 0, completed: 0 }),
+  favorites = ref([]),
+  favLoading = ref(false),
+  activities = ref([])
 const filters = [
   { label: '全部', value: '' },
   { label: '二手', value: 'market' },
@@ -103,9 +151,67 @@ async function load() {
     items.value = r.items
     cursor.value = r.nextCursor
     users.value = demoUsers()
+    await loadStats()
+    await loadFavorites()
+    buildActivities()
   } catch (e) {
     error.value = errorText(e)
   }
+}
+async function loadStats() {
+  let cur = null
+  const all = []
+  do {
+    const r = await myContent.list({ pageSize: 50, cursor: cur })
+    all.push(...r.items)
+    cur = r.nextCursor
+  } while (cur)
+  stats.value = {
+    total: all.length,
+    active: all.filter((c) => ['active', 'open', 'full'].includes(c.status))
+      .length,
+    completed: all.filter((c) =>
+      ['completed', 'returned'].includes(c.status)
+    ).length
+  }
+}
+async function loadFavorites() {
+  favLoading.value = true
+  favorites.value = []
+  try {
+    let cur = null
+    const all = []
+    do {
+      const r = await favorite.list({ pageSize: 50, cursor: cur })
+      all.push(...r.items)
+      cur = r.nextCursor
+    } while (cur)
+    favorites.value = all
+  } finally {
+    favLoading.value = false
+  }
+}
+function buildActivities() {
+  const acts = []
+  for (const c of items.value)
+    acts.push({
+      id: `pub_${c.id}`,
+      label: '发布',
+      title: c.title,
+      createdAt: c.createdAt
+    })
+  for (const f of favorites.value)
+    acts.push({
+      id: `fav_${f.id}`,
+      label: '收藏',
+      title: f.content?.title || `${contentNames[f.contentType]}内容`,
+      createdAt: f.content?.createdAt || new Date(0).toISOString()
+    })
+  acts.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+  activities.value = acts.slice(0, 8)
+}
+function openFav(f) {
+  uni.navigateTo({ url: contentUrl(f.contentType, f.contentId) })
 }
 async function loadMore() {
   try {
@@ -167,4 +273,11 @@ onShow(load)
 .identity-copy { flex: 1; min-width: 0; }
 .profile-avatar { width: 64px; height: 64px; border: 3px solid #d7c7a3; border-radius: 50%; }
 .profile-bio { margin-top: 14px; }
+.stats-row { display: flex; gap: 12px; margin-top: 12px; }
+.stat-cell { flex: 1; text-align: center; padding: 10px; background: #f6f1e3; border-radius: 8px; }
+.stat-num { font-size: 22px; font-weight: 700; color: #354d3e; }
+.fav-item { padding: 8px 0; border-bottom: 1px dashed #ddd1b3; }
+.activity-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px dashed #ddd1b3; }
+.activity-title { flex: 1; min-width: 0; }
+.activity-time { font-size: 12px; }
 </style>

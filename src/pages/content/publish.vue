@@ -84,14 +84,14 @@
           <button
             class="content-tab"
             :class="{ selected: marketType === 'sell' }"
-            @tap="marketType = 'sell'"
+            @tap="setMarketType('sell')"
           >
             闲置出售
           </button>
           <button
             class="content-tab"
             :class="{ selected: marketType === 'buy' }"
-            @tap="marketType = 'buy'"
+            @tap="setMarketType('buy')"
           >
             求购
           </button>
@@ -122,6 +122,29 @@
             v-model="form.handoverCampus"
             placeholder="如 主校区图书馆"
           />
+          <view class="appraisal-box">
+            <button
+              class="secondary appraisal-btn"
+              :disabled="!imageIds.length || appraising"
+              @tap="estimate"
+            >
+              {{ appraising ? '正在估价…' : '上传照片估价' }}
+            </button>
+            <view v-if="appraisal" class="appraisal-result">
+              <view class="appraisal-range">
+                参考估价：¥{{ (appraisal.minCents / 100).toFixed(2) }} ～
+                ¥{{ (appraisal.maxCents / 100).toFixed(2) }}
+              </view>
+              <view class="muted appraisal-note">{{ appraisal.note }}</view>
+              <view class="muted">
+                依据：{{ appraisal.basis.category }} · {{ appraisal.basis.condition }}
+                （{{ appraisal.basis.rule }}）
+              </view>
+              <button class="secondary small" @tap="useEstimatePrice">
+                用参考区间中位价填入
+              </button>
+            </view>
+          </view>
         </template>
         <template v-else>
           <text class="label">预算（元）</text>
@@ -203,11 +226,17 @@ const type = ref('plan'),
   previews = ref([]),
   imageIds = ref([]),
   error = ref(''),
-  saving = ref(false)
+  saving = ref(false),
+  appraisal = ref(null),
+  appraising = ref(false)
 const lostKindOptions = [
   { label: '丢失物品', value: 'lost' },
   { label: '拾到物品', value: 'found' }
 ]
+function setMarketType(value) {
+  marketType.value = value
+  appraisal.value = null
+}
 const lostCategoryOptions = [
   { label: '卡片', value: 'card' },
   { label: '钥匙', value: 'key' },
@@ -258,6 +287,27 @@ function removeImage(index) {
     form.images.splice(index, 1)
   }
 }
+async function estimate() {
+  if (!imageIds.value.length) return
+  appraising.value = true
+  error.value = ''
+  try {
+    appraisal.value = await api.appraisal.estimate({
+      imageId: imageIds.value[0],
+      category: form.category.trim(),
+      condition: form.condition.trim()
+    })
+  } catch (e) {
+    error.value = errorText(e)
+  } finally {
+    appraising.value = false
+  }
+}
+function useEstimatePrice() {
+  if (!appraisal.value) return
+  const mid = (appraisal.value.minCents + appraisal.value.maxCents) / 2 / 100
+  price.value = mid.toFixed(2)
+}
 async function save() {
   if (saving.value) return
   saving.value = true
@@ -285,6 +335,7 @@ async function save() {
         params.priceCents = Math.round(Number(price.value) * 100)
         params.condition = form.condition.trim()
         params.handoverCampus = form.handoverCampus.trim()
+        if (appraisal.value) params.appraisal = appraisal.value
       } else {
         if (!/^\d+(\.\d{1,2})?$/.test(budget.value))
           throw new Error('请填写最多两位小数的非负预算')
@@ -327,4 +378,15 @@ async function save() {
   font-weight: 650;
 }
 .time-fields > picker { flex: 1; min-width: 0; }
+.appraisal-box { margin-top: 10px; }
+.appraisal-result {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f6f1e3;
+  border: 1px dashed #ddd1b3;
+  border-radius: 8px;
+}
+.appraisal-range { font-size: 16px; font-weight: 650; color: #354d3e; }
+.appraisal-note { color: #8a6d3b; margin: 6px 0; }
+.small { font-size: 13px; padding: 6px 12px; margin-top: 8px; }
 </style>

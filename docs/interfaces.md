@@ -91,14 +91,16 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 | user.listPublicContent | `{userId,cursor?,pageSize?}` | 该用户公开发布分页；不包含私有内容 |
 | upload.create | `{ usage: 'content'|'avatar', data }` | `{ imageId, url }`；当前mock仅检查用途/非空数据并记录本机临时地址，尚未实现文件类型/大小检查或云存储；真实后端必须另验 |
 | upload.confirm | `{ imageId, contentType?, contentId? }` | `{ imageId, status: 'confirmed' }`；确认图片归属当前账号与业务内容（待群里确认） |
-| market.create | `{ marketType:'sell'|'buy', title, body, category, imageIds?, priceCents?, condition?, handoverCampus?, budgetCents?, keywords? }` | 保存后的二手内容；闲置需 priceCents/condition，求购需 budgetCents/keywords；imageIds 服务校验归属与 ≤3 张 |
+| market.create | `{ marketType:'sell'|'buy', title, body, category, imageIds?, priceCents?, condition?, handoverCampus?, budgetCents?, keywords?, appraisal? }` | 保存后的二手内容；闲置需 priceCents/condition，求购需 budgetCents/keywords；imageIds 服务校验归属与 ≤3 张；appraisal 为估价快照（见 appraisal.estimate），仅闲置可传且作为发布者自填依据留存 |
 | market.update | `{ id, ...可更新字段 }` | 仅发布者可改，已完成/已下架不可改；imageIds 同 create 校验 |
-| market.get | `{ id }` | 二手详情，images 为服务解析出的可访问地址数组 |
+| market.get | `{ id }` | 二手详情，images 为服务解析出的可访问地址数组；闲置若已估价则含 appraisal 快照 |
 | market.list | `{ keyword?, category?, campusId?, marketType?, status?, cursor?, pageSize? }` | 二手列表分页，pageSize 默认 20 上限 50 |
 | market.close | `{ id }` | 发布者下架，status=closed |
 | market.complete | `{ id }` | 发布者标记交易完成，status=completed；完成后不可预约/修改 |
 | market.reserve | `{ id }` | 非发布者预约交接，status=active 才可预约；同商品不可重复预约，冲突返回 CONFLICT |
 | market.getCandidates | `{ id }` | 发布者查看该商品的待处理预约列表 |
+| market.matchCandidates | `{ buyId }` | 求购发布者查看匹配到的在售闲置：`{items:[{...闲置摘要, reasons:string[]}], nextCursor}`；按同类别+同校区+价格≤预算匹配，排除本人/已下架/已完成；reasons 至少含「同类别、同校区、价格在预算内」，命中关键词时追加「包含求购关键词」；无匹配返回空数组与明确空状态，不返回成功率 |
+| appraisal.estimate | `{ imageId, category?, condition? }` | `{ minCents, maxCents, basis:{category,condition,rule}, note }`；note 固定为「参考估价，仅供参考，最终价格由发布者决定」；basis.rule 说明估价依据（示例规则为「类别+成色示例估价」），不得伪装为 AI 估价；category/condition 取发布表单值，缺失时按空字符串处理 |
 | myContent.list | `{contentType?,status?,cursor?,pageSize?}` | 当前用户发布分页；身份取后端会话 |
 | plan/help/market/lostFound.list | `{keyword?,category?,lostKind?,campusId?,marketType?,ownerId?,status?,cursor?,pageSize?}` | Content分页；lostKind仅失物使用，marketType/campusId仅market生效；筛选后分页，其余模块不受专属字段影响 |
 | 模块.get | `{id}` | 单条内容与公开作者摘要 |

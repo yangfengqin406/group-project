@@ -34,7 +34,18 @@
         </template>
         <template v-else>关键词：{{ item.keywords }}</template>
       </view>
-      <view v-if="type === 'market'" class="muted">
+      <view v-if="type === 'market' && item.marketType === 'sell' && item.appraisal" class="appraisal-panel">
+        <view class="appraisal-range">
+          参考估价：¥{{ (item.appraisal.minCents / 100).toFixed(2) }} ～
+          ¥{{ (item.appraisal.maxCents / 100).toFixed(2) }}
+        </view>
+        <view class="muted appraisal-note">{{ item.appraisal.note }}</view>
+        <view class="muted">
+          依据：{{ item.appraisal.basis.category }} ·
+          {{ item.appraisal.basis.condition }}（{{ item.appraisal.basis.rule }}）
+        </view>
+      </view>
+      <view v-else-if="type === 'market' && item.marketType === 'sell'" class="muted">
         参考估价后续提供
       </view>
       <view class="body detail-body">{{ item.body }}</view>
@@ -47,6 +58,23 @@
           class="thumb"
           @tap="preview(image)"
         />
+      </view>
+      <view v-if="type === 'market' && item.marketType === 'buy'" class="panel">
+        <view class="section-title">为你匹配的闲置</view>
+        <view v-if="matchesLoading" class="muted">正在匹配…</view>
+        <view v-else-if="!matches.length" class="muted">
+          暂无符合类别、校区和预算的闲置；稍后再来看看，或在求购说明里补充更多关键词。
+        </view>
+        <view v-for="m in matches" :key="m.id" class="match-item">
+          <view class="row">
+            <text class="link" @tap="goDetail(m.id)">{{ m.title }}</text>
+            <text class="muted">¥{{ (m.priceCents / 100).toFixed(2) }}</text>
+          </view>
+          <view class="muted">{{ m.condition }} · {{ m.campusName }}</view>
+          <view class="match-reasons">
+            <text v-for="(r, i) in m.reasons" :key="i" class="tag">{{ r }}</text>
+          </view>
+        </view>
       </view>
       <view class="actions">
         <button v-if="!isOwn" class="primary" :disabled="busy" @tap="contact">
@@ -141,6 +169,7 @@ import { session } from '../../utils/session.js'
 import {
   contentTypes,
   contentNames,
+  contentUrl,
   openProfile,
   formatTime
 } from '../../utils/routes.js'
@@ -154,7 +183,9 @@ const type = ref('plan'),
   comments = ref([]),
   commentBody = ref(''),
   commentsLoading = ref(false),
-  commentSaving = ref(false)
+  commentSaving = ref(false),
+  matches = ref([]),
+  matchesLoading = ref(false)
 const isOwn = computed(() => item.value?.ownerId === session.user?.id)
 const service = () =>
   api[type.value === 'lost_found' ? 'lostFound' : type.value]
@@ -176,9 +207,26 @@ async function load() {
       cursor = favorites.nextCursor
     } while (cursor && !selected.value)
     if (type.value === 'lost_found') await loadComments()
+    if (type.value === 'market' && item.value.marketType === 'buy')
+      await loadMatches()
   } catch (e) {
     error.value = errorText(e)
   }
+}
+async function loadMatches() {
+  matchesLoading.value = true
+  matches.value = []
+  try {
+    const r = await api.market.matchCandidates({ buyId: id.value })
+    matches.value = r.items
+  } catch (e) {
+    error.value = errorText(e)
+  } finally {
+    matchesLoading.value = false
+  }
+}
+function goDetail(contentId) {
+  uni.redirectTo({ url: contentUrl('market', contentId) })
 }
 async function loadComments() {
   commentsLoading.value = true
@@ -346,4 +394,19 @@ const lostKindLabel = (kind) => lostKinds[kind] || '失物'
 .comment-state + .textarea {
   margin-top: 18px;
 }
+.appraisal-panel {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f6f1e3;
+  border: 1px dashed #ddd1b3;
+  border-radius: 8px;
+}
+.appraisal-range { font-size: 16px; font-weight: 650; color: #354d3e; }
+.appraisal-note { color: #8a6d3b; margin: 6px 0; }
+.match-item {
+  padding: 12px 0;
+  border-bottom: 1px dashed #ddd1b3;
+}
+.match-reasons { margin-top: 6px; }
+.match-reasons .tag { margin-right: 6px; margin-bottom: 4px; }
 </style>

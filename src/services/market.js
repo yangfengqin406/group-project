@@ -8,3 +8,5 @@ export const complete = (params = {}) => call('market.complete', params)
 export const reserve = (params = {}) => call('market.reserve', params)
 export const getCandidates = (params = {}) =>
   call('market.getCandidates', params)
+export const matchCandidates = (params = {}) =>
+  call('market.matchCandidates', params)

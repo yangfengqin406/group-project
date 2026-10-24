@@ -231,5 +231,5 @@ test('服务端身份约定不接收前端伪造 owner；保留接口明确报�
     () => dispatch(db, 'auth.login', { type: 'wechat' }),
     'NOT_IMPLEMENTED'
   )
-  failCode(() => dispatch(db, 'appraisal.estimate', {}), 'NOT_IMPLEMENTED')
+  failCode(() => dispatch(db, 'appraisal.estimate', {}), 'INVALID_ARGUMENT')
 })

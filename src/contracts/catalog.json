@@ -89,7 +89,8 @@
       "close",
       "complete",
       "reserve",
-      "getCandidates"
+      "getCandidates",
+      "matchCandidates"
     ]
   },
   "reservation": {
