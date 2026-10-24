@@ -285,7 +285,7 @@ export function wearableArt(id, view = 'front') {
   if (!item) return null
   const side = view === 'back' ? 'back' : 'front'
   return {
-    source: `/static/pets/wearables/${assetId}-${side}.png`,
+    source: `/static/pets/wearables/${assetId}-${side}.webp`,
     ...item[side]
   }
 }

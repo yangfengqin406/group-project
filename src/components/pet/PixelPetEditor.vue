@@ -134,9 +134,12 @@ import {
 
 const props = defineProps({
   frame: { type: Object, default: blankFrame },
+  // The page owns this in-memory session while mini-program canvases unmount.
+  editorState: { type: Object, default: null },
+  side: { type: String, default: 'front' },
   disabled: { type: Boolean, default: false }
 })
-const emit = defineEmits(['update:frame', 'error'])
+const emit = defineEmits(['update:frame', 'update:editorState', 'drawing', 'error'])
 const instance = getCurrentInstance()
 const canvasId = `pet-paint-${instance.uid}`
 const colorNames = [
@@ -269,7 +272,21 @@ function scheduleRender() {
 function sendFrame() {
   const frame = { type: 'pixels', pixels: [...pixels.value] }
   lastEmitted = frame
-  emit('update:frame', frame)
+  emit('update:frame', frame, props.side)
+  publishEditorState()
+}
+
+function publishEditorState() {
+  if (destroyed || drawing.value) return
+  emit('update:editorState', {
+    frameSignature: JSON.stringify(imported.value
+      ? { type: 'png', data: importedData.value }
+      : { type: 'pixels', pixels: pixels.value }),
+    undoStack: undoStack.value.map((past) => [...past]),
+    chosenColor: chosenColor.value,
+    tool: tool.value,
+    brushSize: brushSize.value
+  }, props.side)
 }
 
 function remember(past) {
@@ -345,6 +362,8 @@ function startStroke(event, source) {
   const point = eventPoint(event)
   if (!point) return
   drawing.value = true
+  // Protect even the first stroke before its frame is committed on touchend.
+  emit('drawing', true, props.side)
   const current = {
     before: [...pixels.value],
     color: tool.value === 'erase' ? null : chosenColor.value,
@@ -361,6 +380,7 @@ function startStroke(event, source) {
     if (!rect) {
       stroke = null
       drawing.value = false
+      emit('drawing', false, props.side)
       reportError('画布尚未准备好，请稍后再试')
       return
     }
@@ -414,8 +434,17 @@ function finishStroke() {
     remember(current.before)
     sendFrame()
   }
+  emit('drawing', false, props.side)
   scheduleRender()
 }
+
+function flush() {
+  finishStroke()
+  // If the canvas bridge is still measuring, keep the page in place until the
+  // callback commits this stroke. Never disable/unmount it mid-measurement.
+  return !drawing.value
+}
+defineExpose({ flush })
 
 function chooseColor(color) {
   chosenColor.value = color
@@ -476,6 +505,7 @@ watch(
     frameVersion++
     stroke = null
     drawing.value = false
+    emit('drawing', false, props.side)
     undoStack.value = []
     lastEmitted = null
     try {
@@ -489,6 +519,22 @@ watch(
       importedData.value = ''
       pixels.value = blankFrame().pixels
       nextTick(() => reportError(error.message))
+    }
+    const state = props.editorState
+    const signature = JSON.stringify(imported.value
+      ? { type: 'png', data: importedData.value }
+      : { type: 'pixels', pixels: pixels.value })
+    // A changed/imported frame must never inherit the history of a different
+    // drawing. Copy history so front/back and mounted editors cannot share it.
+    if (state?.frameSignature === signature) {
+      if (!imported.value && Array.isArray(state.undoStack))
+        undoStack.value = state.undoStack.slice(-20).filter((past) =>
+          Array.isArray(past) && past.length === ART_SIZE * ART_SIZE &&
+          past.every((color) => color === null || ART_COLORS.includes(color))
+        ).map((past) => [...past])
+      if (ART_COLORS.includes(state.chosenColor)) chosenColor.value = state.chosenColor
+      if (['paint', 'erase'].includes(state.tool)) tool.value = state.tool
+      if ([1, 2, 3].includes(state.brushSize)) brushSize.value = state.brushSize
     }
     context = null
     canvasRect = null
@@ -504,6 +550,7 @@ watch(
       pixels.value = stroke.before
       stroke = null
       drawing.value = false
+      emit('drawing', false, props.side)
       scheduleRender()
     }
   }
@@ -511,8 +558,11 @@ watch(
 onMounted(prepareCanvas)
 onReady(prepareCanvas)
 onBeforeUnmount(() => {
+  if (stroke?.rect && !props.disabled) finishStroke()
+  publishEditorState()
   destroyed = true
   stroke = null
+  emit('drawing', false, props.side)
   if (renderTimer !== null) clearTimeout(renderTimer)
 })
 </script>

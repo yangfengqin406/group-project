@@ -67,9 +67,9 @@
     <view class="pond-wardrobe">
       <view>
         <view class="wardrobe-title">装扮我的伙伴</view>
-        <text>把发型、衣服、鞋子和小包，搭出你的样子。</text>
+        <text>衣柜里的穿戴会自动保存，回到广场就能看到。</text>
       </view>
-      <button :disabled="!loaded || saving || importing" @tap="bagOpen = true">
+      <button :disabled="!loaded || saving || importing" @tap="openWardrobe">
         打开衣柜
       </button>
     </view>
@@ -143,10 +143,15 @@
       </view>
       <PixelPetEditor
         v-if="!bagOpen && !diveOpen"
+        ref="pixelEditor"
         :key="artView + editorVersion"
         :frame="editingFrame"
+        :editor-state="editorSessions[artView]"
+        :side="artView"
         :disabled="blocked"
         @update:frame="updateFrame"
+        @update:editor-state="receiveEditorState"
+        @drawing="receiveDrawing"
         @error="error = $event"
       />
       <view class="art-note">
@@ -154,7 +159,7 @@
         256 KiB）。正面必填，背面可以以后补画。
       </view>
       <view class="art-note">
-        原创画稿会轻轻摇摆着走路；没画背面时，广场只显示正面画稿。
+        原创画稿会轻轻摇摆着走路；没画背面时，广场只显示正面画稿。正背面各自保留撤销记录，离开前记得保存。
       </view>
     </view>
     <view class="customization">
@@ -263,6 +268,9 @@
       </button>
     </view>
     <view class="save-note">
+      名字、配色、形象和原创画稿需点击“保存并去广场”；衣柜穿戴单独自动保存。
+    </view>
+    <view class="save-note">
       {{
         config.apiMode === 'mock'
           ? '搭配会保存在当前设备的演示身份下。'
@@ -291,7 +299,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
 import DemoNotice from '../../components/DemoNotice.vue'
 import PetAvatar from '../../components/pet/PetAvatar.vue'
@@ -303,6 +311,8 @@ import FishingPond from '../../components/plaza/FishingPond.vue'
 import DiveAdventure from '../../components/plaza/DiveAdventure.vue'
 import { config } from '../../config/index.js'
 import { errorText } from '../../utils/errors.js'
+import { session } from '../../utils/session.js'
+import { useUnsavedChanges } from '../../utils/use-unsaved-changes.js'
 import {
   speciesOptions,
   paletteOptions,
@@ -370,9 +380,15 @@ const tabs = computed(() =>
 )
 let revision = 0
 let ornamentRevision = 0
+let confirmingLeave = false
 function openDive() {
+  if (!flushEditor()) return
   bagOpen.value = false
   diveOpen.value = true
+}
+function openWardrobe() {
+  if (blocked.value || !flushEditor()) return
+  bagOpen.value = true
 }
 function closeDive() {
   diveOpen.value = false
@@ -396,20 +412,42 @@ async function loadOrnament() {
 }
 const presetDraft = ref(defaultPet())
 const customDraft = ref(defaultCustomPet())
+const editorSessions = ref({ front: null, back: null })
+const pixelEditor = ref(null)
+const editorDrawing = ref(false)
+const leaving = ref(false)
 const presetBaseline = ref(JSON.stringify(presetDraft.value))
 const customBaseline = ref(JSON.stringify(customDraft.value))
 const pendingChanges = computed(
   () =>
+    editorDrawing.value ||
     dirty.value ||
     JSON.stringify(presetDraft.value) !== presetBaseline.value ||
     JSON.stringify(customDraft.value) !== customBaseline.value
 )
+useUnsavedChanges(computed(() => loaded.value && pendingChanges.value && !leaving.value), {
+  title: '离开未保存的搭配？',
+  content: '名字、外观和原创画稿还没有保存。离开后将放弃这些修改；衣柜穿戴已自动保存。',
+  cancelText: '继续搭配',
+  nativeMessage: '还有未保存的搭配或画稿，返回后会丢失。'
+})
 function rememberDraft() {
   if (custom.value) customDraft.value = clonePet(draft.value)
   else presetDraft.value = clonePet(draft.value)
 }
+function flushEditor() {
+  if (pixelEditor.value?.flush?.() === false) {
+    error.value = '正在收好这一笔，请稍后再试。'
+    return false
+  }
+  return true
+}
+function receiveDrawing(drawing, side) {
+  if (side === artView.value) editorDrawing.value = drawing
+}
 function chooseMode(isCustom) {
   if (blocked.value || isCustom === custom.value) return
+  if (!flushEditor()) return
   rememberDraft()
   draft.value = clonePet(isCustom ? customDraft.value : presetDraft.value)
   activeTab.value = isCustom ? 'name' : 'palette'
@@ -419,27 +457,36 @@ function chooseMode(isCustom) {
   error.value = ''
 }
 function selectArtView(side) {
+  if (blocked.value || !flushEditor()) return
   artView.value = side
   previewView.value = side
 }
-function updateFrame(frame) {
-  draft.value.art[artView.value] = frame
-  previewView.value = artView.value
+function updateFrame(frame, side = artView.value) {
+  if (!loaded.value || saving.value || !custom.value) return
+  draft.value.art[side] = frame
+  previewView.value = side
+}
+function receiveEditorState(state, side = artView.value) {
+  if (!loaded.value || saving.value || !custom.value) return
+  if (state.frameSignature !== JSON.stringify(draft.value.art[side] || emptyFrame)) return
+  editorSessions.value[side] = JSON.parse(JSON.stringify(state))
 }
 async function importPng() {
-  if (blocked.value) return
+  if (blocked.value || !flushEditor()) return
   importing.value = true
   error.value = ''
   const current = revision
+  const userId = session.user?.id
   const side = artView.value
   try {
     const frame = await choosePetPng()
-    if (current !== revision || !frame) return
+    if (current !== revision || userId !== session.user?.id || !frame) return
+    editorSessions.value[side] = null
     draft.value.art[side] = frame
     previewView.value = side
     editorVersion.value++
   } catch (e) {
-    if (current === revision) error.value = errorText(e)
+    if (current === revision && userId === session.user?.id) error.value = errorText(e)
   } finally {
     if (current === revision) importing.value = false
   }
@@ -447,12 +494,17 @@ async function importPng() {
 
 async function load() {
   const current = ++revision
+  const userId = session.user?.id
   loading.value = true
   loaded.value = false
   error.value = ''
   try {
     const appearance = await pet.get()
-    if (current !== revision) return
+    if (current !== revision || userId !== session.user?.id) return
+    presetDraft.value = defaultPet()
+    customDraft.value = defaultCustomPet()
+    editorSessions.value = { front: null, back: null }
+    editorDrawing.value = false
     saved.value = clonePet(appearance)
     draft.value = clonePet(appearance)
     rememberDraft()
@@ -469,46 +521,108 @@ async function load() {
 function chooseSpecies(species) {
   draft.value = changeSpecies(draft.value, species)
 }
-function restore() {
+function applyRestore() {
   draft.value = clonePet(saved.value)
   presetDraft.value = custom.value ? defaultPet() : clonePet(draft.value)
   customDraft.value = custom.value ? clonePet(draft.value) : defaultCustomPet()
   presetBaseline.value = JSON.stringify(presetDraft.value)
   customBaseline.value = JSON.stringify(customDraft.value)
   activeTab.value = custom.value ? 'name' : 'palette'
+  editorSessions.value = { front: null, back: null }
+  editorDrawing.value = false
   editorVersion.value++
   error.value = ''
 }
-function leave() {
-  const navigate = () => uni.switchTab({ url: '/pages/plaza/index' })
-  if (!pendingChanges.value) return navigate()
+function restore() {
+  if (blocked.value || !pendingChanges.value) return
+  if (!flushEditor()) return
+  const current = revision
+  const userId = session.user?.id
   uni.showModal({
-    title: '还没有保存搭配',
-    content: '离开后，广场仍会使用上次保存的样子。',
-    confirmText: '放弃修改',
-    cancelText: '继续搭配',
-    success: (result) => {
-      if (result.confirm) navigate()
+    title: '还原到上次保存的样子？',
+    content: '本次名字、搭配与正背面画稿的未保存修改会被放弃。衣柜已保存的穿戴不受影响。',
+    confirmText: '还原搭配',
+    cancelText: '继续创作',
+    success(result) {
+      if (result.confirm && !blocked.value && current === revision && userId === session.user?.id)
+        applyRestore()
     }
   })
 }
+function returnToPlaza() {
+  leaving.value = true
+  uni.switchTab({
+    url: '/pages/plaza/index',
+    fail() { leaving.value = false }
+  })
+}
+function leave() {
+  if (saving.value || leaving.value || confirmingLeave) return
+  if (!flushEditor()) return
+  if (!pendingChanges.value) return returnToPlaza()
+  const current = revision
+  const userId = session.user?.id
+  confirmingLeave = true
+  uni.showModal({
+    title: '还没有保存搭配',
+    content: '未保存的名字、形象与原创画稿会丢失。衣柜穿戴已单独保存。',
+    confirmText: '放弃修改',
+    cancelText: '继续搭配',
+    success: (result) => {
+      confirmingLeave = false
+      if (result.confirm && current === revision && userId === session.user?.id) returnToPlaza()
+    },
+    fail() { confirmingLeave = false }
+  })
+}
 async function save() {
-  if (blocked.value) return
+  if (blocked.value || !flushEditor()) return
   saving.value = true
   error.value = ''
   const current = revision
+  const userId = session.user?.id
   try {
     const appearance = await pet.save(validateAppearance(draft.value))
-    if (current !== revision) return
+    if (current !== revision || userId !== session.user?.id) return
     saved.value = clonePet(appearance)
     draft.value = clonePet(appearance)
-    uni.switchTab({ url: '/pages/plaza/index' })
+    // Saving the selected mode completes this visit; both cached modes are now
+    // treated as the page baseline if navigation fails, rather than prompting
+    // a second time for a mode the user did not choose to save.
+    rememberDraft()
+    presetBaseline.value = JSON.stringify(presetDraft.value)
+    customBaseline.value = JSON.stringify(customDraft.value)
+    returnToPlaza()
   } catch (e) {
-    if (current === revision) error.value = errorText(e)
+    if (current === revision && userId === session.user?.id) error.value = errorText(e)
   } finally {
     if (current === revision) saving.value = false
   }
 }
+// Use Vue's queued watcher: mock requests refresh the same session synchronously.
+// A sync callback would re-enter before Vue commits the watched ID. Captured
+// account IDs and revisions still reject old responses before they touch drafts.
+watch(() => session.user?.id, () => {
+  revision++
+  ornamentRevision++
+  loaded.value = false
+  loading.value = false
+  saving.value = false
+  importing.value = false
+  leaving.value = false
+  confirmingLeave = false
+  bagOpen.value = false
+  diveOpen.value = false
+  draft.value = defaultPet()
+  saved.value = defaultPet()
+  presetDraft.value = defaultPet()
+  customDraft.value = defaultCustomPet()
+  editorSessions.value = { front: null, back: null }
+  editorDrawing.value = false
+  wardrobeState.value = null
+  load()
+  loadOrnament()
+})
 onLoad(() => {
   load()
   loadOrnament()

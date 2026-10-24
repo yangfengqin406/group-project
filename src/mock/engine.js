@@ -600,19 +600,38 @@ export function dispatch(db, method, p = {}) {
     db.conversations.unshift(conversation)
     return clone(conversation)
   }
-  if (method === 'conversation.list')
-    return list(
-      db.conversations
-        .filter((c) => c.participantIds.includes(me().id))
-        .map((conversation) => ({
-          ...conversation,
-          peer: user(conversation.participantIds.find((id) => id !== me().id)),
-          lastMessage:
-            db.messages
-              .filter((message) => message.conversationId === conversation.id)
-              .slice(-1)[0] || null
-        }))
+  if (method === 'conversation.list') {
+    const userId = me().id
+    const source = p.contentType === undefined ? '' : p.contentType
+    requireThat(
+      source === '' || ['plan', 'help', 'market', 'lost_found'].includes(source),
+      'INVALID_ARGUMENT',
+      '请选择支持的会话来源'
     )
+    const timestamp = (value) => Date.parse(value) || 0
+    const latestMessages = new Map()
+    for (const message of db.messages) {
+      const previous = latestMessages.get(message.conversationId)
+      if (!previous || timestamp(message.createdAt) >= timestamp(previous.createdAt))
+        latestMessages.set(message.conversationId, message)
+    }
+    const ordered = db.conversations
+      .filter((c) => c.participantIds.includes(userId) && (!source || c.contentType === source))
+      .map((conversation, index) => {
+        const lastMessage = latestMessages.get(conversation.id) || null
+        return {
+          conversation, lastMessage, index,
+          activeAt: timestamp(lastMessage?.createdAt || conversation.createdAt)
+        }
+      })
+      .sort((a, b) => b.activeAt - a.activeAt || a.index - b.index)
+      .map(({ conversation, lastMessage }) => ({
+        ...conversation,
+        peer: user(conversation.participantIds.find((id) => id !== userId)),
+        lastMessage
+      }))
+    return list(ordered)
+  }
   if (method === 'message.list' || method === 'message.send') {
     const c = db.conversations.find((c) => c.id === p.conversationId)
     requireThat(c, 'NOT_FOUND', '会话不存在')

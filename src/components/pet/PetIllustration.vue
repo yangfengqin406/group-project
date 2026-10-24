@@ -31,7 +31,7 @@
         <view class="illustration-window" :style="windowStyle">
           <image
             class="illustration-sheet"
-            src="/static/pets/tailored/squirrel-tails.png"
+            src="/static/pets/tailored/squirrel-tails.webp"
             :style="sheetStyle"
             mode="scaleToFill"
           />

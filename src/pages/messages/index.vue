@@ -6,7 +6,7 @@
       <view class="section-title">消息中心</view>
       <button class="secondary" :disabled="loading || busy" @tap="load">刷新</button>
     </view>
-    <view class="subtitle">二手、失物和搭子的联系都在这里</view>
+    <view class="subtitle">二手、失物、搭子和互助的联系都在这里</view>
     <view class="message-tools">
       <view class="source-tabs">
         <button
@@ -14,7 +14,8 @@
           :key="option.value"
           class="source-tab"
           :class="{ selected: source === option.value }"
-          @tap="source = option.value"
+          @tap="setSource(option.value)"
+          :disabled="busy"
         >
           {{ option.label }}
         </button>
@@ -77,7 +78,7 @@
     </button>
     <view class="section-title">联系消息</view>
     <view
-      v-for="c in filteredConversations"
+      v-for="c in conversations"
       :key="c.id"
       class="panel"
       @tap="chat(c.id)"
@@ -92,6 +93,11 @@
       <view class="last-message">{{ c.lastMessage?.body || '还没有留言，来打个招呼吧。' }}</view>
       <text v-if="c.lastMessage" class="muted">{{ formatTime(c.lastMessage.createdAt) }}</text>
     </view>
+    <EmptyState
+      v-if="!loading && !error && !conversations.length && (source || invitations.length || notifications.length)"
+      title="还没有这类联系"
+      description="联系发布者后，会话会出现在这里；其他来源的消息仍可切换查看。"
+    />
     <button
       v-if="conversationCursor"
       class="secondary"
@@ -115,6 +121,7 @@
       v-if="
         !loading &&
         !error &&
+        !source &&
         !invitations.length &&
         !conversations.length &&
         !notifications.length
@@ -125,7 +132,7 @@
   </view>
 </template>
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { invitation, conversation, notification, plan } from '../../services/index.js'
 import { session } from '../../utils/session.js'
@@ -157,13 +164,9 @@ const sourceOptions = [
   { label: '全部', value: '' },
   { label: '二手', value: 'market' },
   { label: '失物', value: 'lost_found' },
-  { label: '搭子', value: 'plan' }
+  { label: '搭子', value: 'plan' },
+  { label: '互助', value: 'help' }
 ]
-const filteredConversations = computed(() =>
-  source.value
-    ? conversations.value.filter((item) => item.contentType === source.value)
-    : conversations.value
-)
 const labels = {
   pending: '等待确认',
   accepted: '已接受',
@@ -181,13 +184,14 @@ async function withSummaries(rows, current) {
 async function load({ preserveError = false } = {}) {
   const version = ++loadVersion
   const userId = session.user?.id
-  const current = () => version === loadVersion && userId === session.user?.id
+  const requestedSource = source.value
+  const current = () => version === loadVersion && userId === session.user?.id && requestedSource === source.value
   loading.value = true
   if (!preserveError) error.value = ''
   try {
     const [i, c, n] = await Promise.all([
       invitation.list(),
-      conversation.list(),
+      conversation.list(requestedSource ? { contentType: requestedSource } : {}),
       notification.list()
     ])
     if (!current()) return
@@ -205,14 +209,24 @@ async function load({ preserveError = false } = {}) {
     if (current()) loading.value = false
   }
 }
+function setSource(value) {
+  if (busy.value || source.value === value || !sourceOptions.some((option) => option.value === value)) return
+  source.value = value
+  conversations.value = []
+  conversationCursor.value = null
+  if (visible) load()
+}
 async function more(service, items, cursor) {
   if (loading.value || busy.value || !cursor.value) return
   const version = loadVersion
   const userId = session.user?.id
-  const current = () => version === loadVersion && userId === session.user?.id
+  const requestedSource = source.value
+  const current = () => version === loadVersion && userId === session.user?.id && requestedSource === source.value
   loading.value = true
   try {
-    const r = await service.list({ cursor: cursor.value })
+    const params = { cursor: cursor.value }
+    if (service === conversation && requestedSource) params.contentType = requestedSource
+    const r = await service.list(params)
     if (service === invitation) r.items = await withSummaries(r.items, current)
     if (!current()) return
     const known = new Set(items.value.map((item) => item.id))

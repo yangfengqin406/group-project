@@ -1,18 +1,18 @@
 const sheets = {
   mushroom: {
-    source: '/static/pets/mushroom-atlas.png',
+    source: '/static/pets/mushroom-atlas.webp',
     features: ['round-cap', 'wide-cap']
   },
   capybara: {
-    source: '/static/pets/capybara-atlas.png',
+    source: '/static/pets/capybara-atlas.webp',
     features: ['round', 'perky']
   },
   rabbit: {
-    source: '/static/pets/rabbit-atlas.png',
+    source: '/static/pets/rabbit-atlas.webp',
     features: ['floppy', 'upright', 'short']
   },
   squirrel: {
-    source: '/static/pets/squirrel-atlas.png',
+    source: '/static/pets/squirrel-atlas.webp',
     features: ['pointed', 'round']
   }
 }

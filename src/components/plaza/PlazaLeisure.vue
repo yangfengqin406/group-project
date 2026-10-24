@@ -15,12 +15,12 @@
     <view class="pond-ripple ripple-two"></view>
     <image
       class="fishing-deck"
-      src="/static/plaza/fishing-dock.png"
+      src="/static/plaza/fishing-dock.webp"
       mode="aspectFit"
     />
     <image
       class="rest-pavilion"
-      src="/static/plaza/pavilion.png"
+      src="/static/plaza/pavilion.webp"
       mode="aspectFit"
     />
   </view>

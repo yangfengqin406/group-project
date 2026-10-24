@@ -11,6 +11,7 @@
 | FishingCast | id、status、biteAt、escapeAt、meterStartAt?、meterPeriodMs?、meterZone?、landDeadlineAt? | 每身份只有一个有效抛竿，服务侧时钟判定；新抛竿作废旧编号，结果消费编号 |
 | WardrobeState | userId、owned、equipped、pearls、clearedLevels | 当前身份独立衣柜与奖励进度；catalog 为公共只读目录，身份、余额和发奖由服务决定，不加入 PetAppearance |
 | DiveRun | id、userId、levelId、seed、startedAt、expiresAt | 每身份一个有效关卡编号，按种子回放输入核验后一次性结算；新开局作废旧编号 |
+| DiveSettlement | userId、runId、levelId、status、reward | 每身份最近一局服务核验后的只读回执；getState仅返回当前身份lastSettlement。只按本局编号恢复结果，不依赖余额推断；重复finish仍冲突，不再次发奖 |
 | Plan | id、ownerId、category、startAt、endAt、capacity、status | 关联作者、成员、邀请；检查校区、日期、时间和容量 |
 | Membership | planId、userId、status | 正式数据库建议独立记录，planId+userId 唯一 |
 | Invitation | id、senderId、recipientId、sourcePlanId、targetPlanId、status | 来源为被邀请人的单人计划，目标为邀请人的计划 |
@@ -18,7 +19,7 @@
 | Reservation | id、contentId、buyerId、sellerId、status、createdAt | 本机二手交接预约；同一商品只允许一条pending，状态冲突返回CONFLICT；后续respond/complete仍待实现 |
 | LostFoundPost | id、ownerId、lostKind、category、images、location、status | lostKind 为丢失/拾获；category 为卡片/钥匙/杂物；1～3 张图片；作者确认完成 |
 | HelpPost | id、ownerId、category、body、status | category 首版为所需技能；后续匹配 User.skillTags |
-| Conversation | id、participantIds、contentType、contentId | 同一内容与参与者组合去重；仅参与者访问 |
+| Conversation | id、participantIds、contentType、contentId、createdAt | 同一内容与参与者组合去重；仅参与者访问；按来源筛选后，以最新Message.createdAt（无消息取会话createdAt）倒序分页，同时间稳定排序 |
 | Message | id、conversationId、senderId、body、createdAt | 发送者取登录态；会话权限由后端校验 |
 | Comment | id、contentType、contentId、authorId、body、createdAt | 首版用于失物公开评论；发布者收到站内通知 |
 | Notification | id、recipientId、contentType、contentId、read | 业务事件去重；本人读写；模板发送与业务事务分开 |

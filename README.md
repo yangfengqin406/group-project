@@ -2,7 +2,7 @@
 
 使用 **uni-app + Vue 3 + JavaScript**，同一套源码构建H5和微信小程序。团队成员为A（杨凤琴）、B（孙瑞）、C（姜澜）。
 
-**[浏览main阶段演示](https://yangfengqin406.github.io/group-project/#/)**：已通过PR #17/#18发布；虚构数据只存在各浏览器，不能跨设备同步。10月22—23日A的质量与计划/邀请改进在草稿[PR #15](https://github.com/yangfengqin406/group-project/pull/15)，尚未更新到公网。成员分支经审阅合入main后才重新发布，说明见[部署文档](docs/deployment.md)。
+**[浏览main阶段演示](https://yangfengqin406.github.io/group-project/#/)**：已通过PR #17/#18发布；虚构数据只存在各浏览器，不能跨设备同步。10月22—24日A的质量与计划/邀请改进在草稿[PR #15](https://github.com/yangfengqin406/group-project/pull/15)，尚未更新到公网。成员分支经审阅合入main后才重新发布，说明见[部署文档](docs/deployment.md)。
 
 **[团队周报（监督查看）](docs/weekly-log.md)**：按周查看A/B/C完成内容、成果证据、问题和下一步。固定入口为[main分支周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)；详细测试过程见[验证记录](docs/verification.md)。
 

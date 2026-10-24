@@ -31,6 +31,7 @@ function component(path, names, extra = {}) {
       `on${name}`, (callback) => callbacks.push(callback)
     ])),
     config: { apiMode: 'mock' },
+    session: { user: { id: 'user_demo_a' } }, watch: () => {},
     errorText: (error) => error.message,
     formatTime: (value) => value,
     pet: { get: async () => ({ name: '测试伙伴' }) },
@@ -92,6 +93,7 @@ test('潜水切后台停止时钟，返回保持暂停，明确继续后沿本�
   let clockId = 0
   let starts = 0
   let finishes = 0
+  let retainedRun = null
   const adventure = component('src/components/plaza/DiveAdventure.vue', [
     'active', 'paused', 'gameState', 'startLevel', 'resume'
   ], {
@@ -105,10 +107,11 @@ test('潜水切后台停止时钟，返回保持暂停，明确继续后沿本�
     },
     clearInterval: (id) => clocks.delete(id),
     dive: {
-      getState: async () => ({ unlockedLevel: 1, clearedLevels: [] }),
+      getState: async () => ({ unlockedLevel: 1, clearedLevels: [], activeRun: retainedRun }),
       start: async () => {
         starts++
-        return { id: 'retained-run', seed: 23, expiresAt: Date.now() + 600000 }
+        retainedRun = { id: 'retained-run', levelId: 1, seed: 23, expiresAt: Date.now() + 600000 }
+        return retainedRun
       },
       finish: async () => { finishes++ }
     }

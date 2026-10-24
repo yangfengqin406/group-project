@@ -4,7 +4,7 @@ const registrations = {
   rabbit: {
     front: {
       'sailor-shirt': {
-        source: '/static/pets/tailored/rabbit-sailor-shirt-front.png',
+        source: '/static/pets/tailored/rabbit-sailor-shirt-front.webp',
         bounds: {
           x: 15.5,
           y: 113.4,
@@ -41,7 +41,7 @@ const registrations = {
         ]
       },
       'moss-cape': {
-        source: '/static/pets/tailored/rabbit-moss-cape-front.png',
+        source: '/static/pets/tailored/rabbit-moss-cape-front.webp',
         bounds: {
           x: 8.25,
           y: 113.52,
@@ -78,7 +78,7 @@ const registrations = {
         ]
       },
       'coral-dress': {
-        source: '/static/pets/tailored/rabbit-coral-dress-front.png',
+        source: '/static/pets/tailored/rabbit-coral-dress-front.webp',
         bounds: {
           x: 9.12,
           y: 113.52,
@@ -117,7 +117,7 @@ const registrations = {
     },
     back: {
       'sailor-shirt': {
-        source: '/static/pets/tailored/rabbit-sailor-shirt-back.png',
+        source: '/static/pets/tailored/rabbit-sailor-shirt-back.webp',
         bounds: {
           x: 18.5,
           y: 113.14,
@@ -135,7 +135,7 @@ const registrations = {
         ]
       },
       'moss-cape': {
-        source: '/static/pets/tailored/rabbit-moss-cape-back.png',
+        source: '/static/pets/tailored/rabbit-moss-cape-back.webp',
         bounds: {
           x: 11.21,
           y: 113.95,
@@ -153,7 +153,7 @@ const registrations = {
         ]
       },
       'coral-dress': {
-        source: '/static/pets/tailored/rabbit-coral-dress-back.png',
+        source: '/static/pets/tailored/rabbit-coral-dress-back.webp',
         bounds: {
           x: 13.64,
           y: 113.14,
@@ -175,7 +175,7 @@ const registrations = {
   capybara: {
     front: {
       'sailor-shirt': {
-        source: '/static/pets/tailored/capybara-sailor-shirt-front.png',
+        source: '/static/pets/tailored/capybara-sailor-shirt-front.webp',
         bounds: {
           x: 13,
           y: 95.07,
@@ -212,7 +212,7 @@ const registrations = {
         ]
       },
       'moss-cape': {
-        source: '/static/pets/tailored/capybara-moss-cape-front.png',
+        source: '/static/pets/tailored/capybara-moss-cape-front.webp',
         bounds: {
           x: 9.44,
           y: 94.6,
@@ -249,7 +249,7 @@ const registrations = {
         ]
       },
       'coral-dress': {
-        source: '/static/pets/tailored/capybara-coral-dress-front.png',
+        source: '/static/pets/tailored/capybara-coral-dress-front.webp',
         bounds: {
           x: 8.56,
           y: 94.4,
@@ -288,7 +288,7 @@ const registrations = {
     },
     back: {
       'sailor-shirt': {
-        source: '/static/pets/tailored/capybara-sailor-shirt-back.png',
+        source: '/static/pets/tailored/capybara-sailor-shirt-back.webp',
         bounds: {
           x: 19.48,
           y: 96.88,
@@ -299,7 +299,7 @@ const registrations = {
         furParts: []
       },
       'moss-cape': {
-        source: '/static/pets/tailored/capybara-moss-cape-back.png',
+        source: '/static/pets/tailored/capybara-moss-cape-back.webp',
         bounds: {
           x: 13,
           y: 97,
@@ -310,7 +310,7 @@ const registrations = {
         furParts: []
       },
       'coral-dress': {
-        source: '/static/pets/tailored/capybara-coral-dress-back.png',
+        source: '/static/pets/tailored/capybara-coral-dress-back.webp',
         bounds: {
           x: 12.98,
           y: 96.1,
@@ -325,7 +325,7 @@ const registrations = {
   mushroom: {
     front: {
       'sailor-shirt': {
-        source: '/static/pets/tailored/mushroom-sailor-shirt-front.png',
+        source: '/static/pets/tailored/mushroom-sailor-shirt-front.webp',
         bounds: {
           x: 34.52,
           y: 124.88,
@@ -362,7 +362,7 @@ const registrations = {
         ]
       },
       'moss-cape': {
-        source: '/static/pets/tailored/mushroom-moss-cape-front.png',
+        source: '/static/pets/tailored/mushroom-moss-cape-front.webp',
         bounds: {
           x: 26.75,
           y: 124.75,
@@ -399,7 +399,7 @@ const registrations = {
         ]
       },
       'coral-dress': {
-        source: '/static/pets/tailored/mushroom-coral-dress-front.png',
+        source: '/static/pets/tailored/mushroom-coral-dress-front.webp',
         bounds: {
           x: 28.25,
           y: 125,
@@ -438,7 +438,7 @@ const registrations = {
     },
     back: {
       'sailor-shirt': {
-        source: '/static/pets/tailored/mushroom-sailor-shirt-back.png',
+        source: '/static/pets/tailored/mushroom-sailor-shirt-back.webp',
         bounds: {
           x: 34.28,
           y: 122.36,
@@ -449,7 +449,7 @@ const registrations = {
         furParts: []
       },
       'moss-cape': {
-        source: '/static/pets/tailored/mushroom-moss-cape-back.png',
+        source: '/static/pets/tailored/mushroom-moss-cape-back.webp',
         bounds: {
           x: 27.8,
           y: 122.36,
@@ -460,7 +460,7 @@ const registrations = {
         furParts: []
       },
       'coral-dress': {
-        source: '/static/pets/tailored/mushroom-coral-dress-back.png',
+        source: '/static/pets/tailored/mushroom-coral-dress-back.webp',
         bounds: {
           x: 27.56,
           y: 122.36,
@@ -475,7 +475,7 @@ const registrations = {
   squirrel: {
     front: {
       'sailor-shirt': {
-        source: '/static/pets/tailored/squirrel-sailor-shirt-front.png',
+        source: '/static/pets/tailored/squirrel-sailor-shirt-front.webp',
         bounds: {
           x: 57.96,
           y: 111.68,
@@ -512,7 +512,7 @@ const registrations = {
         ]
       },
       'moss-cape': {
-        source: '/static/pets/tailored/squirrel-moss-cape-front.png',
+        source: '/static/pets/tailored/squirrel-moss-cape-front.webp',
         bounds: {
           x: 57.66,
           y: 110.54,
@@ -549,7 +549,7 @@ const registrations = {
         ]
       },
       'coral-dress': {
-        source: '/static/pets/tailored/squirrel-coral-dress-front.png',
+        source: '/static/pets/tailored/squirrel-coral-dress-front.webp',
         bounds: {
           x: 56.61,
           y: 111.68,
@@ -588,7 +588,7 @@ const registrations = {
     },
     back: {
       'sailor-shirt': {
-        source: '/static/pets/tailored/squirrel-sailor-shirt-back.png',
+        source: '/static/pets/tailored/squirrel-sailor-shirt-back.webp',
         bounds: {
           x: 67.25,
           y: 109.5,
@@ -599,7 +599,7 @@ const registrations = {
         furParts: []
       },
       'moss-cape': {
-        source: '/static/pets/tailored/squirrel-moss-cape-back.png',
+        source: '/static/pets/tailored/squirrel-moss-cape-back.webp',
         bounds: {
           x: 59.75,
           y: 109.5,
@@ -610,7 +610,7 @@ const registrations = {
         furParts: []
       },
       'coral-dress': {
-        source: '/static/pets/tailored/squirrel-coral-dress-back.png',
+        source: '/static/pets/tailored/squirrel-coral-dress-back.webp',
         bounds: {
           x: 59.25,
           y: 109.5,
@@ -817,13 +817,13 @@ export function tailoredOutfit(species, feature, outfit, view = 'front') {
     source: record.source,
     furSource:
       species === 'squirrel' && outfit === 'moss-cape' && side === 'front'
-        ? '/static/pets/tailored/squirrel-moss-cape-front-fur.png'
+        ? '/static/pets/tailored/squirrel-moss-cape-front-fur.webp'
         : null,
     bounds: move(record.bounds, dx),
-    headArt: frame(`/static/pets/tailored/${species}-heads.png`),
+    headArt: frame(`/static/pets/tailored/${species}-heads.webp`),
     tailArt:
       species === 'squirrel'
-        ? frame('/static/pets/tailored/squirrel-tails.png')
+        ? frame('/static/pets/tailored/squirrel-tails.webp')
         : null,
     headParts: [],
     tailParts: [],

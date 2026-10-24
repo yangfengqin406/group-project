@@ -20,7 +20,7 @@
 
 - 新增 A 维护的 `pet.get()`、`pet.save(appearance)`，统一通过 `src/services/pet.js` 调用。返回当前账号的 `{ species, palette, feature, accessory, name }`，不接受指定其他用户或作者；尚未保存时返回默认糯叶兔外观。演示数据按虚构账号分别保存，旧演示存档无宠物字段时仍可读取默认值。
 - `species` 为 mushroom/capybara/rabbit/squirrel；`palette`、`feature`（耳朵或蘑菇帽型）、`accessory` 使用 `src/utils/pet-appearance.js` 中明确允许的组合，名称去首尾空白后为 1～12 个 Unicode 字符。无效外观保存返回 INVALID_ARGUMENT，不影响上一次保存。
-- 页面编辑的是草稿；切换物种时采用该物种的默认耳朵/帽型，保留配色、配饰和名字；点击“保存并去广场”成功后才生效。页面内“回到广场”会确认放弃草稿；系统返回离开不保存修改。保存失败保留草稿并显示错误。
+- 页面编辑的是草稿；切换物种时采用该物种的默认耳朵/帽型，保留配色、配饰和名字；点击“保存并去广场”成功后才生效。页面内离开与还原先确认，系统返回/刷新按平台能力提醒，不自动保存；衣柜穿戴独立自动保存。原创正背面各保留20步页面内撤销历史，切面/打开衣柜不清空，导入新图仅重置对应面；不新增业务存储。保存失败保留草稿并显示错误，旧账号的导入/保存响应不能覆盖新账号。
 - 新页面 `/pages/pet/index` 从“自己的家 → 我的宠物”和广场入口进入，不新增房子或底部栏目。广场每次显示读取当前账号已保存的外观，NPC 仍为装饰角色。
 - 真实模式继续走现有 RPC；后端尚未实现这两个方法时必须报错，不能显示演示保存成功。本次不改 User 公开字段、登录/上传与消息接口。
 - 原创宠物增加 `species: 'custom'`，固定 `palette: 'cream'`、`feature: 'art'`、`accessory: 'none'`，增加 `art: { front: ArtFrame, back: ArtFrame | null }`。预设四款保持既有五字段。ArtFrame 为 `{type:'pixels',pixels:Array<1024>}`（32×32，像素为允许色板十六进制或 null）或 `{type:'png',data:'data:image/png;base64,...'}`。至少有非空正面才可保存；背面可后补。
@@ -51,7 +51,8 @@
 - `wardrobe.getState()` → `{catalog,owned:[{id,count}],equipped:{hair,head,outfit,feet,bag,hand,charm},pearls,clearedLevels:[1,2,3]}`。`wardrobe.equip({slot,itemId:string|null})` → state，只能穿已拥有且槽位匹配的物品；null摘下该槽。`wardrobe.redeem({itemId})` → state，按目录价格扣珍珠，重复兑换已拥有物不重复扣款；不能伪造价格/余额/身份。
 - 旧 fishing.collection 的荷叶/芦苇结/水泡星迁移为衣柜拥有物，旧单件佩戴迁移到对应槽，不清空存档、不重复累计；后续钓获进入同一衣柜。fishing旧5方法保留兼容。`PetAvatar` 新可选 `wardrobe:Object|null`；传入时按衣柜多槽显示，否则保留旧ornament。新bag覆盖旧satchel，新head覆盖旧flower，避免同部位叠两件。
 - 四款预设改为参照用户概念图的透明精绘像素插画，提供真实正背面及对应耳型/帽型；保留四种配色显示（cream标为“原色”）。原创画布/PNG继续可用；衣柜为独立层，不伪造原创背面。
-- `dive.getState()` → `{clearedLevels,unlockedLevel,pearls,activeRun:Run|null}`；`dive.start({levelId:1|2|3})` → `Run:{id,levelId,seed,startedAt,expiresAt}`，只可开已解锁关卡，新run使旧run失效。每关为固定步长50ms的泡泡冒险：方向操作、发射泡泡、怪鱼/海胆碰撞、珍珠收集、找到出口；3爱心与氧气时限。
+- `dive.getState()` → `{clearedLevels,unlockedLevel,pearls,activeRun:Run|null,lastSettlement?:null|{runId,levelId,status:'cleared'|'failed',reward:{firstClear,items:[id],pearls}|null}}`；lastSettlement为当前身份最近一次核验结算的只读回执，旧存档无回执可为null。界面只为当前已发起且已结束的同一runId/levelId恢复结果，不根据珍珠或历史首通推断本局成功；隐藏期间或结果不明先读回执，读取衣柜同步展示，不重复发奖。重复finish仍返回CONFLICT，新局不能套用旧回执。
+- `dive.start({levelId:1|2|3})` → `Run:{id,levelId,seed,startedAt,expiresAt}`，只可开已解锁关卡，新run使旧run失效。每关为固定步长50ms的泡泡冒险：方向操作、发射泡泡、怪鱼/海胆碰撞、珍珠收集、找到出口；3爱心与氧气时限。
 - `dive.finish({runId,ticks,trace})` → `{status:'cleared'|'failed',reward:{firstClear,items:[id],pearls}|null,wardrobe:WardrobeState,state:DiveState}`。trace为输入改变事件数组 `{tick,dx,dy,fire}`，dx/dy为-1..1，fire布尔；工具 `src/utils/dive-game.js` 用 seed 重放固定步长输入核验结果。服务侧拒绝超长/越界/旧或他人编号、客户端直接提交成功/奖励；编号结算一次，失败不发奖。演示回放不等同生产防作弊或在线服务器。
 - 首通L1送sailor-shirt＋shell-shoes及30珍珠；L2送cloud-bun＋shell-pouch及45珍珠；L3送shell-crown＋star-wand＋pearl-badge及60珍珠。重玩通关分别8/12/18珍珠，不重复发首通套装；失败不扣已拥有装扮，不消耗购买资源。全为不可交易本机装扮，无付费或真实货币。
 - `FishingPond` 与宠物收纳袋复用分类衣柜，池边增加“潜水闯关”入口；仍不新增业务房子或路由，潜水以独立弹层打开。亭子真人麻将不属于本轮。
@@ -109,7 +110,7 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 | invitation.respond | `{invitationId,action,idempotencyKey}` | `{invitation,targetPlan}`；action=accept/reject/cancel |
 | invitation.cancel | `{invitationId,idempotencyKey}` | 与 respond(cancel) 一致 |
 | conversation.open | `{contentType,contentId,peerUserId}` | 会话，含原内容链接和 participantIds |
-| conversation.list | `{cursor?,pageSize?}` | 当前用户会话分页，含 peer 摘要、lastMessage 与原内容字段 |
+| conversation.list | `{contentType?,cursor?,pageSize?}` | 当前用户会话先按来源筛选、按最近消息时间（无消息时按创建时间）倒序，再分页；contentType省略/空串表示全部，非空为plan/help/market/lost_found。含peer摘要、lastMessage与原内容字段 |
 | message.list | `{conversationId,cursor?,pageSize?}` | Message 分页，含 sender 摘要，按新到旧排列 |
 | message.send | `{conversationId,body,idempotencyKey}` | 保存的 Message |
 | comment.list | `{contentType,contentId,cursor?,pageSize?}` | 公开评论分页，含 author 摘要 |
