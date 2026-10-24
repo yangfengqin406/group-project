@@ -6,7 +6,7 @@
 
 部署入口：[校园生活广场 H5](https://yangfengqin406.github.io/group-project/#/)。10月22日[PR #17](https://github.com/yangfengqin406/group-project/pull/17)合入后，[首次发布](https://github.com/yangfengqin406/group-project/actions/runs/39803225930)的 build/deploy 均成功，HTTPS 首页实际返回200。以后当前版本以[发布工作流](https://github.com/yangfengqin406/group-project/actions/workflows/deploy-h5.yml)最近一次成功运行为准；详细验收见[验证记录](verification.md)。
 
-此站只展示 main 已审阅的 A/B/C 阶段成果，固定使用本机演示数据。页面中的账号、消息、发布和装扮记录只保存在各自浏览器，不能跨设备同步，不是真实校园业务上线。A 分支草稿 PR #15 不随本次发布合入 main。
+此站只展示 main 已审阅的 A/B/C 阶段成果，固定使用本机演示数据。页面中的账号、消息、发布和装扮记录只保存在各自浏览器，不能跨设备同步，不是真实校园业务上线。2026-10-24 A的PR #15及B的PR #20均已审阅合入main，自动重新部署的结果以对应Actions运行状态为准。
 
 ### 首次设置
 
@@ -53,6 +53,8 @@ Remove-Item Env:UNI_H5_BASE
 ## 最终提交物
 
 10月24日A分支补充：构建后运行 `node scripts/report-build-size.mjs` 或 `--json` 复核目录体积，并运行 `node scripts/check-weixin-package.mjs`。图像重编码后实际微信主包原始目录2062368字节（约1.97 MiB）、未分包，通过团队每包2MiB保守预算；预算检查已加入PR与main部署工作流。旧3.62MiB记录是10月23日快照，不代表本轮构建。预算只剩34784字节余量，后续新增资源需要继续控制或合理分包；仍须微信开发者工具代码依赖分析、实际上传与真机验收，不能凭build/预算通过声称微信已发布。AppID本机修改保留且不提交，不提交私有工具配置或密钥。
+
+B第二版PR #20合入后的当前原始主包为2075448字节，2MiB预算余21704字节；上面的34784为A版本历史快照。实际微信工具分析/上传仍需单独验收，以[最新验证记录](verification.md)为准。
 
 仓库地址、README、可访问 URL / 小程序码、演示账号说明（不含管理员密钥）、功能完成表、验收记录及分工。构建通过只表示可生成产物，不表示已审核或公网可用。
 
