@@ -5,6 +5,8 @@ function campusDay(iso) {
 }
 export function findCandidates(plan, plans, now = Date.now()) {
   if (
+    plan.visibility !== 'public' ||
+    plan.joinedPlanId ||
     plan.status !== 'open' ||
     plan.memberIds.length >= plan.capacity ||
     Date.parse(plan.endAt) <= now
@@ -15,10 +17,14 @@ export function findCandidates(plan, plans, now = Date.now()) {
       (other) =>
         other.id !== plan.id &&
         other.ownerId !== plan.ownerId &&
+        !plan.memberIds.includes(other.ownerId) &&
+        other.visibility === 'public' &&
+        !other.joinedPlanId &&
         other.campusId === plan.campusId &&
         other.category === plan.category &&
         other.status === 'open' &&
         other.memberIds.length === 1 &&
+        other.memberIds.length < other.capacity &&
         Date.parse(other.endAt) > now &&
         campusDay(other.startAt) === campusDay(plan.startAt) &&
         Math.max(Date.parse(other.startAt), Date.parse(plan.startAt)) <

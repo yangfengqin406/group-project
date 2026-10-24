@@ -1,0 +1,96 @@
+{
+  "measuredAt": "2026-10-23T15:31:17.580Z",
+  "note": "目录原始字节统计，不代表压缩后的上传包或微信开发者工具验收结果。修改源码后应重新构建再测量。",
+  "sourceStatic": {
+    "fileCount": 167,
+    "bytes": 3317961,
+    "groups": [
+      {
+        "directory": "pets/tailored",
+        "fileCount": 30,
+        "bytes": 685315
+      },
+      {
+        "directory": "pets",
+        "fileCount": 4,
+        "bytes": 612495
+      },
+      {
+        "directory": "plaza",
+        "fileCount": 3,
+        "bytes": 598883
+      },
+      {
+        "directory": "pets/fitted",
+        "fileCount": 72,
+        "bytes": 537031
+      },
+      {
+        "directory": "village",
+        "fileCount": 2,
+        "bytes": 487948
+      },
+      {
+        "directory": "pets/wearables",
+        "fileCount": 50,
+        "bytes": 394818
+      },
+      {
+        "directory": "tabs",
+        "fileCount": 6,
+        "bytes": 1471
+      }
+    ],
+    "largestFiles": [
+      {
+        "path": "src/static/village/room-interiors.webp",
+        "bytes": 457766
+      },
+      {
+        "path": "src/static/plaza/world-phase-one.webp",
+        "bytes": 305788
+      },
+      {
+        "path": "src/static/plaza/pavilion.png",
+        "bytes": 221358
+      },
+      {
+        "path": "src/static/pets/rabbit-atlas.png",
+        "bytes": 189895
+      },
+      {
+        "path": "src/static/pets/capybara-atlas.png",
+        "bytes": 164135
+      },
+      {
+        "path": "src/static/pets/squirrel-atlas.png",
+        "bytes": 144696
+      },
+      {
+        "path": "src/static/pets/tailored/rabbit-heads.png",
+        "bytes": 120730
+      },
+      {
+        "path": "src/static/pets/mushroom-atlas.png",
+        "bytes": 113769
+      }
+    ]
+  },
+  "h5": {
+    "built": true,
+    "fileCount": 221,
+    "bytes": 4028611
+  },
+  "weixin": {
+    "built": true,
+    "fileCount": 362,
+    "bytes": 3795893,
+    "mainPackageRaw": {
+      "fileCount": 362,
+      "bytes": 3795893
+    },
+    "subpackages": [],
+    "mainOver2MiBReference": true,
+    "limitation": "2 MiB 仅作主包原始体积排查参考；实际限制及大小须以当前微信官方规则与开发者工具代码依赖分析、上传结果为准。"
+  }
+}

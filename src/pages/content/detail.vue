@@ -53,11 +53,20 @@
           联系发布者
         </button>
         <button
-          v-if="isOwn && type === 'plan' && item.status === 'open'"
+          v-if="canManagePlan && item.status === 'open'"
           class="primary"
+          :disabled="busy"
           @tap="candidates"
         >
           查看相近计划
+        </button>
+        <button
+          v-if="canManagePlan"
+          class="secondary"
+          :disabled="busy"
+          @tap="editPlan"
+        >
+          编辑计划 / 调整人数
         </button>
         <button
           v-if="!isOwn && type === 'market' && item.status === 'active'"
@@ -80,7 +89,7 @@
           标记交易完成
         </button>
         <button
-          v-if="isOwn && ['open', 'active', 'full'].includes(item.status)"
+          v-if="isOwn && (type === 'plan' ? canManagePlan : ['open', 'active', 'full'].includes(item.status))"
           class="secondary"
           :disabled="busy"
           @tap="finish"
@@ -92,6 +101,14 @@
                 ? '下架'
                 : '标记完成'
           }}
+        </button>
+        <button
+          v-if="canManagePlan"
+          class="secondary"
+          :disabled="busy"
+          @tap="cancelPlan"
+        >
+          取消计划
         </button>
       </view>
     </view>
@@ -113,6 +130,14 @@
         </view>
         <view class="body comment-body">{{ comment.body }}</view>
       </view>
+      <button
+        v-if="commentsCursor"
+        class="secondary comments-more"
+        :disabled="commentsLoading"
+        @tap="loadComments({ reset: false })"
+      >
+        {{ commentsLoading ? '正在读取…' : '更早的线索' }}
+      </button>
       <textarea
         class="input textarea"
         v-model="commentBody"
@@ -132,8 +157,8 @@
   </view>
 </template>
 <script setup>
-import { ref, computed } from 'vue'
-import { onLoad, onShow } from '@dcloudio/uni-app'
+import { ref, computed, watch } from 'vue'
+import { onLoad, onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import DemoNotice from '../../components/DemoNotice.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
 import * as api from '../../services/index.js'
@@ -152,24 +177,43 @@ const type = ref('plan'),
   busy = ref(false),
   selected = ref(false),
   comments = ref([]),
+  commentsCursor = ref(null),
   commentBody = ref(''),
   commentsLoading = ref(false),
-  commentSaving = ref(false)
+  commentSaving = ref(false),
+  planRefreshing = ref(false)
 const isOwn = computed(() => item.value?.ownerId === session.user?.id)
+const canManagePlan = computed(
+  () => isOwn.value && type.value === 'plan' &&
+    !planRefreshing.value && ['open', 'full'].includes(item.value?.status)
+)
+let loadVersion = 0
+let commentsVersion = 0
+let visible = false
 const service = () =>
   api[type.value === 'lost_found' ? 'lostFound' : type.value]
 onLoad((options) => {
   if (contentTypes.includes(options.type)) type.value = options.type
   id.value = options.id || ''
 })
-async function load() {
-  error.value = ''
+async function load({ preserveError = false } = {}) {
+  const version = ++loadVersion
+  const userId = session.user?.id
+  const contentType = type.value
+  const contentId = id.value
+  const current = () => visible && version === loadVersion && userId === session.user?.id &&
+    contentType === type.value && contentId === id.value
+  if (!preserveError) error.value = ''
+  if (contentType === 'plan') planRefreshing.value = true
   try {
-    item.value = await service().get({ id: id.value })
+    const result = await service().get({ id: contentId })
+    if (!current()) return
+    item.value = result
     selected.value = false
     let cursor = null
     do {
       const favorites = await api.favorite.list({ pageSize: 50, cursor })
+      if (!current()) return
       selected.value = favorites.items.some(
         (f) => f.contentType === type.value && f.contentId === id.value
       )
@@ -177,60 +221,122 @@ async function load() {
     } while (cursor && !selected.value)
     if (type.value === 'lost_found') await loadComments()
   } catch (e) {
-    error.value = errorText(e)
+    if (!current()) return
+    if (contentType === 'plan') item.value = null
+    if (!preserveError || !error.value) error.value = errorText(e)
+  } finally {
+    if (current()) planRefreshing.value = false
   }
 }
-async function loadComments() {
+async function loadComments({ reset = true } = {}) {
+  if (type.value !== 'lost_found' || (!reset && (commentsLoading.value || !commentsCursor.value))) return
+  const version = ++commentsVersion
+  const pageVersion = loadVersion
+  const userId = session.user?.id
+  const contentId = id.value
+  const cursor = reset ? null : commentsCursor.value
+  const current = () => visible && version === commentsVersion && pageVersion === loadVersion &&
+    userId === session.user?.id && contentId === id.value && type.value === 'lost_found'
   commentsLoading.value = true
   try {
     const result = await api.comment.list({
-      contentType: type.value,
-      contentId: id.value,
-      pageSize: 50
+      contentType: 'lost_found',
+      contentId,
+      pageSize: 50,
+      cursor
     })
-    comments.value = result.items
+    if (!current()) return
+    const next = reset ? result.items : [...comments.value, ...result.items]
+    comments.value = next.filter((entry, index) => next.findIndex((other) => other.id === entry.id) === index)
+    commentsCursor.value = result.nextCursor
+  } catch (e) {
+    if (current()) error.value = errorText(e)
   } finally {
-    commentsLoading.value = false
+    if (current()) commentsLoading.value = false
   }
 }
 async function sendComment() {
   if (commentSaving.value || !commentBody.value.trim()) return
+  const userId = session.user?.id
+  const contentId = id.value
+  const body = commentBody.value.trim()
+  const pageVersion = loadVersion
+  const current = () => visible && pageVersion === loadVersion && userId === session.user?.id &&
+    contentId === id.value && type.value === 'lost_found'
   commentSaving.value = true
   error.value = ''
   try {
     await api.comment.create({
-      contentType: type.value,
-      contentId: id.value,
-      body: commentBody.value
+      contentType: 'lost_found',
+      contentId,
+      body
     })
-    commentBody.value = ''
+    if (!current()) return
+    if (commentBody.value.trim() === body) commentBody.value = ''
     await loadComments()
   } catch (e) {
-    error.value = errorText(e)
+    if (current()) error.value = errorText(e)
   } finally {
     commentSaving.value = false
   }
 }
-onShow(load)
+watch(() => session.user?.id, () => {
+  ++loadVersion
+  ++commentsVersion
+  item.value = null
+  comments.value = []
+  commentsCursor.value = null
+  commentsLoading.value = false
+  commentBody.value = ''
+  selected.value = false
+  planRefreshing.value = false
+  error.value = ''
+  if (visible) load()
+})
+onShow(() => {
+  visible = true
+  load()
+})
+onHide(() => {
+  visible = false
+  ++loadVersion
+  ++commentsVersion
+  commentsLoading.value = false
+  planRefreshing.value = false
+})
+onUnload(() => {
+  ++loadVersion
+  ++commentsVersion
+})
 async function run(fn) {
   if (busy.value) return
+  const userId = session.user?.id
+  const contentType = type.value
+  const contentId = id.value
+  const version = loadVersion
+  const current = () => visible && version === loadVersion && userId === session.user?.id &&
+    contentType === type.value && contentId === id.value
   busy.value = true
   error.value = ''
   try {
-    await fn()
+    await fn(current)
   } catch (e) {
+    if (!current()) return
     error.value = errorText(e)
+    if (type.value === 'plan' && ['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
+      await load({ preserveError: true })
   } finally {
     busy.value = false
   }
 }
 function contact() {
-  run(async () => {
+  run(async (current) => {
     const c = await api.conversation.open({
       contentType: type.value,
       contentId: id.value,
       peerUserId: item.value.ownerId
     })
+    if (!current()) return
     uni.navigateTo({
       url: `/pages/messages/chat?id=${encodeURIComponent(c.id)}`
     })
@@ -241,70 +347,141 @@ function candidates() {
     url: `/pages/partner/candidates?planId=${encodeURIComponent(id.value)}`
   })
 }
-function reserve() {
-  run(async () => {
-    await api.market.reserve({ id: id.value })
-    uni.showToast({ title: '已提交预约', icon: 'success' })
-    load()
+function editPlan() {
+  if (!canManagePlan.value || busy.value) return
+  uni.navigateTo({
+    url: `/pages/content/publish?type=plan&id=${encodeURIComponent(id.value)}`
   })
 }
+function reserve() {
+  run(async (current) => {
+    await api.market.reserve({ id: id.value })
+    if (!current()) return
+    uni.showToast({ title: '已提交预约', icon: 'success' })
+    await load()
+  })
+}
+function confirmationCurrent() {
+  const version = loadVersion
+  const userId = session.user?.id
+  const contentType = type.value
+  const contentId = id.value
+  return () => visible && version === loadVersion && userId === session.user?.id &&
+    contentType === type.value && contentId === id.value
+}
 function complete() {
+  const same = confirmationCurrent()
   uni.showModal({
     title: '确认交易完成',
     content: '确认标记该商品已交易完成？完成后不可再预约或修改。',
     success: (r) => {
-      if (r.confirm)
-        run(async () => {
-          item.value = await api.market.complete({ id: id.value })
+      if (r.confirm && same())
+        run(async (current) => {
+          const updated = await api.market.complete({ id: id.value })
+          if (current()) item.value = updated
         })
     }
   })
 }
 function toggleFavorite() {
-  run(async () => {
+  run(async (current) => {
     const r = await api.favorite.set({
       contentType: type.value,
       contentId: id.value,
       selected: !selected.value
     })
-    selected.value = r.selected
+    if (current()) selected.value = r.selected
   })
 }
 function report() {
+  const same = confirmationCurrent()
   uni.showModal({
     title: '举报原因',
     editable: true,
     placeholderText: '请填写具体原因',
     success: (r) => {
-      if (r.confirm)
-        run(async () => {
+      if (r.confirm && same())
+        run(async (current) => {
           await api.report.create({
             contentType: type.value,
             contentId: id.value,
             reason: r.content || ''
           })
+          if (!current()) return
           uni.showToast({ title: '已保存举报', icon: 'none' })
         })
     }
   })
 }
 function finish() {
+  if (type.value === 'plan') {
+    confirmPlan('complete')
+    return
+  }
+  const same = confirmationCurrent()
   uni.showModal({
     title: '确认操作',
     content: '确认更新这条内容的状态吗？',
     success: (r) => {
-      if (r.confirm)
-        run(async () => {
+      if (r.confirm && same())
+        run(async (current) => {
           const action =
             type.value === 'lost_found'
               ? 'markReturned'
               : type.value === 'market'
                 ? 'close'
                 : 'complete'
-          item.value = await service()[action]({ id: id.value })
+          const updated = await service()[action]({ id: id.value })
+          if (current()) item.value = updated
         })
     }
   })
+}
+function cancelPlan() {
+  confirmPlan('close')
+}
+function confirmPlan(action) {
+  if (!canManagePlan.value || busy.value) return
+  const planId = id.value
+  const userId = session.user?.id
+  const version = loadVersion
+  const current = () => visible && type.value === 'plan' && planId === id.value && userId === session.user?.id
+  const cancelling = action === 'close'
+  uni.showModal({
+    title: cancelling ? '取消整个计划？' : '确认计划完成',
+    content: cancelling
+      ? '取消后，所有成员的这次活动安排将结束，尚未处理的邀请会失效，计划不能重新开启。这不是退出个人组队。'
+      : '确认这次活动已经完成？完成后停止招募，未处理的邀请会失效，计划不能重新开启。',
+    confirmText: cancelling ? '取消计划' : '确认完成',
+    cancelText: cancelling ? '保留计划' : '再想一下',
+    success: (result) => {
+      if (result.confirm && version === loadVersion && current() && canManagePlan.value)
+        changePlan(action, planId, current)
+    }
+  })
+}
+async function changePlan(action, planId, current) {
+  if (busy.value) return
+  const version = ++loadVersion
+  busy.value = true
+  error.value = ''
+  try {
+    const updated = await api.plan[action]({ id: planId })
+    if (!current()) return
+    if (version === loadVersion) item.value = updated
+    else await load()
+  } catch (e) {
+    if (!current()) return
+    if (version !== loadVersion) {
+      await load()
+      return
+    }
+    error.value = errorText(e)
+    if (['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
+      await load({ preserveError: true })
+  } finally {
+    busy.value = false
+  }
 }
 function preview(image) {
   uni.previewImage({ current: image, urls: item.value.images })
@@ -316,6 +493,7 @@ const statusLabels = {
   open: '进行中',
   full: '已满员',
   completed: '已完成',
+  expired: '已过期',
   reserved: '已预约'
 }
 const lostCategories = { card: '卡片', key: '钥匙', misc: '杂物' }
@@ -346,4 +524,5 @@ const lostKindLabel = (kind) => lostKinds[kind] || '失物'
 .comment-state + .textarea {
   margin-top: 18px;
 }
+.comments-more { margin: 14px 0; }
 </style>

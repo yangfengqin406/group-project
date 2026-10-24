@@ -1,0 +1,90 @@
+{
+  "title": "A质量改进本机H5实际点击验收",
+  "startedAt": "2026-10-23T14:59:47.886Z",
+  "finishedAt": "2026-10-23T14:59:59.649Z",
+  "status": "passed",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "cases": [
+    {
+      "name": "搭子手机首卡与筛选",
+      "status": "passed",
+      "details": {
+        "firstCardY": 437.59375,
+        "headerHeight": 120
+      }
+    },
+    {
+      "name": "失物手机首卡与筛选",
+      "status": "passed",
+      "details": {
+        "firstCardY": 373.59375,
+        "headerHeight": 120
+      }
+    },
+    {
+      "name": "二手手机首卡与筛选",
+      "status": "passed",
+      "details": {
+        "firstCardY": 385.59375,
+        "headerHeight": 120
+      }
+    },
+    {
+      "name": "推荐摘要",
+      "status": "passed",
+      "details": "我的计划、重叠时间和邀请影响可见"
+    },
+    {
+      "name": "邀请确认",
+      "status": "passed",
+      "details": "取消确认不加入，再确认后目标2/2且原计划停止招募"
+    },
+    {
+      "name": "计划编辑扩容",
+      "status": "passed",
+      "details": "实际编辑满员2/2为2/3，状态恢复招募"
+    },
+    {
+      "name": "统一留言与最近消息",
+      "status": "passed",
+      "details": "从二手原内容建立会话，实际发送后信箱显示最近留言"
+    },
+    {
+      "name": "下一关奖励",
+      "status": "passed",
+      "details": "空衣柜的首关奖励明确仅预览，无提前穿戴"
+    },
+    {
+      "name": "广场地图",
+      "status": "passed",
+      "details": "390px探索与全景正常切换"
+    },
+    {
+      "name": "桌面布局",
+      "status": "passed",
+      "details": "1280px无横向页面溢出"
+    }
+  ],
+  "screenshots": [
+    "mobile-partner.png",
+    "mobile-lost.png",
+    "mobile-market.png",
+    "invite-confirmation.png",
+    "plan-expanded.png",
+    "message-preview.png",
+    "wardrobe-next-goal.png",
+    "plaza-overview.png"
+  ],
+  "runtimeExceptions": [],
+  "limitations": [
+    "本机虚构身份与演示数据，不代表真实后端或跨设备验收",
+    "未执行微信开发者工具或真机验收"
+  ],
+  "attemptNotes": [
+    "首次脚本按纯文字匹配带图标地图按钮失败，改为包含匹配后通过。",
+    "再次脚本未等确认框过渡动画稳定，确认点击未命中；加入稳定等待后完整流程通过。两次失败原始证据保留本机，未把失败当成功。"
+  ]
+}

@@ -64,13 +64,14 @@
       </button>
     </view>
     <ContentCard v-for="item in items" :key="item.id" :item="item" />
-    <EmptyState v-if="!items.length && !error" title="还没有发布" />
-    <button v-if="cursor" class="secondary" @tap="loadMore">加载更多</button>
+    <view v-if="loading" class="muted">正在整理小屋…</view>
+    <EmptyState v-if="!items.length && !error && !loading" title="还没有发布" />
+    <button v-if="cursor" class="secondary" :disabled="loading" @tap="loadMore">加载更多</button>
   </view>
 </template>
 <script setup>
-import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { ref, watch } from 'vue'
+import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { user, myContent } from '../../services/index.js'
 import { demoUsers, switchDemoUser, resetDemo } from '../../mock/index.js'
 import { config } from '../../config/index.js'
@@ -81,13 +82,17 @@ import DemoNotice from '../../components/DemoNotice.vue'
 import ContentCard from '../../components/ContentCard.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
+import { session } from '../../utils/session.js'
 const profile = ref(null),
   items = ref([]),
   error = ref(''),
   users = ref([]),
   cursor = ref(null),
+  loading = ref(false),
   contentType = ref(''),
   isMock = config.apiMode === 'mock'
+let loadVersion = 0
+let visible = false
 const filters = [
   { label: '全部', value: '' },
   { label: '二手', value: 'market' },
@@ -96,27 +101,49 @@ const filters = [
   { label: '技能', value: 'help' }
 ]
 async function load() {
+  const version = ++loadVersion
+  const userId = session.user?.id
+  const filter = contentType.value
+  const current = () => version === loadVersion && userId === session.user?.id && filter === contentType.value
+  loading.value = true
   error.value = ''
+  items.value = []
+  cursor.value = null
   try {
-    profile.value = await user.getProfile()
-    const r = await myContent.list({ contentType: contentType.value })
+    const [p, r] = await Promise.all([
+      user.getProfile(),
+      myContent.list({ contentType: filter })
+    ])
+    if (!current()) return
+    profile.value = p
     items.value = r.items
     cursor.value = r.nextCursor
     users.value = demoUsers()
   } catch (e) {
-    error.value = errorText(e)
+    if (current()) error.value = errorText(e)
+  } finally {
+    if (current()) loading.value = false
   }
 }
 async function loadMore() {
+  if (loading.value || !cursor.value) return
+  const version = loadVersion
+  const userId = session.user?.id
+  const current = () => version === loadVersion && userId === session.user?.id
+  loading.value = true
   try {
     const r = await myContent.list({
       contentType: contentType.value,
       cursor: cursor.value
     })
-    items.value.push(...r.items)
+    if (!current()) return
+    const known = new Set(items.value.map((item) => item.id))
+    items.value.push(...r.items.filter((item) => !known.has(item.id)))
     cursor.value = r.nextCursor
   } catch (e) {
-    error.value = errorText(e)
+    if (current()) error.value = errorText(e)
+  } finally {
+    if (current()) loading.value = false
   }
 }
 function setFilter(value) {
@@ -160,7 +187,17 @@ async function askSubscription() {
     error.value = errorText(e)
   }
 }
-onShow(load)
+watch(() => session.user?.id, () => {
+  ++loadVersion
+  profile.value = null
+  items.value = []
+  cursor.value = null
+  loading.value = false
+  if (visible) load()
+})
+onShow(() => { visible = true; load() })
+onHide(() => { visible = false; ++loadVersion; loading.value = false })
+onUnload(() => { ++loadVersion })
 </script>
 <style scoped>
 .home-identity { justify-content: flex-start; }

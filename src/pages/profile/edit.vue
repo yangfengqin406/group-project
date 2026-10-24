@@ -48,12 +48,14 @@
   </view>
 </template>
 <script setup>
-import { reactive, ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { computed, reactive, ref, watch } from 'vue'
+import { onShow, onUnload } from '@dcloudio/uni-app'
 import { upload, user } from '../../services/index.js'
 import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
+import { session } from '../../utils/session.js'
+import { useUnsavedChanges } from '../../utils/use-unsaved-changes.js'
 const profile = ref(null),
   form = reactive({
     nickname: '',
@@ -65,10 +67,20 @@ const profile = ref(null),
   avatarUrl = ref(''),
   error = ref(''),
   saving = ref(false)
+const snapshot = () => JSON.stringify([form.nickname, form.bio, skillInput.value, form.avatarImageId])
+const saved = ref('')
+useUnsavedChanges(computed(() => Boolean(profile.value) && snapshot() !== saved.value))
+let revision = 0
+let loading = false
 async function load() {
+  if (loading) return
+  const version = ++revision
+  const userId = session.user?.id
+  loading = true
   error.value = ''
   try {
     const p = await user.getProfile()
+    if (version !== revision || userId !== session.user?.id) return
     profile.value = p
     form.nickname = p.nickname || ''
     form.bio = p.bio || ''
@@ -76,30 +88,40 @@ async function load() {
     form.avatarImageId = p.avatarImageId || ''
     avatarUrl.value = p.avatarUrl || ''
     skillInput.value = (p.skillTags || []).join(',')
+    saved.value = snapshot()
   } catch (e) {
-    error.value = errorText(e)
+    if (version === revision) error.value = errorText(e)
+  } finally {
+    if (version === revision) loading = false
   }
 }
 function chooseAvatar() {
+  const version = revision
+  const userId = session.user?.id
   uni.chooseImage({
     count: 1,
     sizeType: ['compressed'],
     success: async (r) => {
+      if (version !== revision || userId !== session.user?.id) return
       try {
         const result = await upload.create({
           usage: 'avatar',
           data: r.tempFilePaths[0]
         })
+        if (version !== revision || userId !== session.user?.id) return
         form.avatarImageId = result.imageId
         avatarUrl.value = result.url
       } catch (e) {
-        error.value = errorText(e)
+        if (version === revision && userId === session.user?.id) error.value = errorText(e)
       }
     }
   })
 }
 async function save() {
   if (saving.value) return
+  const version = revision
+  const userId = session.user?.id
+  const submitted = snapshot()
   saving.value = true
   error.value = ''
   try {
@@ -113,15 +135,27 @@ async function save() {
       skillTags: tags,
       avatarImageId: form.avatarImageId || undefined
     })
+    if (version !== revision || userId !== session.user?.id) return
+    saved.value = submitted
     uni.showToast({ title: '已保存', icon: 'success' })
-    setTimeout(() => uni.navigateBack(), 600)
+    setTimeout(() => {
+      if (version === revision && userId === session.user?.id && snapshot() === saved.value) uni.navigateBack()
+    }, 600)
   } catch (e) {
-    error.value = errorText(e)
+    if (version === revision) error.value = errorText(e)
   } finally {
     saving.value = false
   }
 }
-onShow(load)
+watch(() => session.user?.id, () => {
+  ++revision
+  profile.value = null
+  loading = false
+  load()
+})
+// 选头像或切回前台不会重新覆盖正在填写的资料。
+onShow(() => { if (!profile.value) load() })
+onUnload(() => { ++revision })
 </script>
 <style scoped>
 .avatar {

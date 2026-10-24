@@ -1,0 +1,132 @@
+{
+  "title": "A 10月24日潜水双指 H5 浏览器验收",
+  "origin": "http://127.0.0.1:5212",
+  "startedAt": "2026-10-24T09:35:37.223Z",
+  "cases": [
+    {
+      "name": "先发射后游动双指",
+      "status": "passed",
+      "details": {
+        "initial": {
+          "x": 9,
+          "y": 54,
+          "bubbleCount": 0
+        },
+        "together": {
+          "x": 13.666904755831204,
+          "y": 49.33309524416882,
+          "bubbleCount": 1
+        },
+        "target": {
+          "x": 121.89999999999999,
+          "y": 287.90625,
+          "id": 2
+        },
+        "board": {
+          "x": 31,
+          "y": 190.40625,
+          "width": 606,
+          "height": 390
+        }
+      }
+    },
+    {
+      "name": "松开发射手指仍继续游动",
+      "status": "passed",
+      "details": {
+        "together": {
+          "x": 13.666904755831204,
+          "y": 49.33309524416882,
+          "bubbleCount": 1
+        },
+        "fireReleased": {
+          "x": 14.444722215136405,
+          "y": 16.655277784863685,
+          "bubbleCount": 0
+        }
+      }
+    },
+    {
+      "name": "全部松手停止游动",
+      "status": "passed",
+      "details": {
+        "stopped": {
+          "x": 14.444722215136405,
+          "y": 16.655277784863685,
+          "bubbleCount": 0
+        },
+        "still": {
+          "x": 14.444722215136405,
+          "y": 16.655277784863685,
+          "bubbleCount": 0
+        }
+      }
+    },
+    {
+      "name": "暂停与明确继续",
+      "status": "passed",
+      "details": {
+        "oxygenWhilePaused": "氧气 36秒"
+      }
+    }
+  ],
+  "screenshots": [
+    "fire-first-dual-touch.png",
+    "fire-released-water-retained.png",
+    "dive-paused.png"
+  ],
+  "limitations": [
+    "本机虚构身份与演示数据，不代表真实后端或跨设备验收",
+    "未执行微信开发者工具或真机验收",
+    "部分手指松开采用浏览器DOM合成TouchEvent；其他开始/全部松开采用CDP触摸事件，非微信真机"
+  ],
+  "touchTrace": [
+    {
+      "type": "touchstart",
+      "target": "fire",
+      "touches": [
+        1
+      ],
+      "changed": [
+        1
+      ]
+    },
+    {
+      "type": "touchstart",
+      "target": "water",
+      "touches": [
+        1,
+        2
+      ],
+      "changed": [
+        2
+      ]
+    },
+    {
+      "type": "touchend",
+      "target": "fire",
+      "touches": [
+        2
+      ],
+      "changed": [
+        1
+      ]
+    }
+  ],
+  "partialRelease": {
+    "together": {
+      "x": 13.666904755831204,
+      "y": 49.33309524416882,
+      "bubbleCount": 1
+    },
+    "fireReleased": {
+      "x": 14.444722215136405,
+      "y": 16.655277784863685,
+      "bubbleCount": 0
+    }
+  },
+  "partialReleaseMethod": "Native CDP touch starts; explicit DOM TouchEvent fires partial touchend because this browser CDP touchEnd ends all contacts.",
+  "status": "passed",
+  "runtimeExceptions": [],
+  "finishedAt": "2026-10-24T09:35:44.913Z"
+}
