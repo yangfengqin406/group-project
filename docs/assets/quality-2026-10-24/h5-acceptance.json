@@ -1,0 +1,71 @@
+{
+  "title": "A 10月24日质量续修 H5 本机演示验收",
+  "origin": "http://127.0.0.1:5212",
+  "startedAt": "2026-10-24T09:23:16.365Z",
+  "cases": [
+    {
+      "name": "跨页来源筛选",
+      "status": "passed",
+      "details": "21条会话，原第一页以外的失物会话可直接筛选出来"
+    },
+    {
+      "name": "会话活跃排序",
+      "status": "passed",
+      "details": "旧失物会话收到最新留言后排在全部会话首位"
+    },
+    {
+      "name": "双面绘画与衣柜重建",
+      "status": "passed",
+      "details": "实际画布各画两笔，切面并打开/收起衣柜后正面仍可撤销"
+    },
+    {
+      "name": "离开保护",
+      "status": "passed",
+      "details": "未保存画稿离开有确认，继续搭配后仍在编辑页"
+    },
+    {
+      "name": "画稿保存与还原取消",
+      "status": "passed",
+      "details": "取消还原后保存，服务实读正面1像素、背面2像素"
+    },
+    {
+      "name": "素材浏览器解码",
+      "status": "passed",
+      "details": "160张重编码图逐一加载并核对像素数量，未缺图"
+    },
+    {
+      "name": "穿戴视觉复核",
+      "status": "passed",
+      "details": "实际PetAvatar渲染四宠、三衣身、正背面和发型/鞋/包/手持，保存总览截图"
+    },
+    {
+      "name": "广场与四屋回归",
+      "status": "passed",
+      "details": "390px页面可打开、底图与室内图加载，无横向页面溢出"
+    }
+  ],
+  "screenshots": [
+    "messages-filtered.png",
+    "pet-history.png",
+    "pet-unsaved-confirmation.png",
+    "pet-wearable-gallery.png",
+    "home-mobile.png"
+  ],
+  "limitations": [
+    "本机虚构身份与演示数据，不代表真实后端或跨设备验收",
+    "未执行微信开发者工具或真机验收"
+  ],
+  "status": "passed",
+  "runtimeExceptions": [],
+  "finishedAt": "2026-10-24T09:23:30.979Z",
+  "attempts": [
+    {
+      "kind": "product",
+      "result": "首次冷启动出现身份同步重入导致栈溢出，已修并新增两条先失败后通过的回归，重新完整执行。"
+    },
+    {
+      "kind": "harness",
+      "result": "渲染总览验收脚本一次括号语法错误，修正后完整8项通过。"
+    }
+  ]
+}

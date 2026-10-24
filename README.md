@@ -1,6 +1,8 @@
-# 校园像素生活广场 · uni-app 项目骨架
+# 校园生活广场 · uni-app 团队项目
 
-这是可运行的源码骨架，不是只有文档的旧压缩包。技术方案依据课程要求改为 **uni-app + Vue 3 + JavaScript**，同一套源码构建 H5 和微信小程序。
+使用 **uni-app + Vue 3 + JavaScript**，同一套源码构建H5和微信小程序。团队成员为A（杨凤琴）、B（孙瑞）、C（姜澜）。
+
+**[浏览main阶段演示](https://yangfengqin406.github.io/group-project/#/)**：已通过PR #17/#18发布；虚构数据只存在各浏览器，不能跨设备同步。10月22—24日A的质量与计划/邀请改进在草稿[PR #15](https://github.com/yangfengqin406/group-project/pull/15)，尚未更新到公网。成员分支经审阅合入main后才重新发布，说明见[部署文档](docs/deployment.md)。
 
 **[团队周报（监督查看）](docs/weekly-log.md)**：按周查看A/B/C完成内容、成果证据、问题和下一步。固定入口为[main分支周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)；详细测试过程见[验证记录](docs/verification.md)。
 
@@ -9,7 +11,7 @@
 ## 先跑起来
 
 1. 安装 Node.js **22.22.0**；三人统一这个版本（`.nvmrc`），本包也按此版本验证。
-2. 解压后用 VS Code 打开 `campus-plaza-starter` 这一层，确保能看到 package.json。
+2. clone团队仓库后，打开能看到package.json的项目根目录；已有仓库不要重新git init。
 3. 在这个文件夹的终端执行：
 
 ```bash
@@ -42,6 +44,7 @@ npm run dev:mp-weixin
 - 共用内容卡片、空状态、错误提示、导航、个人状态和消息入口。
 - 各模块接口调用位置、统一 RPC 请求层和框架无关的业务契约。
 - 本机演示：发布、查询、收藏、举报、相近计划推荐、邀请与确认、关联内容的留言和通知。
+- 10月22日A第二阶段首批在A工作分支完善公开计划推荐、取消确认、容量/到期状态及失效邀请；返回推荐会恢复待确认标记，网络结果不明的邀请重试复用操作编号。具体交付与验证见[团队周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)和[验证记录](docs/verification.md)，真实登录与数据库事务仍待接入。
 - 锁定依赖、Git 规则、任务说明、两端构建命令、GitHub 检查和关键业务测试。
 
 ## 还没有完成什么
@@ -60,9 +63,9 @@ npm run dev:mp-weixin
 
 | 目录 | 用途 | 协调人 |
 | --- | --- | --- |
-| src/pages/plaza、partner、help | 广场、搭子、技能互助 | A |
-| src/pages/market、home、profile | 二手、账号、个人资料 | B |
-| src/pages/lost、messages | 失物、留言、消息 | C |
+| src/pages/plaza、partner、help | 广场、搭子、技能互助 | A（杨凤琴） |
+| src/pages/market、home、profile | 二手、账号、个人资料 | B（孙瑞） |
+| src/pages/lost、messages | 失物、留言、消息 | C（姜澜） |
 | src/pages/content | 共用发布/详情，修改需同步 | A/B/C 协调 |
 | src/services | 模块接口调用，按模块归属 | 对应模块负责人 |
 | src/services/transport.js、config | 请求与环境配置 | B 协调 |
@@ -72,7 +75,7 @@ npm run dev:mp-weixin
 
 开始开发请看 [docs/start-here.md](docs/start-here.md)。后端接入看 [docs/backend.md](docs/backend.md)。最终提交看 [docs/deployment.md](docs/deployment.md)。
 
-需求、数据模型、接口、实现边界、验收与协作说明均在 docs/；tasks.csv 是按三人和两周划分的待办表，实际姓名需团队填写。
+需求、数据模型、接口、实现边界、验收与协作说明均在docs/；[tasks.csv](tasks.csv)按团队分工记录进度，监督人统一查看[main团队周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)。A对B/C共用页面的边界修复或画风协作不改写原业务归属。
 
 ## 上传 GitHub
 

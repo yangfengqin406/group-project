@@ -36,6 +36,7 @@ export function dispatchDive(
     '请只提供潜水操作所需参数，不能指定身份或奖励'
   )
   db.diveRuns ||= {}
+  db.diveSettlements ||= {}
   function currentState() {
     const wardrobe = getWardrobeState(db, userId)
     const clearedLevels = [...wardrobe.clearedLevels]
@@ -48,7 +49,8 @@ export function dispatchDive(
       clearedLevels,
       unlockedLevel,
       pearls: wardrobe.pearls,
-      activeRun: clone(db.diveRuns[userId] || null)
+      activeRun: clone(db.diveRuns[userId] || null),
+      lastSettlement: clone(db.diveSettlements[userId] || null)
     }
   }
   if (action === 'getState') return currentState()
@@ -107,6 +109,12 @@ export function dispatchDive(
     }
     wardrobe = result.state
   } else wardrobe = getWardrobeState(db, userId)
+  db.diveSettlements[userId] = {
+    runId: run.id,
+    levelId: run.levelId,
+    status: replay.status,
+    reward: clone(reward)
+  }
   delete db.diveRuns[userId]
   return { status: replay.status, reward, wardrobe, state: currentState() }
 }

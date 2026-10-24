@@ -37,12 +37,44 @@
       <view class="goal-heading">
         <view class="goal-title">潜水首通收藏</view>
         <text class="goal-progress">已通关 {{ clearedCount }}/3</text>
+      </view>
+      <view v-if="nextGoal" class="next-goal" :data-next-goal="nextGoal.level">
+        <view class="next-goal-stage">
+          <view class="next-goal-model">
+            <PetAvatar
+              :appearance="previewPet"
+              :wardrobe="nextGoalWardrobe"
+              :view="view"
+            />
+          </view>
+          <text class="next-goal-tag">
+            {{ nextGoalHasUnowned ? '未拥有装扮 · 仅预览' : '首通搭配 · 仅预览' }}
+          </text>
+        </view>
+        <view class="next-goal-details">
+          <text class="next-goal-title">下一站，第{{ levelLabels[nextGoal.level] }}关</text>
+          <text class="next-goal-names">{{ nextGoal.names }}</text>
+          <text class="goal-pearls">首次通关获得装扮和 {{ nextGoal.pearls }} 珍珠</text>
+          <button
+            class="adventure-action"
+            :disabled="Boolean(busy)"
+            @tap="adventure"
+          >
+            去潜水闯关
+          </button>
+        </view>
+      </view>
+      <view v-else class="goals-completed">
+        <view>
+          <view class="next-goal-title">三关首通收藏已完成</view>
+          <view class="goal-pearls">重游攒珍珠，挑选更多喜欢的装扮。</view>
+        </view>
         <button
           class="adventure-action"
           :disabled="Boolean(busy)"
           @tap="adventure"
         >
-          去潜水闯关
+          重游攒珍珠
         </button>
       </view>
       <view
@@ -210,6 +242,20 @@ const clearedCount = computed(
 const nextLevel = computed(
   () => firstClearRules.find((goal) => !hasCleared(goal.level))?.level || null
 )
+const nextGoal = computed(() =>
+  firstClearGoals.value.find((goal) => goal.level === nextLevel.value)
+)
+const nextGoalWardrobe = computed(() => {
+  const equipped = { ...state.value?.equipped }
+  for (const id of nextGoal.value?.items || []) {
+    const item = items.value.find((entry) => entry.id === id)
+    if (item) equipped[item.slot] = item.id
+  }
+  return equipped
+})
+const nextGoalHasUnowned = computed(() =>
+  nextGoal.value?.items.some((id) => !isOwned(id)) || false
+)
 const isLevelLocked = (item) =>
   item.unlockLevel > 0 && !hasCleared(item.unlockLevel)
 const missingPearls = (item) =>
@@ -374,10 +420,67 @@ onUnmounted(() => {
   color: #7d896e;
   font-size: 10px;
 }
+.next-goal {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 10px 0 12px;
+}
+.next-goal-stage {
+  flex: 0 0 132px;
+  height: 150px;
+  position: relative;
+  border-radius: 50% 50% 12px 12px;
+  background: #e3e9d3;
+}
+.next-goal-model {
+  position: absolute;
+  top: 4px;
+  left: calc(50% - 54px);
+  width: 108px;
+  height: 122px;
+}
+.next-goal-tag {
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  font-size: 10px;
+  text-align: center;
+  color: #65785b;
+}
+.next-goal-details {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.next-goal-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.next-goal-names {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #66785d;
+}
+.goals-completed {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  line-height: 1.7;
+}
+.goals-completed > view {
+  flex: 1;
+}
 .adventure-action {
   min-height: 36px;
   padding: 8px 10px;
-  margin: 0 0 0 auto;
+  margin: 2px 0 0;
   line-height: 1.4;
   border-radius: 8px;
   background: #d8e7d5;
@@ -579,6 +682,16 @@ button:focus-visible {
   }
   .adventure-goals {
     padding: 10px;
+  }
+  .next-goal {
+    gap: 10px;
+  }
+  .next-goal-stage {
+    flex-basis: 114px;
+    height: 144px;
+  }
+  .next-goal-title {
+    font-size: 13px;
   }
   .goal-row {
     gap: 7px;

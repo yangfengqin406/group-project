@@ -1,5 +1,6 @@
 <template>
-  <view class="page">
+  <view class="page village-page village-chat">
+    <VillageHeader kind="messages" title="邻里留言" subtitle="围绕原来的发布，好好说句话。" compact />
     <DemoNotice />
     <view v-if="error" class="error">{{ error }}</view>
     <view
@@ -39,7 +40,7 @@
         maxlength="1000"
       />
       <view class="actions">
-        <button class="primary" :disabled="sending || !body.trim()" @tap="send">
+        <button class="primary" :disabled="sending || !current || !body.trim()" @tap="send">
           发送留言
         </button>
       </view>
@@ -47,8 +48,8 @@
   </view>
 </template>
 <script setup>
-import { ref } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
+import { ref, watch } from 'vue'
+import { onLoad, onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { conversation, message } from '../../services/index.js'
 import {
   contentNames,
@@ -59,6 +60,8 @@ import {
 } from '../../utils/routes.js'
 import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
+import VillageHeader from '../../components/village/VillageHeader.vue'
+import { session } from '../../utils/session.js'
 const id = ref(''),
   current = ref(null),
   items = ref([]),
@@ -67,23 +70,44 @@ const id = ref(''),
   sending = ref(false),
   loading = ref(false),
   cursor = ref(null)
-onLoad(async (options) => {
-  id.value = options.id
+let loadVersion = 0
+let visible = false
+let initialized = false
+let pendingSend = null
+async function initialize() {
+  const version = ++loadVersion
+  const userId = session.user?.id
+  const currentRequest = () => version === loadVersion && userId === session.user?.id
+  loading.value = true
+  current.value = null
+  items.value = []
+  cursor.value = null
+  error.value = ''
   try {
     let next = null
     do {
       const r = await conversation.list({ cursor: next })
+      if (!currentRequest()) return
       current.value = r.items.find((c) => c.id === id.value) || current.value
       next = r.nextCursor
     } while (next && !current.value)
     if (!current.value) throw new Error('会话不存在或没有权限')
     await load(true)
   } catch (e) {
-    error.value = errorText(e)
+    if (currentRequest()) error.value = errorText(e)
+  } finally {
+    if (currentRequest()) loading.value = false
   }
+}
+onLoad((options) => {
+  id.value = options.id
 })
 async function load(reset) {
-  if (loading.value) return
+  // 刷新必须使旧读取失效，发送成功后不能被较早的列表覆盖。
+  if (!reset && (loading.value || !cursor.value)) return
+  const version = reset ? ++loadVersion : loadVersion
+  const userId = session.user?.id
+  const currentRequest = () => version === loadVersion && userId === session.user?.id
   loading.value = true
   error.value = ''
   try {
@@ -91,30 +115,57 @@ async function load(reset) {
       conversationId: id.value,
       cursor: reset ? null : cursor.value
     })
-    items.value = reset ? r.items : [...items.value, ...r.items]
+    if (!currentRequest()) return
+    const known = new Set(reset ? [] : items.value.map((item) => item.id))
+    items.value = [...(reset ? [] : items.value), ...r.items.filter((item) => !known.has(item.id))]
     cursor.value = r.nextCursor
   } catch (e) {
-    error.value = errorText(e)
+    if (currentRequest()) error.value = errorText(e)
   } finally {
-    loading.value = false
+    if (currentRequest()) loading.value = false
   }
 }
 async function send() {
-  if (sending.value) return
+  if (sending.value || !current.value || !body.value.trim()) return
+  const userId = session.user?.id
+  const conversationId = id.value
+  const text = body.value
+  const currentRequest = () => userId === session.user?.id && conversationId === id.value && visible
+  const fingerprint = JSON.stringify([userId, conversationId, text])
+  if (pendingSend?.fingerprint !== fingerprint)
+    pendingSend = { fingerprint, key: idempotencyKey() }
   sending.value = true
   error.value = ''
   try {
     await message.send({
-      conversationId: id.value,
-      body: body.value,
-      idempotencyKey: idempotencyKey()
+      conversationId,
+      body: text,
+      idempotencyKey: pendingSend.key
     })
-    body.value = ''
+    pendingSend = null
+    if (!currentRequest()) return
+    if (body.value === text) body.value = ''
     await load(true)
   } catch (e) {
-    error.value = errorText(e)
+    if (['INVALID_ARGUMENT', 'FORBIDDEN', 'NOT_FOUND', 'CONFLICT', 'UNAUTHENTICATED'].includes(e?.code)) pendingSend = null
+    if (currentRequest()) error.value = errorText(e)
   } finally {
     sending.value = false
   }
 }
+watch(() => session.user?.id, () => {
+  ++loadVersion
+  body.value = ''
+  items.value = []
+  current.value = null
+  pendingSend = null
+  if (visible) initialize()
+})
+onShow(() => {
+  visible = true
+  if (!initialized || !current.value) { initialized = true; initialize() }
+  else load(true)
+})
+onHide(() => { visible = false; ++loadVersion; loading.value = false })
+onUnload(() => { ++loadVersion; pendingSend = null })
 </script>

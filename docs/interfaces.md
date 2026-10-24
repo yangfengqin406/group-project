@@ -20,7 +20,7 @@
 
 - 新增 A 维护的 `pet.get()`、`pet.save(appearance)`，统一通过 `src/services/pet.js` 调用。返回当前账号的 `{ species, palette, feature, accessory, name }`，不接受指定其他用户或作者；尚未保存时返回默认糯叶兔外观。演示数据按虚构账号分别保存，旧演示存档无宠物字段时仍可读取默认值。
 - `species` 为 mushroom/capybara/rabbit/squirrel；`palette`、`feature`（耳朵或蘑菇帽型）、`accessory` 使用 `src/utils/pet-appearance.js` 中明确允许的组合，名称去首尾空白后为 1～12 个 Unicode 字符。无效外观保存返回 INVALID_ARGUMENT，不影响上一次保存。
-- 页面编辑的是草稿；切换物种时采用该物种的默认耳朵/帽型，保留配色、配饰和名字；点击“保存并去广场”成功后才生效。页面内“回到广场”会确认放弃草稿；系统返回离开不保存修改。保存失败保留草稿并显示错误。
+- 页面编辑的是草稿；切换物种时采用该物种的默认耳朵/帽型，保留配色、配饰和名字；点击“保存并去广场”成功后才生效。页面内离开与还原先确认，系统返回/刷新按平台能力提醒，不自动保存；衣柜穿戴独立自动保存。原创正背面各保留20步页面内撤销历史，切面/打开衣柜不清空，导入新图仅重置对应面；不新增业务存储。保存失败保留草稿并显示错误，旧账号的导入/保存响应不能覆盖新账号。
 - 新页面 `/pages/pet/index` 从“自己的家 → 我的宠物”和广场入口进入，不新增房子或底部栏目。广场每次显示读取当前账号已保存的外观，NPC 仍为装饰角色。
 - 真实模式继续走现有 RPC；后端尚未实现这两个方法时必须报错，不能显示演示保存成功。本次不改 User 公开字段、登录/上传与消息接口。
 - 原创宠物增加 `species: 'custom'`，固定 `palette: 'cream'`、`feature: 'art'`、`accessory: 'none'`，增加 `art: { front: ArtFrame, back: ArtFrame | null }`。预设四款保持既有五字段。ArtFrame 为 `{type:'pixels',pixels:Array<1024>}`（32×32，像素为允许色板十六进制或 null）或 `{type:'png',data:'data:image/png;base64,...'}`。至少有非空正面才可保存；背面可后补。
@@ -51,7 +51,8 @@
 - `wardrobe.getState()` → `{catalog,owned:[{id,count}],equipped:{hair,head,outfit,feet,bag,hand,charm},pearls,clearedLevels:[1,2,3]}`。`wardrobe.equip({slot,itemId:string|null})` → state，只能穿已拥有且槽位匹配的物品；null摘下该槽。`wardrobe.redeem({itemId})` → state，按目录价格扣珍珠，重复兑换已拥有物不重复扣款；不能伪造价格/余额/身份。
 - 旧 fishing.collection 的荷叶/芦苇结/水泡星迁移为衣柜拥有物，旧单件佩戴迁移到对应槽，不清空存档、不重复累计；后续钓获进入同一衣柜。fishing旧5方法保留兼容。`PetAvatar` 新可选 `wardrobe:Object|null`；传入时按衣柜多槽显示，否则保留旧ornament。新bag覆盖旧satchel，新head覆盖旧flower，避免同部位叠两件。
 - 四款预设改为参照用户概念图的透明精绘像素插画，提供真实正背面及对应耳型/帽型；保留四种配色显示（cream标为“原色”）。原创画布/PNG继续可用；衣柜为独立层，不伪造原创背面。
-- `dive.getState()` → `{clearedLevels,unlockedLevel,pearls,activeRun:Run|null}`；`dive.start({levelId:1|2|3})` → `Run:{id,levelId,seed,startedAt,expiresAt}`，只可开已解锁关卡，新run使旧run失效。每关为固定步长50ms的泡泡冒险：方向操作、发射泡泡、怪鱼/海胆碰撞、珍珠收集、找到出口；3爱心与氧气时限。
+- `dive.getState()` → `{clearedLevels,unlockedLevel,pearls,activeRun:Run|null,lastSettlement?:null|{runId,levelId,status:'cleared'|'failed',reward:{firstClear,items:[id],pearls}|null}}`；lastSettlement为当前身份最近一次核验结算的只读回执，旧存档无回执可为null。界面只为当前已发起且已结束的同一runId/levelId恢复结果，不根据珍珠或历史首通推断本局成功；隐藏期间或结果不明先读回执，读取衣柜同步展示，不重复发奖。重复finish仍返回CONFLICT，新局不能套用旧回执。
+- `dive.start({levelId:1|2|3})` → `Run:{id,levelId,seed,startedAt,expiresAt}`，只可开已解锁关卡，新run使旧run失效。每关为固定步长50ms的泡泡冒险：方向操作、发射泡泡、怪鱼/海胆碰撞、珍珠收集、找到出口；3爱心与氧气时限。
 - `dive.finish({runId,ticks,trace})` → `{status:'cleared'|'failed',reward:{firstClear,items:[id],pearls}|null,wardrobe:WardrobeState,state:DiveState}`。trace为输入改变事件数组 `{tick,dx,dy,fire}`，dx/dy为-1..1，fire布尔；工具 `src/utils/dive-game.js` 用 seed 重放固定步长输入核验结果。服务侧拒绝超长/越界/旧或他人编号、客户端直接提交成功/奖励；编号结算一次，失败不发奖。演示回放不等同生产防作弊或在线服务器。
 - 首通L1送sailor-shirt＋shell-shoes及30珍珠；L2送cloud-bun＋shell-pouch及45珍珠；L3送shell-crown＋star-wand＋pearl-badge及60珍珠。重玩通关分别8/12/18珍珠，不重复发首通套装；失败不扣已拥有装扮，不消耗购买资源。全为不可交易本机装扮，无付费或真实货币。
 - `FishingPond` 与宠物收纳袋复用分类衣柜，池边增加“潜水闯关”入口；仍不新增业务房子或路由，潜水以独立弹层打开。亭子真人麻将不属于本轮。
@@ -91,7 +92,7 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 | user.listPublicContent | `{userId,cursor?,pageSize?}` | 该用户公开发布分页；不包含私有内容 |
 | upload.create | `{ usage: 'content'|'avatar', data }` | `{ imageId, url }`；当前mock仅检查用途/非空数据并记录本机临时地址，尚未实现文件类型/大小检查或云存储；真实后端必须另验 |
 | upload.confirm | `{ imageId, contentType?, contentId? }` | `{ imageId, status: 'confirmed' }`；确认图片归属当前账号与业务内容（待群里确认） |
-| market.create | `{ marketType:'sell'|'buy', title, body, category, imageIds?, priceCents?, condition?, handoverCampus?, budgetCents?, keywords?, appraisal? }` | 保存后的二手内容；闲置需 priceCents/condition，求购需 budgetCents/keywords；imageIds 服务校验归属与 ≤3 张；appraisal 为估价快照（见 appraisal.estimate），仅闲置可传且作为发布者自填依据留存 |
+| market.create | `{ marketType:'sell'|'buy', title, body, category, imageIds?, priceCents?, condition?, handoverCampus?, budgetCents?, keywords?, appraisal? }` | 保存后的二手内容；闲置需 priceCents/condition，求购需 budgetCents/keywords；imageIds 服务校验归属与 ≤3 张；appraisal 为发布者提交的参考快照，非鉴定凭证。仅闲置可传：min/max为非负安全整数分且min≤max，basis.category/condition/rule为字符串，rule固定“类别+成色示例估价”，note固定参考声明；缺结构或不合规则拒绝，改为求购清除旧快照 |
 | market.update | `{ id, ...可更新字段 }` | 仅发布者可改，已完成/已下架不可改；imageIds 同 create 校验 |
 | market.get | `{ id }` | 二手详情，images 为服务解析出的可访问地址数组；闲置若已估价则含 appraisal 快照 |
 | market.list | `{ keyword?, category?, campusId?, marketType?, status?, cursor?, pageSize? }` | 二手列表分页，pageSize 默认 20 上限 50 |
@@ -99,7 +100,7 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 | market.complete | `{ id }` | 发布者标记交易完成，status=completed；完成后不可预约/修改 |
 | market.reserve | `{ id }` | 非发布者预约交接，status=active 才可预约；同商品不可重复预约，冲突返回 CONFLICT |
 | market.getCandidates | `{ id }` | 发布者查看该商品的待处理预约列表 |
-| market.matchCandidates | `{ buyId }` | 求购发布者查看匹配到的在售闲置：`{items:[{...闲置摘要, reasons:string[]}], nextCursor}`；按同类别+同校区+价格≤预算匹配，排除本人/已下架/已完成；reasons 至少含「同类别、同校区、价格在预算内」，命中关键词时追加「包含求购关键词」；无匹配返回空数组与明确空状态，不返回成功率 |
+| market.matchCandidates | `{ buyId, cursor?, pageSize? }` | 仅求购发布者查看匹配到的公开在售闲置：`{items:[{...闲置摘要, reasons:string[]}], nextCursor}`；同类别+同校区+价格≤预算，排除私有、本人、已下架/已完成，先筛选再分页；reasons至少含「同类别、同校区、价格在预算内」，命中关键词时追加「包含求购关键词」；无匹配返回空数组，不返回成功率 |
 | appraisal.estimate | `{ imageId, category?, condition? }` | `{ minCents, maxCents, basis:{category,condition,rule}, note }`；note 固定为「参考估价，仅供参考，最终价格由发布者决定」；basis.rule 说明估价依据（示例规则为「类别+成色示例估价」），不得伪装为 AI 估价；category/condition 取发布表单值，缺失时按空字符串处理 |
 | myContent.list | `{contentType?,status?,cursor?,pageSize?}` | 当前用户发布分页；身份取后端会话 |
 | plan/help/market/lostFound.list | `{keyword?,category?,lostKind?,campusId?,marketType?,ownerId?,status?,cursor?,pageSize?}` | Content分页；lostKind仅失物使用，marketType/campusId仅market生效；筛选后分页，其余模块不受专属字段影响 |
@@ -111,7 +112,7 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 | invitation.respond | `{invitationId,action,idempotencyKey}` | `{invitation,targetPlan}`；action=accept/reject/cancel |
 | invitation.cancel | `{invitationId,idempotencyKey}` | 与 respond(cancel) 一致 |
 | conversation.open | `{contentType,contentId,peerUserId}` | 会话，含原内容链接和 participantIds |
-| conversation.list | `{cursor?,pageSize?}` | 当前用户会话分页，含 peer 摘要、lastMessage 与原内容字段 |
+| conversation.list | `{contentType?,cursor?,pageSize?}` | 当前用户会话先按来源筛选、按最近消息时间（无消息时按创建时间）倒序，再分页；contentType省略/空串表示全部，非空为plan/help/market/lost_found。含peer摘要、lastMessage与原内容字段 |
 | message.list | `{conversationId,cursor?,pageSize?}` | Message 分页，含 sender 摘要，按新到旧排列 |
 | message.send | `{conversationId,body,idempotencyKey}` | 保存的 Message |
 | comment.list | `{contentType,contentId,cursor?,pageSize?}` | 公开评论分页，含 author 摘要 |
@@ -124,9 +125,18 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 
 ## 推荐与邀请规则
 
-匹配目标计划必须由当前用户拥有、仍有空位且未结束。候选同校区、同类别、北京时间同日、有效时间严格重叠、仍为单人 open 计划，排除本人。返回 overlap 和理由，不返回虚假的成功率。
+匹配目标计划必须由当前用户拥有、公开、仍有空位且未结束。候选也必须公开，同校区、同类别、北京时间同日、有效时间严格重叠、仍为有空位的单人 open 计划，排除本人和已加入目标的成员。返回 overlap 和理由，不返回虚假的成功率；私有计划不得通过推荐摘要泄露。
 
 邀请 targetPlanId 是邀请人自己的计划，sourcePlanId 是被邀请人的单人计划。接收人接受后加入 target，source 关闭并记录 joinedPlanId。真实后端需用事务同时检查权限、容量、来源状态、成员唯一性和幂等。第一版不处理整队合并。
+
+### A 第二阶段首批：计划与邀请状态（2026-10-22）
+
+- 沿用现有方法、字段和状态枚举，不新增RPC、路由或依赖。计划在读取/操作时按服务时间判断是否结束：招募中/满员计划到期转为 `expired`，已关闭/已完成的终态保持不变。
+- 发布者可更新 `open/full` 计划；容量不能小于现有成员数。更新后人数达到容量为 `full`，扩容后有空位为 `open`；不能恢复已关闭、已完成或已过期计划。新建计划开始时间必须在未来；已开始但未结束的计划可保持原开始时刻修改说明/扩容，或改到未来，但不能另设过去的开始时间，结束时间必须晚于当前服务时间。`plan.close({id})` 为取消整个计划，`plan.complete({id})` 为完成，均只允许发布者操作有效的 `open/full` 计划，不等于成员退队。
+- 邀请已有 `pending/accepted/rejected/cancelled/expired` 状态。待处理邀请的来源或目标关闭、完成、过期、转私有、满员或不再符合原推荐条件时，转为 `expired`；来源加入另一计划也使相关旧邀请失效。读取列表和执行计划/邀请操作时校验，不依赖页面自行写状态；失效后不能因重新扩容等操作自动恢复。
+- 接受、拒绝及发送者取消仍校验身份；非法或失效操作返回原有错误码，不增加成员或重复通知。接受最后空位后同步使其他待处理邀请失效；已成功操作的相同幂等编号重试仍返回原结果。
+- 前端在详情提供有确认的取消入口；消息仅对 `pending` 显示处理按钮，失效后解释原因范围；服务冲突后刷新状态。推荐页返回时重读服务，并由现有邀请分页恢复待确认标记，不以页面内数组冒充服务记录。
+- 本批是演示业务规则与真实接口对接前的准备；没有部署后端、接入真实认证或验证数据库并发事务。
 
 通知与业务结果分开：订阅发送失败不撤销组队。requestSubscription 只在微信端用户点击时申请授权；subscription.send 必须服务端受控，不能任意从前端调用发送模板消息。
 
@@ -135,6 +145,14 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 - `PlazaScene` 的 `guide` 为本地展示事件，打开公告面板的“广场指南”；原 `board` 仍打开校园活动。指南沿用现有四屋和池边入口，不新增路由、服务方法或业务字段。
 - 三位漫步邻居和小狗向导是场景角色，不是在线同学、公开 User 或私信联系人。邻居靠近问候有冷却，点击查看简短提示；状态仅在场景内存中，离开或进入房屋时关闭。
 - 下方石板路连接集市前、池边支路与自己家门前支路；普通路点不会触发房屋跳转，仍须抵达已有门口。
+
+## 2026-10-23 体验与质量调整（A协调，未接真实后端）
+
+- 沿用现有RPC、字段及状态，不增加业务依赖。`pages/content/publish?type=plan&id=<计划ID>` 用于编辑本人有效计划；读取用 `plan.get`，提交用 `plan.update`。`id` 仅在计划编辑时使用，其他类型继续新建。修改后的容量、时间及旧邀请失效按现有服务校验，不在页面伪造状态。
+- 商品完成/关闭只接受合法的当前状态，终态操作返回冲突；收藏读取与预约复用内容可见性规则。失物评论沿用 `comment.list` 的 `cursor/nextCursor` 分页，不能丢弃早期线索。
+- 精简筛选、卡片时间与名额、邀请/会话摘要均使用已有返回字段；高级条件折叠不改变已提交筛选或加载更多的快照。旧响应、隐藏页面和旧账号不能覆盖新界面。
+- 表单保护与首次指路属于界面状态；本轮不增加草稿RPC或本地业务存储，不改变 `pet.save`、衣柜拥有物和奖励结算。锁定装扮只能预览，不得提前装备或发奖。
+- 后台暂停与主动离开分别处理；界面暂停不能冒充服务结算或真实跨设备同步。微信专有能力仍需工具和真机验证。
 
 ## H5 公网演示部署（2026-10-22）
 

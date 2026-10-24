@@ -60,10 +60,10 @@
         </view>
       </view>
       <view v-if="favLoading" class="muted">正在读取收藏…</view>
-      <view v-else-if="!favorites.length" class="muted">还没有收藏内容。</view>
+      <view v-else-if="!favorites.length && !error" class="muted">还没有收藏内容。</view>
       <view
         v-for="f in favorites"
-        :key="f.id"
+        :key="f.contentType + ':' + f.contentId"
         class="fav-item link"
         @tap="openFav(f)"
       >
@@ -71,8 +71,8 @@
       </view>
     </view>
     <view class="panel">
-      <view class="section-title" style="margin-top: 0">最近动态</view>
-      <view v-if="!activities.length" class="muted">暂无动态。</view>
+      <view class="section-title" style="margin-top: 0">近期发布</view>
+      <view v-if="!activities.length && !loading && !error" class="muted">还没有发布内容。</view>
       <view v-for="a in activities" :key="a.id" class="activity-item">
         <text class="tag">{{ a.label }}</text>
         <text class="activity-title">{{ a.title }}</text>
@@ -108,13 +108,14 @@
       </button>
     </view>
     <ContentCard v-for="item in items" :key="item.id" :item="item" />
-    <EmptyState v-if="!items.length && !error" title="还没有发布" />
-    <button v-if="cursor" class="secondary" @tap="loadMore">加载更多</button>
+    <view v-if="loading" class="muted">正在整理小屋…</view>
+    <EmptyState v-if="!items.length && !error && !loading" title="还没有发布" />
+    <button v-if="cursor" class="secondary" :disabled="loading" @tap="loadMore">加载更多</button>
   </view>
 </template>
 <script setup>
-import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { ref, watch } from 'vue'
+import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { user, myContent, favorite } from '../../services/index.js'
 import { demoUsers, switchDemoUser, resetDemo } from '../../mock/index.js'
 import { config } from '../../config/index.js'
@@ -125,17 +126,21 @@ import DemoNotice from '../../components/DemoNotice.vue'
 import ContentCard from '../../components/ContentCard.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
+import { session } from '../../utils/session.js'
 const profile = ref(null),
   items = ref([]),
   error = ref(''),
   users = ref([]),
   cursor = ref(null),
+  loading = ref(false),
   contentType = ref(''),
   isMock = config.apiMode === 'mock',
   stats = ref({ total: 0, active: 0, completed: 0 }),
   favorites = ref([]),
   favLoading = ref(false),
   activities = ref([])
+let loadVersion = 0
+let visible = false
 const filters = [
   { label: '全部', value: '' },
   { label: '二手', value: 'market' },
@@ -144,25 +149,53 @@ const filters = [
   { label: '技能', value: 'help' }
 ]
 async function load() {
+  const version = ++loadVersion
+  const userId = session.user?.id
+  const filter = contentType.value
+  const current = () => version === loadVersion && userId === session.user?.id && filter === contentType.value
+  loading.value = true
   error.value = ''
+  items.value = []
+  cursor.value = null
+  clearPersonalSummary()
+  favLoading.value = true
   try {
-    profile.value = await user.getProfile()
-    const r = await myContent.list({ contentType: contentType.value })
+    const [p, r] = await Promise.all([
+      user.getProfile(),
+      myContent.list({ contentType: filter })
+    ])
+    if (!current()) return
+    profile.value = p
     items.value = r.items
     cursor.value = r.nextCursor
     users.value = demoUsers()
-    await loadStats()
-    await loadFavorites()
-    buildActivities()
   } catch (e) {
-    error.value = errorText(e)
+    if (current()) error.value = errorText(e)
+  } finally {
+    if (current()) loading.value = false
+  }
+  if (!current() || error.value) {
+    if (current()) favLoading.value = false
+    return
+  }
+  try {
+    await Promise.all([loadStats(current), loadFavorites(current)])
+  } catch (e) {
+    if (current()) error.value = errorText(e)
   }
 }
-async function loadStats() {
+function clearPersonalSummary() {
+  stats.value = { total: 0, active: 0, completed: 0 }
+  favorites.value = []
+  activities.value = []
+  favLoading.value = false
+}
+async function loadStats(current) {
   let cur = null
   const all = []
   do {
     const r = await myContent.list({ pageSize: 50, cursor: cur })
+    if (!current()) return
     all.push(...r.items)
     cur = r.nextCursor
   } while (cur)
@@ -174,8 +207,9 @@ async function loadStats() {
       ['completed', 'returned'].includes(c.status)
     ).length
   }
+  buildActivities(all)
 }
-async function loadFavorites() {
+async function loadFavorites(current) {
   favLoading.value = true
   favorites.value = []
   try {
@@ -183,29 +217,23 @@ async function loadFavorites() {
     const all = []
     do {
       const r = await favorite.list({ pageSize: 50, cursor: cur })
+      if (!current()) return
       all.push(...r.items)
       cur = r.nextCursor
     } while (cur)
     favorites.value = all
   } finally {
-    favLoading.value = false
+    if (current()) favLoading.value = false
   }
 }
-function buildActivities() {
+function buildActivities(contents) {
   const acts = []
-  for (const c of items.value)
+  for (const c of contents)
     acts.push({
-      id: `pub_${c.id}`,
+      id: `pub_${c.type}_${c.id}`,
       label: '发布',
       title: c.title,
       createdAt: c.createdAt
-    })
-  for (const f of favorites.value)
-    acts.push({
-      id: `fav_${f.id}`,
-      label: '收藏',
-      title: f.content?.title || `${contentNames[f.contentType]}内容`,
-      createdAt: f.content?.createdAt || new Date(0).toISOString()
     })
   acts.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
   activities.value = acts.slice(0, 8)
@@ -214,15 +242,24 @@ function openFav(f) {
   uni.navigateTo({ url: contentUrl(f.contentType, f.contentId) })
 }
 async function loadMore() {
+  if (loading.value || !cursor.value) return
+  const version = loadVersion
+  const userId = session.user?.id
+  const current = () => version === loadVersion && userId === session.user?.id
+  loading.value = true
   try {
     const r = await myContent.list({
       contentType: contentType.value,
       cursor: cursor.value
     })
-    items.value.push(...r.items)
+    if (!current()) return
+    const known = new Set(items.value.map((item) => item.id))
+    items.value.push(...r.items.filter((item) => !known.has(item.id)))
     cursor.value = r.nextCursor
   } catch (e) {
-    error.value = errorText(e)
+    if (current()) error.value = errorText(e)
+  } finally {
+    if (current()) loading.value = false
   }
 }
 function setFilter(value) {
@@ -266,7 +303,18 @@ async function askSubscription() {
     error.value = errorText(e)
   }
 }
-onShow(load)
+watch(() => session.user?.id, () => {
+  ++loadVersion
+  profile.value = null
+  items.value = []
+  cursor.value = null
+  loading.value = false
+  clearPersonalSummary()
+  if (visible) load()
+})
+onShow(() => { visible = true; load() })
+onHide(() => { visible = false; ++loadVersion; loading.value = false; favLoading.value = false })
+onUnload(() => { visible = false; ++loadVersion; favLoading.value = false })
 </script>
 <style scoped>
 .home-identity { justify-content: flex-start; }

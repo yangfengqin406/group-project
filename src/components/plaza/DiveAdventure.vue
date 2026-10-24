@@ -278,9 +278,9 @@
                 :class="'direction-' + direction.id"
                 :aria-label="direction.label"
                 :disabled="!canPlay"
-                @touchstart.stop.prevent="pressDirection(direction.id)"
-                @touchend.stop.prevent="releaseDirection(direction.id)"
-                @touchcancel.stop.prevent="releaseDirection(direction.id)"
+                @touchstart.stop.prevent="pressDirection(direction.id, $event)"
+                @touchend.stop.prevent="releaseDirection(direction.id, $event)"
+                @touchcancel.stop.prevent="releaseDirection(direction.id, $event)"
                 @mousedown.prevent="pressDirection(direction.id)"
                 @mouseup="releaseDirection(direction.id)"
                 @mouseleave="releaseDirection(direction.id)"
@@ -352,12 +352,14 @@ import {
   nextTick,
   onMounted,
   onUnmounted,
-  ref
+  ref,
+  watch
 } from 'vue'
 import { onHide, onShow } from '@dcloudio/uni-app'
-import { dive } from '../../services/index.js'
+import { dive, wardrobe } from '../../services/index.js'
 import { config } from '../../config/index.js'
 import { errorText } from '../../utils/errors.js'
+import { session } from '../../utils/session.js'
 import {
   createDiveGame,
   DIVE_LEVELS,
@@ -388,6 +390,7 @@ const canPlay = computed(
     active.value &&
     !paused.value &&
     !busy.value &&
+    runUserId === session.user?.id &&
     gameState.value?.status === 'playing'
 )
 const oxygenPercent = computed(() =>
@@ -418,7 +421,9 @@ const earnedNames = computed(() =>
   (settled.value?.reward?.items || [])
     .map(
       (id) =>
-        settled.value.wardrobe.catalog.find((item) => item.id === id)?.name ||
+        (settled.value.wardrobe?.catalog || WARDROBE_ITEMS).find(
+          (item) => item.id === id
+        )?.name ||
         id
     )
     .join('、')
@@ -431,6 +436,8 @@ const directions = [
 ]
 let game = null,
   issued = null,
+  runUserId = null,
+  pendingFinish = null,
   trace = [],
   lastInput = { dx: 0, dy: 0, fire: false },
   clock = null,
@@ -441,6 +448,9 @@ let game = null,
   heldFire = false,
   firePulse = 0,
   dragPoint = null,
+  dragTouchId = null,
+  fireTouchId = null,
+  directionTouchId = null,
   boardRect = null,
   mouseHeld = false
 const heldKeys = new Set()
@@ -467,6 +477,9 @@ function clearInput() {
   heldFire = false
   firePulse = 0
   dragPoint = null
+  dragTouchId = null
+  fireTouchId = null
+  directionTouchId = null
   mouseHeld = false
 }
 function pause() {
@@ -477,24 +490,68 @@ function pause() {
 async function request(kind, action, apply) {
   if (busy.value || !active.value || closed) return
   const current = ++revision
+  const userId = session.user?.id
+  const isCurrent = () =>
+    current === revision && mounted && !closed && active.value &&
+    userId === session.user?.id
   busy.value = kind
   error.value = ''
   try {
     const value = await action()
-    if (current === revision && mounted && !closed && active.value) apply(value)
+    if (isCurrent()) return apply(value)
   } catch (failure) {
-    if (current === revision && mounted && !closed && active.value)
-      error.value = errorText(failure)
+    if (isCurrent()) error.value = errorText(failure)
   } finally {
     if (current === revision) busy.value = ''
   }
 }
 function loadProgress() {
+  const runId = issued?.id
+  const finishing = pendingFinish
   return request(
     'loading',
-    () => dive.getState(),
-    (value) => {
-      progress.value = value
+    async () => {
+      // A foreground read must observe the finish that was already in flight.
+      // Finishing an unknown result again could only conflict, never grant twice.
+      if (finishing && finishing.runId === runId &&
+          finishing.userId === session.user?.id)
+        await finishing.promise
+      const state = await dive.getState()
+      const receipt = state.lastSettlement
+      let recoveredWardrobe = null
+      let wardrobeError = ''
+      if (receipt && receipt.runId === runId &&
+          receipt.levelId === issued?.levelId &&
+          gameState.value?.status !== 'playing' && !settled.value?.wardrobe) {
+        try {
+          recoveredWardrobe = await wardrobe.getState()
+        } catch (failure) {
+          wardrobeError = errorText(failure)
+        }
+      }
+      return { state, recoveredWardrobe, wardrobeError }
+    },
+    ({ state, recoveredWardrobe, wardrobeError }) => {
+      progress.value = state
+      if (!issued || issued.id !== runId) return state
+      const receipt = state.lastSettlement
+      if (receipt && receipt.runId === runId &&
+          receipt.levelId === issued.levelId &&
+          gameState.value?.status !== 'playing') {
+        if (!settled.value) {
+          settled.value = { ...receipt, wardrobe: recoveredWardrobe, state }
+          if (recoveredWardrobe) emit('reward', recoveredWardrobe)
+        } else if (!settled.value.wardrobe && recoveredWardrobe) {
+          settled.value = { ...settled.value, wardrobe: recoveredWardrobe, state }
+          emit('reward', recoveredWardrobe)
+        }
+        if (wardrobeError)
+          error.value = `收获已保存，衣柜暂时未能刷新：${wardrobeError}`
+      } else if (!settled.value && state.activeRun?.id !== runId) {
+        resetRun()
+        error.value = '这次潜水已结束或过期，请重新出发'
+      }
+      return state
     }
   )
 }
@@ -508,6 +565,7 @@ function startLevel(levelId) {
     () => dive.start({ levelId }),
     (run) => {
       issued = run
+      runUserId = session.user?.id
       game = createDiveGame(levelId, { seed: run.seed })
       gameState.value = game.getState()
       trace = []
@@ -583,29 +641,38 @@ function startClock() {
   }, DIVE_STEP_MS)
 }
 function finishRun() {
-  if (!issued || !gameState.value || gameState.value.status === 'playing')
+  if (!issued || runUserId !== session.user?.id || !gameState.value ||
+      gameState.value.status === 'playing' || settled.value || busy.value)
     return
+  if (pendingFinish?.runId === issued.id) return pendingFinish.promise
   const proof = {
     runId: issued.id,
     ticks: gameState.value.tick,
     trace: trace.map((item) => ({ ...item }))
   }
-  return request(
+  const finishing = { runId: issued.id, userId: runUserId, promise: null }
+  pendingFinish = finishing
+  finishing.promise = request(
     'finish',
     () => dive.finish(proof),
     (value) => {
-      settled.value = value
+      settled.value = { ...value, runId: proof.runId }
       progress.value = value.state
       emit('reward', value.wardrobe)
     }
-  )
+  ).finally(() => {
+    if (pendingFinish === finishing) pendingFinish = null
+  })
+  return finishing.promise
 }
-function retryRequest() {
-  return gameState.value?.status && gameState.value.status !== 'playing'
-    ? finishRun()
-    : gameState.value
-      ? startLevel(selectedLevel.value)
-      : loadProgress()
+async function retryRequest() {
+  if (gameState.value?.status && gameState.value.status !== 'playing') {
+    const state = await loadProgress()
+    if (state?.activeRun?.id === issued?.id && !settled.value &&
+        runUserId === session.user?.id) return finishRun()
+    return
+  }
+  return gameState.value ? startLevel(selectedLevel.value) : loadProgress()
 }
 function resume() {
   if (!active.value || busy.value) return
@@ -622,12 +689,16 @@ function togglePause() {
   if (!gameState.value || gameState.value.status !== 'playing') return
   paused.value ? resume() : pause()
 }
-function backToLevels() {
+function resetRun() {
   pause()
   game = null
   issued = null
+  runUserId = null
   gameState.value = null
   settled.value = null
+}
+function backToLevels() {
+  resetRun()
   error.value = ''
   loadProgress()
 }
@@ -655,20 +726,36 @@ function askClose() {
     }
   })
 }
-function pressDirection(direction) {
-  if (canPlay.value) heldDirection = direction
+const isTouchEvent = (event) => Boolean(event?.touches || event?.changedTouches)
+const changedTouch = (event) => event?.changedTouches?.[0]
+const endedTouch = (event, identifier) =>
+  Array.from(event?.changedTouches || []).some(
+    (point) => point.identifier === identifier
+  )
+function pressDirection(direction, event) {
+  if (!canPlay.value || directionTouchId !== null) return
+  if (isTouchEvent(event))
+    directionTouchId = changedTouch(event)?.identifier ?? null
+  heldDirection = direction
 }
-function releaseDirection(direction) {
+function releaseDirection(direction, event) {
+  if (directionTouchId !== null && !endedTouch(event, directionTouchId)) return
   if (heldDirection === direction) heldDirection = ''
+  directionTouchId = null
 }
-function pressFire() {
-  if (canPlay.value) {
+function pressFire(event) {
+  if (canPlay.value && fireTouchId === null) {
+    if (isTouchEvent(event))
+      fireTouchId = changedTouch(event)?.identifier ?? null
     heldFire = true
     firePulse = 2
   }
 }
-function releaseFire() {
+function releaseFire(event) {
+  if (fireTouchId !== null && !endedTouch(event, fireTouchId)) return
   heldFire = false
+  fireTouchId = null
+  firePulse = 0
 }
 function pulseFire() {
   if (canPlay.value) firePulse = 2
@@ -684,8 +771,8 @@ function measureBoard() {
     })
     .exec()
 }
-function pointer(event) {
-  const point = event.touches?.[0] || event.changedTouches?.[0] || event
+function pointer(point) {
+  if (!point) return null
   const x = point.clientX ?? point.pageX,
     y = point.clientY ?? point.pageY
   if (!boardRect || !Number.isFinite(x) || !Number.isFinite(y)) return null
@@ -698,25 +785,36 @@ function pointer(event) {
   }
 }
 function beginDrag(event) {
-  if (!canPlay.value) return
+  if (!canPlay.value || dragTouchId !== null) return
+  const point = changedTouch(event)
+  if (point?.identifier == null) return
+  dragTouchId = point.identifier
   measureBoard()
-  dragPoint = pointer(event)
+  dragPoint = pointer(point)
 }
 function dragSwim(event) {
-  if (canPlay.value) dragPoint = pointer(event)
+  if (!canPlay.value || dragTouchId === null) return
+  const point = Array.from(event.touches || []).find(
+    (item) => item.identifier === dragTouchId
+  )
+  if (point) dragPoint = pointer(point)
 }
-function endDrag() {
+function endDrag(event) {
+  if (dragTouchId !== null && !endedTouch(event, dragTouchId)) return
   dragPoint = null
+  dragTouchId = null
   mouseHeld = false
 }
 function beginMouseDrag(event) {
   if ((event.button == null || event.button === 0) && canPlay.value) {
+    if (dragTouchId !== null) return
     mouseHeld = true
-    beginDrag(event)
+    measureBoard()
+    dragPoint = pointer(event)
   }
 }
 function mouseDrag(event) {
-  if (mouseHeld) dragSwim(event)
+  if (mouseHeld && canPlay.value) dragPoint = pointer(event)
 }
 function readViewport() {
   const info =
@@ -790,6 +888,15 @@ onShow(() => {
   active.value = true
   readViewport()
   loadProgress()
+})
+watch(() => session.user?.id, () => {
+  revision++
+  busy.value = ''
+  pendingFinish = null
+  resetRun()
+  progress.value = null
+  error.value = ''
+  if (mounted && active.value && !closed) loadProgress()
 })
 onUnmounted(() => {
   mounted = false

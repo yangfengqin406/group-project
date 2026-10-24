@@ -164,7 +164,9 @@ const atlasPosition = computed(() => ({
   .room-caption { max-width: 77%; padding: 10px 12px; }
   .room-nameplate { gap: 6px; font-size: 24px; }
   .room-description { font-size: 12px; max-width: 230px; }
-  .compact { min-height: 150px; }
-  .compact .room-nameplate { font-size: 22px; }
+  .compact { min-height: 120px; padding: 12px; }
+  .compact .room-caption { max-width: calc(100% - 70px); padding: 8px 10px; }
+  .compact .room-nameplate { font-size: 21px; }
+  .compact .room-description { margin-top: 4px; font-size: 11px; line-height: 1.5; }
 }
 </style>

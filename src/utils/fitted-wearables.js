@@ -7,7 +7,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-rain-boots-front-left.png',
+            source: '/static/pets/fitted/rabbit-rain-boots-front-left.webp',
             bounds: {
               x: 23.5,
               y: 146.673,
@@ -16,7 +16,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/rabbit-rain-boots-front-right.png',
+            source: '/static/pets/fitted/rabbit-rain-boots-front-right.webp',
             bounds: {
               x: 64.5,
               y: 145.263,
@@ -29,7 +29,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-rain-boots-back-left.png',
+            source: '/static/pets/fitted/rabbit-rain-boots-back-left.webp',
             bounds: {
               x: 22.5,
               y: 150.353,
@@ -38,7 +38,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/rabbit-rain-boots-back-right.png',
+            source: '/static/pets/fitted/rabbit-rain-boots-back-right.webp',
             bounds: {
               x: 63.5,
               y: 147.766,
@@ -53,7 +53,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-shell-shoes-front-left.png',
+            source: '/static/pets/fitted/rabbit-shell-shoes-front-left.webp',
             bounds: {
               x: 23.5,
               y: 149.108,
@@ -62,7 +62,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/rabbit-shell-shoes-front-right.png',
+            source: '/static/pets/fitted/rabbit-shell-shoes-front-right.webp',
             bounds: {
               x: 64.5,
               y: 148.091,
@@ -75,7 +75,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-shell-shoes-back-left.png',
+            source: '/static/pets/fitted/rabbit-shell-shoes-back-left.webp',
             bounds: {
               x: 22.5,
               y: 151.855,
@@ -84,7 +84,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/rabbit-shell-shoes-back-right.png',
+            source: '/static/pets/fitted/rabbit-shell-shoes-back-right.webp',
             bounds: {
               x: 63.5,
               y: 150.706,
@@ -99,7 +99,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-leaf-slippers-front-left.png',
+            source: '/static/pets/fitted/rabbit-leaf-slippers-front-left.webp',
             bounds: {
               x: 23.5,
               y: 148.909,
@@ -108,7 +108,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/rabbit-leaf-slippers-front-right.png',
+            source: '/static/pets/fitted/rabbit-leaf-slippers-front-right.webp',
             bounds: {
               x: 64.5,
               y: 147.407,
@@ -121,7 +121,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-leaf-slippers-back-left.png',
+            source: '/static/pets/fitted/rabbit-leaf-slippers-back-left.webp',
             bounds: {
               x: 22.5,
               y: 152.1,
@@ -130,7 +130,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/rabbit-leaf-slippers-back-right.png',
+            source: '/static/pets/fitted/rabbit-leaf-slippers-back-right.webp',
             bounds: {
               x: 63.5,
               y: 149.314,
@@ -145,7 +145,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-acorn-bob-front.png',
+            source: '/static/pets/fitted/rabbit-acorn-bob-front.webp',
             bounds: {
               x: 9.5,
               y: 50.04,
@@ -158,7 +158,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-acorn-bob-back.png',
+            source: '/static/pets/fitted/rabbit-acorn-bob-back.webp',
             bounds: {
               x: 9.17,
               y: 51.03,
@@ -173,7 +173,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-cloud-bun-front.png',
+            source: '/static/pets/fitted/rabbit-cloud-bun-front.webp',
             bounds: {
               x: 9.995,
               y: 50.04,
@@ -186,7 +186,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-cloud-bun-back.png',
+            source: '/static/pets/fitted/rabbit-cloud-bun-back.webp',
             bounds: {
               x: 9.5,
               y: 51.03,
@@ -201,7 +201,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-sea-braid-front.png',
+            source: '/static/pets/fitted/rabbit-sea-braid-front.webp',
             bounds: {
               x: 10.325,
               y: 50.04,
@@ -214,7 +214,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/rabbit-sea-braid-back.png',
+            source: '/static/pets/fitted/rabbit-sea-braid-back.webp',
             bounds: {
               x: 12.14,
               y: 51.03,
@@ -231,7 +231,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-rain-boots-front-left.png',
+            source: '/static/pets/fitted/capybara-rain-boots-front-left.webp',
             bounds: {
               x: 26.5,
               y: 148.185,
@@ -240,7 +240,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/capybara-rain-boots-front-right.png',
+            source: '/static/pets/fitted/capybara-rain-boots-front-right.webp',
             bounds: {
               x: 83.5,
               y: 146.843,
@@ -253,7 +253,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-rain-boots-back-left.png',
+            source: '/static/pets/fitted/capybara-rain-boots-back-left.webp',
             bounds: {
               x: 26.5,
               y: 146.178,
@@ -262,7 +262,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/capybara-rain-boots-back-right.png',
+            source: '/static/pets/fitted/capybara-rain-boots-back-right.webp',
             bounds: {
               x: 83.5,
               y: 144.172,
@@ -277,7 +277,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-shell-shoes-front-left.png',
+            source: '/static/pets/fitted/capybara-shell-shoes-front-left.webp',
             bounds: {
               x: 26.5,
               y: 149.286,
@@ -286,7 +286,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/capybara-shell-shoes-front-right.png',
+            source: '/static/pets/fitted/capybara-shell-shoes-front-right.webp',
             bounds: {
               x: 83.5,
               y: 149.286,
@@ -299,7 +299,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-shell-shoes-back-left.png',
+            source: '/static/pets/fitted/capybara-shell-shoes-back-left.webp',
             bounds: {
               x: 26.5,
               y: 147.857,
@@ -308,7 +308,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/capybara-shell-shoes-back-right.png',
+            source: '/static/pets/fitted/capybara-shell-shoes-back-right.webp',
             bounds: {
               x: 83.5,
               y: 148.062,
@@ -323,7 +323,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-leaf-slippers-front-left.png',
+            source: '/static/pets/fitted/capybara-leaf-slippers-front-left.webp',
             bounds: {
               x: 26.5,
               y: 149.852,
@@ -333,7 +333,7 @@ const registrations = {
           },
           {
             source:
-              '/static/pets/fitted/capybara-leaf-slippers-front-right.png',
+              '/static/pets/fitted/capybara-leaf-slippers-front-right.webp',
             bounds: {
               x: 83.5,
               y: 150.563,
@@ -346,7 +346,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-leaf-slippers-back-left.png',
+            source: '/static/pets/fitted/capybara-leaf-slippers-back-left.webp',
             bounds: {
               x: 26.5,
               y: 148.299,
@@ -355,7 +355,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/capybara-leaf-slippers-back-right.png',
+            source: '/static/pets/fitted/capybara-leaf-slippers-back-right.webp',
             bounds: {
               x: 83.5,
               y: 148.492,
@@ -370,7 +370,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-acorn-bob-front.png',
+            source: '/static/pets/fitted/capybara-acorn-bob-front.webp',
             bounds: {
               x: 24.695,
               y: 23.02,
@@ -383,7 +383,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-acorn-bob-back.png',
+            source: '/static/pets/fitted/capybara-acorn-bob-back.webp',
             bounds: {
               x: 24.065,
               y: 22.5,
@@ -398,7 +398,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-cloud-bun-front.png',
+            source: '/static/pets/fitted/capybara-cloud-bun-front.webp',
             bounds: {
               x: 25.388,
               y: 23.265,
@@ -411,7 +411,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-cloud-bun-back.png',
+            source: '/static/pets/fitted/capybara-cloud-bun-back.webp',
             bounds: {
               x: 23.593,
               y: 22.5,
@@ -426,7 +426,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-sea-braid-front.png',
+            source: '/static/pets/fitted/capybara-sea-braid-front.webp',
             bounds: {
               x: 20.443,
               y: 23.02,
@@ -439,7 +439,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/capybara-sea-braid-back.png',
+            source: '/static/pets/fitted/capybara-sea-braid-back.webp',
             bounds: {
               x: 22.805,
               y: 22.5,
@@ -456,7 +456,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-rain-boots-front-left.png',
+            source: '/static/pets/fitted/mushroom-rain-boots-front-left.webp',
             bounds: {
               x: 37.5,
               y: 150.75,
@@ -465,7 +465,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/mushroom-rain-boots-front-right.png',
+            source: '/static/pets/fitted/mushroom-rain-boots-front-right.webp',
             bounds: {
               x: 69.5,
               y: 150.275,
@@ -478,7 +478,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-rain-boots-back-left.png',
+            source: '/static/pets/fitted/mushroom-rain-boots-back-left.webp',
             bounds: {
               x: 37.5,
               y: 150.537,
@@ -487,7 +487,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/mushroom-rain-boots-back-right.png',
+            source: '/static/pets/fitted/mushroom-rain-boots-back-right.webp',
             bounds: {
               x: 69.5,
               y: 149.586,
@@ -502,7 +502,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-shell-shoes-front-left.png',
+            source: '/static/pets/fitted/mushroom-shell-shoes-front-left.webp',
             bounds: {
               x: 37.5,
               y: 150.918,
@@ -511,7 +511,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/mushroom-shell-shoes-front-right.png',
+            source: '/static/pets/fitted/mushroom-shell-shoes-front-right.webp',
             bounds: {
               x: 69.5,
               y: 151.147,
@@ -524,7 +524,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-shell-shoes-back-left.png',
+            source: '/static/pets/fitted/mushroom-shell-shoes-back-left.webp',
             bounds: {
               x: 37.5,
               y: 150.097,
@@ -533,7 +533,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/mushroom-shell-shoes-back-right.png',
+            source: '/static/pets/fitted/mushroom-shell-shoes-back-right.webp',
             bounds: {
               x: 69.5,
               y: 150.067,
@@ -548,7 +548,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-leaf-slippers-front-left.png',
+            source: '/static/pets/fitted/mushroom-leaf-slippers-front-left.webp',
             bounds: {
               x: 37.5,
               y: 150.959,
@@ -558,7 +558,7 @@ const registrations = {
           },
           {
             source:
-              '/static/pets/fitted/mushroom-leaf-slippers-front-right.png',
+              '/static/pets/fitted/mushroom-leaf-slippers-front-right.webp',
             bounds: {
               x: 69.5,
               y: 150.3,
@@ -571,7 +571,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-leaf-slippers-back-left.png',
+            source: '/static/pets/fitted/mushroom-leaf-slippers-back-left.webp',
             bounds: {
               x: 37.5,
               y: 150.097,
@@ -580,7 +580,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/mushroom-leaf-slippers-back-right.png',
+            source: '/static/pets/fitted/mushroom-leaf-slippers-back-right.webp',
             bounds: {
               x: 69.5,
               y: 150.75,
@@ -595,7 +595,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-acorn-bob-front.png',
+            source: '/static/pets/fitted/mushroom-acorn-bob-front.webp',
             bounds: {
               x: 38.205,
               y: 99.9,
@@ -608,7 +608,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-acorn-bob-back.png',
+            source: '/static/pets/fitted/mushroom-acorn-bob-back.webp',
             bounds: {
               x: 43.815,
               y: 119,
@@ -623,7 +623,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-cloud-bun-front.png',
+            source: '/static/pets/fitted/mushroom-cloud-bun-front.webp',
             bounds: {
               x: 38.23,
               y: 99.9,
@@ -636,7 +636,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-cloud-bun-back.png',
+            source: '/static/pets/fitted/mushroom-cloud-bun-back.webp',
             bounds: {
               x: 43.942,
               y: 119,
@@ -651,7 +651,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-sea-braid-front.png',
+            source: '/static/pets/fitted/mushroom-sea-braid-front.webp',
             bounds: {
               x: 36.496,
               y: 99.9,
@@ -664,7 +664,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/mushroom-sea-braid-back.png',
+            source: '/static/pets/fitted/mushroom-sea-braid-back.webp',
             bounds: {
               x: 40.627,
               y: 119,
@@ -681,7 +681,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-rain-boots-front-left.png',
+            source: '/static/pets/fitted/squirrel-rain-boots-front-left.webp',
             bounds: {
               x: 58.5,
               y: 149.857,
@@ -690,7 +690,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/squirrel-rain-boots-front-right.png',
+            source: '/static/pets/fitted/squirrel-rain-boots-front-right.webp',
             bounds: {
               x: 102.5,
               y: 149.773,
@@ -703,7 +703,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-rain-boots-back-left.png',
+            source: '/static/pets/fitted/squirrel-rain-boots-back-left.webp',
             bounds: {
               x: 58.5,
               y: 150.84,
@@ -712,7 +712,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/squirrel-rain-boots-back-right.png',
+            source: '/static/pets/fitted/squirrel-rain-boots-back-right.webp',
             bounds: {
               x: 102.5,
               y: 148.304,
@@ -727,7 +727,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-shell-shoes-front-left.png',
+            source: '/static/pets/fitted/squirrel-shell-shoes-front-left.webp',
             bounds: {
               x: 58.5,
               y: 151.155,
@@ -736,7 +736,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/squirrel-shell-shoes-front-right.png',
+            source: '/static/pets/fitted/squirrel-shell-shoes-front-right.webp',
             bounds: {
               x: 102.5,
               y: 149.474,
@@ -749,7 +749,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-shell-shoes-back-left.png',
+            source: '/static/pets/fitted/squirrel-shell-shoes-back-left.webp',
             bounds: {
               x: 58.5,
               y: 151.699,
@@ -758,7 +758,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/squirrel-shell-shoes-back-right.png',
+            source: '/static/pets/fitted/squirrel-shell-shoes-back-right.webp',
             bounds: {
               x: 102.5,
               y: 148.62,
@@ -773,7 +773,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-leaf-slippers-front-left.png',
+            source: '/static/pets/fitted/squirrel-leaf-slippers-front-left.webp',
             bounds: {
               x: 58.5,
               y: 152.074,
@@ -783,7 +783,7 @@ const registrations = {
           },
           {
             source:
-              '/static/pets/fitted/squirrel-leaf-slippers-front-right.png',
+              '/static/pets/fitted/squirrel-leaf-slippers-front-right.webp',
             bounds: {
               x: 102.5,
               y: 151.302,
@@ -796,7 +796,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-leaf-slippers-back-left.png',
+            source: '/static/pets/fitted/squirrel-leaf-slippers-back-left.webp',
             bounds: {
               x: 58.5,
               y: 151.51,
@@ -805,7 +805,7 @@ const registrations = {
             }
           },
           {
-            source: '/static/pets/fitted/squirrel-leaf-slippers-back-right.png',
+            source: '/static/pets/fitted/squirrel-leaf-slippers-back-right.webp',
             bounds: {
               x: 102.5,
               y: 148.374,
@@ -820,7 +820,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-acorn-bob-front.png',
+            source: '/static/pets/fitted/squirrel-acorn-bob-front.webp',
             bounds: {
               x: 54.15,
               y: 61.075,
@@ -833,7 +833,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-acorn-bob-back.png',
+            source: '/static/pets/fitted/squirrel-acorn-bob-back.webp',
             bounds: {
               x: 69.425,
               y: 63.466,
@@ -848,7 +848,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-cloud-bun-front.png',
+            source: '/static/pets/fitted/squirrel-cloud-bun-front.webp',
             bounds: {
               x: 54.898,
               y: 61.075,
@@ -861,7 +861,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-cloud-bun-back.png',
+            source: '/static/pets/fitted/squirrel-cloud-bun-back.webp',
             bounds: {
               x: 69.588,
               y: 63.466,
@@ -876,7 +876,7 @@ const registrations = {
       front: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-sea-braid-front.png',
+            source: '/static/pets/fitted/squirrel-sea-braid-front.webp',
             bounds: {
               x: 54.231,
               y: 61.075,
@@ -889,7 +889,7 @@ const registrations = {
       back: {
         parts: [
           {
-            source: '/static/pets/fitted/squirrel-sea-braid-back.png',
+            source: '/static/pets/fitted/squirrel-sea-braid-back.webp',
             bounds: {
               x: 67.8,
               y: 63.466,

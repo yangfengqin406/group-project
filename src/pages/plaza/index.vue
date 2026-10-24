@@ -72,6 +72,26 @@
         重试
       </button>
     </view>
+    <view
+      v-if="welcomeVisible && active && appearance && !boardOpen && !pondOpen && !pavilionOpen && !diveOpen"
+      class="first-visit-note"
+    >
+      <button
+        class="welcome-guide"
+        aria-label="打开麦麦的广场指南"
+        @tap="openGuide"
+      >
+        <text>点步道散步，点房子进小屋。</text>
+        <text class="welcome-detail">问问麦麦，或用地图看全景</text>
+      </button>
+      <button
+        class="welcome-dismiss"
+        aria-label="收起新手提示"
+        @tap="dismissWelcome"
+      >
+        ×
+      </button>
+    </view>
     <view class="game-bottom">
       <text v-if="config.apiMode === 'mock'" class="demo-mark">
         本机演示 · 数据不跨设备同步
@@ -80,7 +100,7 @@
         <button
           class="hud-button"
           :aria-pressed="overview"
-          @tap="overview = !overview"
+          @tap="toggleOverview"
         >
           <text class="hud-icon">⌖</text>
           <text>{{ overview ? '回到身边' : '广场地图' }}</text>
@@ -240,6 +260,10 @@ import { pet, bulletin, wardrobe } from '../../services/index.js'
 import { formatTime } from '../../utils/routes.js'
 import { config } from '../../config/index.js'
 import { errorText } from '../../utils/errors.js'
+import {
+  isPlazaWelcomeDismissed,
+  dismissPlazaWelcome
+} from '../../utils/plaza-onboarding.js'
 import PetAvatar from '../../components/pet/PetAvatar.vue'
 import PlazaScene from '../../components/plaza/PlazaScene.vue'
 import PlazaGuide from '../../components/plaza/PlazaGuide.vue'
@@ -251,6 +275,7 @@ const scene = ref(null),
   petLoading = ref(false),
   petError = ref(''),
   overview = ref(false),
+  welcomeVisible = ref(!isPlazaWelcomeDismissed()),
   navigating = ref(false),
   navigationError = ref('')
 const boardOpen = ref(false),
@@ -270,6 +295,14 @@ let petRevision = 0,
 function activityDay(value) {
   const date = new Date(Date.parse(value) + 8 * 3600000)
   return { month: date.getUTCMonth() + 1, day: date.getUTCDate() }
+}
+function dismissWelcome() {
+  welcomeVisible.value = false
+  dismissPlazaWelcome()
+}
+function toggleOverview() {
+  dismissWelcome()
+  overview.value = !overview.value
 }
 async function loadOrnament() {
   const current = ++ornamentRevision
@@ -331,6 +364,7 @@ async function loadPet() {
 }
 function navigate(url, tab = false) {
   if (navigating.value) return
+  dismissWelcome()
   navigating.value = true
   navigationError.value = ''
   // 在跳转前恢复全局底栏配置；首个 tab 页可能卸载而不触发 onHide。
@@ -371,6 +405,7 @@ function openBoard() {
   loadBoard()
 }
 function openGuide() {
+  dismissWelcome()
   boardTab.value = 'guide'
   boardOpen.value = true
 }
@@ -425,8 +460,8 @@ onHide(() => {
   active.value = false
   petRevision++
   ornamentRevision++
-  pondOpen.value = false
-  diveOpen.value = false
+  // Keep game components mounted: their onHide hooks pause clocks and input.
+  // Unmounting here would discard the current dive before it can be resumed.
   pavilionOpen.value = false
   closeBoard()
   // H5 在目标非 tab 页面已生效后可能调用该钩子，框架此时不接受底栏操作。
@@ -435,8 +470,11 @@ onHide(() => {
 onUnload(() => {
   active.value = false
   petRevision++
-  boardRevision++
   ornamentRevision++
+  pondOpen.value = false
+  diveOpen.value = false
+  pavilionOpen.value = false
+  closeBoard()
   uni.showTabBar({ animation: false, fail: () => {} })
 })
 </script>
@@ -655,6 +693,49 @@ button:focus-visible {
   color: #456957;
   font-size: 12px;
   flex-shrink: 0;
+}
+.first-visit-note {
+  position: absolute;
+  left: 14px;
+  bottom: calc(78px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  width: calc(100% - 28px);
+  max-width: 350px;
+  padding: 5px 5px 5px 12px;
+  border: 1px solid #c5b384;
+  border-radius: 4px 14px 14px 14px;
+  background: #fffaeaf2;
+  box-shadow: 0 3px 0 #36544222;
+}
+.welcome-guide {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 6px 0;
+  color: #405b43;
+  background: transparent;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.welcome-detail {
+  font-size: 11px;
+  color: #7d8063;
+}
+.welcome-dismiss {
+  flex: none;
+  width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  font-size: 23px;
+  line-height: 1.2;
+  background: transparent;
+  color: #7b8067;
 }
 .game-bottom {
   position: absolute;
@@ -967,6 +1048,9 @@ button:focus-visible {
     align-items: flex-end;
     gap: 8px;
   }
+  .first-visit-note {
+    bottom: calc(125px + env(safe-area-inset-bottom));
+  }
   .demo-mark {
     align-self: flex-start;
     max-width: none;
@@ -1010,6 +1094,9 @@ button:focus-visible {
   }
   .game-status {
     top: 62px;
+  }
+  .first-visit-note {
+    bottom: calc(85px + env(safe-area-inset-bottom));
   }
   .bulletin-content {
     max-height: 42vh;

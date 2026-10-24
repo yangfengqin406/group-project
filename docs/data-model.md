@@ -11,14 +11,15 @@
 | FishingCast | id、status、biteAt、escapeAt、meterStartAt?、meterPeriodMs?、meterZone?、landDeadlineAt? | 每身份只有一个有效抛竿，服务侧时钟判定；新抛竿作废旧编号，结果消费编号 |
 | WardrobeState | userId、owned、equipped、pearls、clearedLevels | 当前身份独立衣柜与奖励进度；catalog 为公共只读目录，身份、余额和发奖由服务决定，不加入 PetAppearance |
 | DiveRun | id、userId、levelId、seed、startedAt、expiresAt | 每身份一个有效关卡编号，按种子回放输入核验后一次性结算；新开局作废旧编号 |
+| DiveSettlement | userId、runId、levelId、status、reward | 每身份最近一局服务核验后的只读回执；getState仅返回当前身份lastSettlement。只按本局编号恢复结果，不依赖余额推断；重复finish仍冲突，不再次发奖 |
 | Plan | id、ownerId、category、startAt、endAt、capacity、status | 关联作者、成员、邀请；检查校区、日期、时间和容量 |
 | Membership | planId、userId、status | 正式数据库建议独立记录，planId+userId 唯一 |
 | Invitation | id、senderId、recipientId、sourcePlanId、targetPlanId、status | 来源为被邀请人的单人计划，目标为邀请人的计划 |
-| MarketPost | id、ownerId、marketType(sell/buy)、title、body、category、imageIds、priceCents(闲置)、condition、handoverCampus、budgetCents(求购)、keywords、status | 闲置/求购两类；图片存 imageIds，读时由 upload 服务解析为 images；仅 active 可预约，已完成不可改/约 |
+| MarketPost | id、ownerId、marketType(sell/buy)、title、body、category、imageIds、priceCents(闲置)、condition、handoverCampus、budgetCents(求购)、keywords、appraisal?、status | 闲置/求购两类；图片存 imageIds，读时由 upload 服务解析为 images；appraisal仅闲置参考快照，区间/依据/固定参考声明校验见interfaces.md，不是鉴定凭证；改成求购删除旧快照。仅active可预约，已完成不可改/约 |
 | Reservation | id、contentId、buyerId、sellerId、status、createdAt | 本机二手交接预约；同一商品只允许一条pending，状态冲突返回CONFLICT；后续respond/complete仍待实现 |
 | LostFoundPost | id、ownerId、lostKind、category、images、location、status | lostKind 为丢失/拾获；category 为卡片/钥匙/杂物；1～3 张图片；作者确认完成 |
 | HelpPost | id、ownerId、category、body、status | category 首版为所需技能；后续匹配 User.skillTags |
-| Conversation | id、participantIds、contentType、contentId | 同一内容与参与者组合去重；仅参与者访问 |
+| Conversation | id、participantIds、contentType、contentId、createdAt | 同一内容与参与者组合去重；仅参与者访问；按来源筛选后，以最新Message.createdAt（无消息取会话createdAt）倒序分页，同时间稳定排序 |
 | Message | id、conversationId、senderId、body、createdAt | 发送者取登录态；会话权限由后端校验 |
 | Comment | id、contentType、contentId、authorId、body、createdAt | 首版用于失物公开评论；发布者收到站内通知 |
 | Notification | id、recipientId、contentType、contentId、read | 业务事件去重；本人读写；模板发送与业务事务分开 |
@@ -56,5 +57,7 @@ Cast 仅持有 waiting/hooked 状态：抛竿后约 1.4～2.5 秒咬钩，咬钩
 公告通过 `bulletin.list` 只读分页。演示校园活动使用 `kind: 'campus-activity'`，相对当前北京时间生成未来 1/2/3 天的三条活动，过滤已结束项后分页；包含起止时间、地点、组织方和参与方式，明确为虚构内容，不写入报名、event 或私信状态。
 
 状态约定：Plan open/full/closed/completed/expired；Invitation pending/accepted/rejected/cancelled/expired；Market active/reserved/completed/closed；Lost active/returned/closed；Help open/completed/closed。
+
+2026-10-22 A状态规则补齐：计划 `open/full` 由容量和成员数计算，到结束时间转 `expired`；`closed/completed/expired` 不因编辑容量恢复。待处理邀请不再满足公开性、来源单人、时间重叠、容量等推荐条件时永久转 `expired`。沿用既有状态，无新增字段；真实存储的事务校验仍待接入，详见interfaces.md。
 
 真实后端的索引建议：校区+类别+状态、作者+时间、会话参与者、conversationId+消息时间、recipientId+通知时间。把容量校验、来源计划关闭和成员写入放在一次事务中；不要让客户端控制状态流转。

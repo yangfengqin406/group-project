@@ -1,5 +1,6 @@
 import { ServiceError, requireThat } from '../utils/errors.js'
 import { findCandidates } from './matching.js'
+import { reconcilePlanState } from './plan-state.js'
 import { getPet, savePet } from './pet.js'
 import { listDemoBulletins } from './bulletin.js'
 import { dispatchFishing } from './fishing.js'
@@ -28,12 +29,10 @@ export function dispatch(db, method, p = {}) {
   }
   const owned = (item) =>
     requireThat(item.ownerId === me().id, 'FORBIDDEN', '只有发布者可以修改')
+  const canView = (item) =>
+    item && (item.visibility === 'public' || item.ownerId === me().id)
   const visible = (item) =>
-    requireThat(
-      item.visibility === 'public' || item.ownerId === me().id,
-      'FORBIDDEN',
-      '无权查看内容'
-    )
+    requireThat(canView(item), 'FORBIDDEN', '无权查看内容')
   const user = (id) => {
     const u = db.users.find((x) => x.id === id)
     requireThat(u, 'NOT_FOUND', '找不到同学资料')
@@ -119,6 +118,7 @@ export function dispatch(db, method, p = {}) {
     }
   }
   me()
+  reconcilePlanState(db)
   if (method.startsWith('wardrobe.'))
     return dispatchWardrobe(db, me().id, method.slice(9), p)
   if (method.startsWith('dive.'))
@@ -267,23 +267,31 @@ export function dispatch(db, method, p = {}) {
         old = content(type, p.id)
         owned(old)
         requireThat(
-          ['open', 'active'].includes(old.status),
+          (type === 'plan' ? ['open', 'full'] : ['open', 'active']).includes(
+            old.status
+          ),
           'CONFLICT',
           '该内容不能再编辑'
         )
       }
       if (type === 'plan') {
+        const startAt = Date.parse(p.startAt)
+        const endAt = Date.parse(p.endAt)
+        const now = Date.now()
         requireThat(
-          Number.isFinite(Date.parse(p.startAt)) &&
-            Number.isFinite(Date.parse(p.endAt)) &&
-            Date.parse(p.startAt) < Date.parse(p.endAt),
+          Number.isFinite(startAt) && Number.isFinite(endAt) && startAt < endAt,
           'INVALID_ARGUMENT',
           '结束时间应晚于开始时间'
         )
         requireThat(
-          Date.parse(p.startAt) > Date.now(),
+          endAt > now,
           'INVALID_ARGUMENT',
-          '活动开始时间应在未来'
+          '活动结束时间应在未来'
+        )
+        requireThat(
+          startAt > now || (old && startAt === Date.parse(old.startAt)),
+          'INVALID_ARGUMENT',
+          old ? '开始时间只能保留原时刻或调整到未来' : '活动开始时间应在未来'
         )
         requireThat(
           Number.isInteger(p.capacity) && p.capacity >= 2 && p.capacity <= 10,
@@ -324,6 +332,23 @@ export function dispatch(db, method, p = {}) {
             typeof p.keywords === 'string' && p.keywords.trim(),
             'INVALID_ARGUMENT',
             '请填写关键词'
+          )
+        }
+        if (p.appraisal !== undefined) {
+          const estimate = p.appraisal
+          requireThat(
+            p.marketType === 'sell' &&
+              estimate &&
+              Number.isSafeInteger(estimate.minCents) &&
+              estimate.minCents >= 0 &&
+              Number.isSafeInteger(estimate.maxCents) &&
+              estimate.maxCents >= estimate.minCents &&
+              typeof estimate.basis?.category === 'string' &&
+              typeof estimate.basis?.condition === 'string' &&
+              estimate.basis?.rule === '类别+成色示例估价' &&
+              estimate.note === '参考估价，仅供参考，最终价格由发布者决定',
+            'INVALID_ARGUMENT',
+            '估价仅适用于闲置，需完整保留参考区间、依据与参考声明'
           )
         }
         if (p.imageIds !== undefined) {
@@ -396,7 +421,10 @@ export function dispatch(db, method, p = {}) {
       if (type === 'plan') item.memberIds = old?.memberIds || [me().id]
       if (old) Object.assign(old, item)
       else db.contents[type].unshift(item)
-      return summarize(item)
+      if (type === 'market' && p.marketType === 'buy')
+        delete (old || item).appraisal
+      if (type === 'plan') reconcilePlanState(db)
+      return summarize(old || item)
     }
     const item = content(type, p.id)
     owned(item)
@@ -406,23 +434,27 @@ export function dispatch(db, method, p = {}) {
         'CONFLICT',
         '计划状态已变化'
       )
+    if (type === 'market')
+      requireThat(item.status === 'active', 'CONFLICT', '商品状态已变化')
     item.status =
       action === 'markReturned'
         ? 'returned'
         : action === 'close'
           ? 'closed'
           : 'completed'
+    if (type === 'plan') reconcilePlanState(db)
     return summarize(item)
   }
   if (method === 'market.reserve') {
-    db.reservations = db.reservations || []
     const item = content('market', p.id)
+    visible(item)
     requireThat(
       item.ownerId !== me().id,
       'INVALID_ARGUMENT',
       '不能预约自己的商品'
     )
     requireThat(item.status === 'active', 'CONFLICT', '该商品当前不可预约')
+    db.reservations = db.reservations || []
     requireThat(
       !db.reservations.some(
         (r) => r.contentId === item.id && r.status === 'pending'
@@ -465,6 +497,7 @@ export function dispatch(db, method, p = {}) {
       .filter(
         (c) =>
           c.id !== buy.id &&
+          canView(c) &&
           c.marketType === 'sell' &&
           c.status === 'active' &&
           c.ownerId !== me().id &&
@@ -634,6 +667,7 @@ export function dispatch(db, method, p = {}) {
           invite.targetPlanId
         )
       }
+      reconcilePlanState(db)
       return {
         invitation: clone(invite),
         targetPlan: summarize(content('plan', invite.targetPlanId))
@@ -666,19 +700,38 @@ export function dispatch(db, method, p = {}) {
     db.conversations.unshift(conversation)
     return clone(conversation)
   }
-  if (method === 'conversation.list')
-    return list(
-      db.conversations
-        .filter((c) => c.participantIds.includes(me().id))
-        .map((conversation) => ({
-          ...conversation,
-          peer: user(conversation.participantIds.find((id) => id !== me().id)),
-          lastMessage:
-            db.messages
-              .filter((message) => message.conversationId === conversation.id)
-              .slice(-1)[0] || null
-        }))
+  if (method === 'conversation.list') {
+    const userId = me().id
+    const source = p.contentType === undefined ? '' : p.contentType
+    requireThat(
+      source === '' || ['plan', 'help', 'market', 'lost_found'].includes(source),
+      'INVALID_ARGUMENT',
+      '请选择支持的会话来源'
     )
+    const timestamp = (value) => Date.parse(value) || 0
+    const latestMessages = new Map()
+    for (const message of db.messages) {
+      const previous = latestMessages.get(message.conversationId)
+      if (!previous || timestamp(message.createdAt) >= timestamp(previous.createdAt))
+        latestMessages.set(message.conversationId, message)
+    }
+    const ordered = db.conversations
+      .filter((c) => c.participantIds.includes(userId) && (!source || c.contentType === source))
+      .map((conversation, index) => {
+        const lastMessage = latestMessages.get(conversation.id) || null
+        return {
+          conversation, lastMessage, index,
+          activeAt: timestamp(lastMessage?.createdAt || conversation.createdAt)
+        }
+      })
+      .sort((a, b) => b.activeAt - a.activeAt || a.index - b.index)
+      .map(({ conversation, lastMessage }) => ({
+        ...conversation,
+        peer: user(conversation.participantIds.find((id) => id !== userId)),
+        lastMessage
+      }))
+    return list(ordered)
+  }
   if (method === 'message.list' || method === 'message.send') {
     const c = db.conversations.find((c) => c.id === p.conversationId)
     requireThat(c, 'NOT_FOUND', '会话不存在')
@@ -772,10 +825,12 @@ export function dispatch(db, method, p = {}) {
     return list(
       db.favorites
         .filter((f) => f.userId === me().id)
-        .map((f) => ({
-          ...f,
-          content: summarize(content(f.contentType, f.contentId))
-        }))
+        .flatMap((f) => {
+          const item = db.contents[f.contentType]?.find(
+            (c) => c.id === f.contentId
+          )
+          return canView(item) ? [{ ...f, content: summarize(item) }] : []
+        })
     )
   if (method === 'favorite.set') {
     const item = content(p.contentType, p.contentId)
