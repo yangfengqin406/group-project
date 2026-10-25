@@ -26,20 +26,20 @@
 | dive.finish | A | 本机固定步长回放输入并一次性结算，首通固定装扮与珍珠、重玩只发珍珠；不等同生产防作弊，真实后端待实现 |
 | upload.create | B | 本机记录content/avatar用途与临时地址，返回imageId；无云存储/文件类型大小校验，真实上传待接 |
 | upload.confirm | B | 本机校验图片归属并标记confirmed；真实业务关联与存储待接 |
-| conversation.open | C | 本机演示；真实后端待实现 |
+| conversation.open | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
 | conversation.get | C | 参与者直接读取会话；mock 与 C 服务端已有，线上待接入 |
-| conversation.list | C | 本机演示；真实后端待实现 |
-| message.send | C | 本机演示；真实后端待实现 |
-| message.list | C | 本机演示；真实后端待实现 |
-| comment.create | C | 失物公开评论本机演示；真实后端待实现 |
-| comment.list | C | 失物公开评论本机演示；真实后端待实现 |
-| notification.list | C | 本机演示；真实后端待实现 |
-| notification.markRead | C | 本机演示；真实后端待实现 |
+| conversation.list | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| message.send | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| message.list | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| comment.create | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| comment.list | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| notification.list | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| notification.markRead | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
 | favorite.set | B | 本机演示；真实后端待实现 |
 | favorite.list | B | 本机演示；真实后端待实现 |
 | myContent.list | B | 本机演示；真实后端待实现 |
-| report.create | C | 本机演示；真实后端待实现 |
-| report.adminResolve | C | C 服务端校验真实管理员角色后处理并通知；演示仍未实现，管理员后台待接 |
+| report.create | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| report.adminResolve | C | SQLite服务端管理员权限/处理/通知已实现；mock未实现，管理员查询/审核界面及跨模块屏蔽待接 |
 | plan.create | A | 本机演示；真实后端待实现 |
 | plan.update | A | 本机演示；真实后端待实现 |
 | plan.get | A | 本机演示；真实后端待实现 |
@@ -65,15 +65,16 @@
 | market.complete | B | 发布者标记completed本机演示；真实权限/事务待接 |
 | market.reserve | B | 本机非本人/active商品只允许一条pending预约；真实后端待接 |
 | market.getCandidates | B | 本机发布者查看该商品pending预约分页；真实后端待接 |
+| market.matchCandidates | B | 本人求购的公开在售闲置规则匹配已实现；同类同校及预算筛选后分页，真实后端待接 |
 | reservation.respond | B | 仅预留，未实现 |
 | reservation.complete | B | 仅预留，未实现 |
-| lostFound.create | C | 本机演示；真实后端待实现 |
-| lostFound.update | C | 本机演示；真实后端待实现 |
-| lostFound.get | C | 本机演示；真实后端待实现 |
-| lostFound.list | C | 本机演示；真实后端待实现 |
-| lostFound.markReturned | C | 本机演示；真实后端待实现 |
+| lostFound.create | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| lostFound.update | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| lostFound.get | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| lostFound.list | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
+| lostFound.markReturned | C | backend/c SQLite服务代码已合入；真实认证/上传与全组适配、总RPC/线上双设备待接入 |
 | event.list | A | 仅预留，未实现 |
 | event.get | A | 仅预留，未实现 |
 | event.createPlan | A | 仅预留，未实现 |
-| appraisal.estimate | B | 仅预留，未实现 |
-| subscription.send | C | 仅预留，未实现 |
+| appraisal.estimate | B | 已实现类别+成色示例参考估价，不分析照片；本机演示可用，真实后端待接 |
+| subscription.send | C | C服务明确NOT_IMPLEMENTED，真实模板/服务端发送及真机未完成 |

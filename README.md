@@ -2,7 +2,7 @@
 
 使用 **uni-app + Vue 3 + JavaScript**，同一套源码构建H5和微信小程序。团队成员为A（杨凤琴）、B（孙瑞）、C（姜澜）。
 
-**[浏览main阶段演示](https://yangfengqin406.github.io/group-project/#/)**：手机或电脑可打开。A（杨凤琴）的第二阶段与质量改进已通过[PR #15](https://github.com/yangfengqin406/group-project/pull/15)合入，B（孙瑞）的估价、求购匹配和个人空间已通过[PR #20](https://github.com/yangfengqin406/group-project/pull/20)合入，C（姜澜）的失物/消息既有成果保留。main更新后由Actions检查并自动发布，构建失败则保留上次成功版本；使用虚构本机数据，不能跨设备同步。见[部署文档](docs/deployment.md)。
+**[浏览main阶段演示](https://yangfengqin406.github.io/group-project/#/)**：手机或电脑可打开。A（杨凤琴）的第二阶段与质量改进已通过[PR #15](https://github.com/yangfengqin406/group-project/pull/15)合入，B（孙瑞）的估价、求购匹配和个人空间已通过[PR #20](https://github.com/yangfengqin406/group-project/pull/20)合入，C（姜澜）的SQLite失物/统一消息服务端与权限通知已通过[PR #23](https://github.com/yangfengqin406/group-project/pull/23)合入。main更新后由Actions检查并自动发布，构建失败则保留上次成功版本；使用虚构本机数据，不能跨设备同步。见[部署文档](docs/deployment.md)。
 
 **[团队周报（监督查看）](docs/weekly-log.md)**：按周查看A/B/C完成内容、成果证据、问题和下一步。固定入口为[main分支周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)；详细测试过程见[验证记录](docs/verification.md)。
 
@@ -48,9 +48,11 @@ npm run dev:mp-weixin
 
 ## 还没有完成什么
 
+2026-10-25全组核对：main的检查、231项测试、H5/微信构建及原始包体预算通过，H5部署成功；这不代表核心真实版本全部完成。当前缺口与责任见[实现边界](docs/status.md)，实际验证见[验证记录](docs/verification.md)。A今天的返航、斗地主、食人鱼和音乐等仍为本地未提交工作，不在main；这批306项本地测试不能记成main的测试数量。
+
 C（姜澜）10月25日补充 [失物与统一消息服务端](backend/c/README.md)，包含 SQLite 持久化、参与者权限、幂等留言、归还通知、评论及管理员举报处理，附本地集成测试；仍需接入 B 的真实认证/上传与全组数据库方案。前端默认演示模式没有改变，不等于线上通信、双设备验收或微信订阅发送已完成。
 
-真实微信/H5 登录、数据库、跨用户在线通信、文件存储、服务端权限与事务、真实订阅通知和小程序审核发布均未接入。钓鱼、衣柜与潜水的真实后端、生产防作弊、真实校园活动来源和报名、亭子真人匹配与麻将仍待实现；当前小游戏和活动均为本机演示。H5 阶段演示已部署到 GitHub Pages，实际发布与检查见 [验证记录](docs/verification.md)；微信工具上传与真机尚未验收。H5 托管完成不代表真实业务或小程序审核完成。
+全组真实登录、公共上传、A/B业务与C服务的统一数据/RPC、跨设备通信尚未接成上线闭环；C已有SQLite权限与事务代码，仍需团队真实适配。真实订阅发送、小程序真机及审核也待完成。钓鱼、衣柜与潜水的真实后端、生产防作弊、真实校园活动来源和报名仍待实现；main未交付亭子真人玩法，A本地已改为三人斗地主但未提交/合入，麻将不再作为当前目标。main现有小游戏和活动仍为本机演示。H5 阶段演示已部署到 GitHub Pages，实际发布与检查见 [验证记录](docs/verification.md)；微信工具上传与真机尚未验收。H5 托管完成不代表真实业务或小程序审核完成。
 
 二手等业务内容的演示图片使用本机临时地址，刷新或重启后可能失效；真实模式需接入公共上传。原创宠物的像素或 PNG 数据通过 pet 服务保存在本机演示身份下，导入文件不等于云上传；真实模式的原创保存明确返回未实现，预设宠物同步也需要后端支持。
 
