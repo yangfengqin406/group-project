@@ -1,0 +1,340 @@
+{
+  "mode": "before",
+  "samples": 1000,
+  "falseSwaps": 14,
+  "realSwaps": 0,
+  "elapsedSceneSeconds": 33,
+  "detail": {
+    "samples": 1000,
+    "falseSwaps": [
+      {
+        "sample": 528,
+        "pair": "self:squirrel",
+        "actors": [
+          {
+            "id": "self",
+            "x": 0.46,
+            "y": 0.68,
+            "z": 780
+          },
+          {
+            "id": "squirrel",
+            "x": 0.460631,
+            "y": 0.6797369999999999,
+            "z": 780
+          }
+        ],
+        "actual": 1,
+        "drawn": -1
+      },
+      {
+        "sample": 532,
+        "pair": "self:squirrel",
+        "actors": [
+          {
+            "id": "self",
+            "x": 0.46,
+            "y": 0.68,
+            "z": 780
+          },
+          {
+            "id": "squirrel",
+            "x": 0.45884300000000006,
+            "y": 0.6792279999999999,
+            "z": 779
+          }
+        ],
+        "actual": 1,
+        "drawn": 1
+      },
+      {
+        "sample": 534,
+        "pair": "self:capybara",
+        "actors": [
+          {
+            "id": "self",
+            "x": 0.46,
+            "y": 0.68,
+            "z": 780
+          },
+          {
+            "id": "capybara",
+            "x": 0.460674,
+            "y": 0.6797190000000001,
+            "z": 780
+          }
+        ],
+        "actual": 1,
+        "drawn": -1
+      },
+      {
+        "sample": 534,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.460674,
+            "y": 0.6797190000000001,
+            "z": 780
+          },
+          {
+            "id": "squirrel",
+            "x": 0.457685,
+            "y": 0.678457,
+            "z": 778
+          }
+        ],
+        "actual": 1,
+        "drawn": 1
+      },
+      {
+        "sample": 537,
+        "pair": "self:capybara",
+        "actors": [
+          {
+            "id": "self",
+            "x": 0.46,
+            "y": 0.68,
+            "z": 780
+          },
+          {
+            "id": "capybara",
+            "x": 0.45866,
+            "y": 0.679107,
+            "z": 779
+          }
+        ],
+        "actual": 1,
+        "drawn": 1
+      },
+      {
+        "sample": 552,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.44860900000000004,
+            "y": 0.6724060000000001,
+            "z": 772
+          },
+          {
+            "id": "squirrel",
+            "x": 0.447269,
+            "y": 0.671513,
+            "z": 772
+          }
+        ],
+        "actual": 1,
+        "drawn": -1
+      },
+      {
+        "sample": 553,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.44793900000000003,
+            "y": 0.67196,
+            "z": 772
+          },
+          {
+            "id": "squirrel",
+            "x": 0.446691,
+            "y": 0.671127,
+            "z": 771
+          }
+        ],
+        "actual": 1,
+        "drawn": 1
+      },
+      {
+        "sample": 557,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.445259,
+            "y": 0.670173,
+            "z": 770
+          },
+          {
+            "id": "squirrel",
+            "x": 0.44437600000000005,
+            "y": 0.669584,
+            "z": 770
+          }
+        ],
+        "actual": 1,
+        "drawn": -1
+      },
+      {
+        "sample": 558,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.444589,
+            "y": 0.669726,
+            "z": 770
+          },
+          {
+            "id": "squirrel",
+            "x": 0.443797,
+            "y": 0.669198,
+            "z": 769
+          }
+        ],
+        "actual": 1,
+        "drawn": 1
+      },
+      {
+        "sample": 559,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.443919,
+            "y": 0.66928,
+            "z": 769
+          },
+          {
+            "id": "squirrel",
+            "x": 0.443219,
+            "y": 0.668813,
+            "z": 769
+          }
+        ],
+        "actual": 1,
+        "drawn": -1
+      },
+      {
+        "sample": 560,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.443249,
+            "y": 0.668833,
+            "z": 769
+          },
+          {
+            "id": "squirrel",
+            "x": 0.44264000000000003,
+            "y": 0.6684269999999999,
+            "z": 768
+          }
+        ],
+        "actual": 1,
+        "drawn": 1
+      },
+      {
+        "sample": 561,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.442579,
+            "y": 0.668386,
+            "z": 768
+          },
+          {
+            "id": "squirrel",
+            "x": 0.442061,
+            "y": 0.6680410000000001,
+            "z": 768
+          }
+        ],
+        "actual": 1,
+        "drawn": -1
+      },
+      {
+        "sample": 565,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.439899,
+            "y": 0.6665989999999999,
+            "z": 767
+          },
+          {
+            "id": "squirrel",
+            "x": 0.439747,
+            "y": 0.666498,
+            "z": 766
+          }
+        ],
+        "actual": 1,
+        "drawn": 1
+      },
+      {
+        "sample": 566,
+        "pair": "capybara:squirrel",
+        "actors": [
+          {
+            "id": "capybara",
+            "x": 0.439229,
+            "y": 0.666153,
+            "z": 766
+          },
+          {
+            "id": "squirrel",
+            "x": 0.439168,
+            "y": 0.6661119999999999,
+            "z": 766
+          }
+        ],
+        "actual": 1,
+        "drawn": -1
+      }
+    ],
+    "realSwaps": 0,
+    "previous": {
+      "self:capybara": {
+        "actual": 1,
+        "drawn": 1
+      },
+      "self:squirrel": {
+        "actual": 1,
+        "drawn": 1
+      },
+      "self:mushroom": {
+        "actual": 1,
+        "drawn": 1
+      },
+      "capybara:squirrel": {
+        "actual": -1,
+        "drawn": -1
+      },
+      "capybara:mushroom": {
+        "actual": -1,
+        "drawn": -1
+      },
+      "squirrel:mushroom": {
+        "actual": -1,
+        "drawn": -1
+      }
+    },
+    "imageSources": {
+      "self": [
+        "/static/pets/rabbit-atlas.webp",
+        "/static/pets/wearables/leaf-backpack-front.webp"
+      ],
+      "capybara": [
+        "/static/pets/capybara-atlas.webp",
+        "/static/pets/wearables/legacy-scarf-front.webp"
+      ],
+      "squirrel": [
+        "/static/pets/squirrel-atlas.webp",
+        "/static/pets/wearables/leaf-backpack-front.webp"
+      ],
+      "mushroom": [
+        "/static/pets/mushroom-atlas.webp",
+        "/static/pets/wearables/legacy-flower-front.webp"
+      ]
+    },
+    "minOpacity": 1,
+    "maxOpacity": 1
+  },
+  "method": "Actual built H5 in isolated browser with accelerated Date.now and the original 33ms scene callback; computed CSS z-index sampled after Vue update, not real-time physical-device verification."
+}

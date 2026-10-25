@@ -1,0 +1,28 @@
+{
+  "title": "明亮木琴与拨弦背景音乐复核",
+  "startedAt": "2026-10-25T10:35:57.826Z",
+  "cases": [
+    {
+      "name": "新版86 BPM循环实际播放，输出非零",
+      "status": "passed",
+      "nodes": [
+        {
+          "started": true,
+          "stopped": false,
+          "duration": 22.325578231292518,
+          "loop": true
+        }
+      ],
+      "rms": 0.024944914968642436
+    },
+    {
+      "name": "音乐开关可用且重复开启仅有一条循环",
+      "status": "passed"
+    }
+  ],
+  "limitations": [
+    "独立H5浏览器实际输出采样，不代替用户听感或微信真机验收"
+  ],
+  "status": "passed",
+  "finishedAt": "2026-10-25T10:35:58.537Z"
+}

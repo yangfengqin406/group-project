@@ -1,0 +1,85 @@
+{
+  "title": "真实本地校园服务双独立浏览器会话人工操作验收",
+  "startedAt": "2026-10-25T16:00:08.783Z",
+  "cases": [
+    {
+      "name": "两独立浏览器上下文通过实际注册界面创建并登录不同真实账号",
+      "status": "passed"
+    },
+    {
+      "name": "通过真实选图控件、uni.uploadFile上传并发布，另一独立账号读取持久内容及实际图片",
+      "status": "passed"
+    },
+    {
+      "name": "两账号从实际联系入口互发留言，另一会话刷新可见，页面重载后身份和留言保留",
+      "status": "passed"
+    },
+    {
+      "name": "买家实际预约、卖家入口接受、买家确认交接，双方重载均显示交易完成",
+      "status": "passed"
+    },
+    {
+      "name": "两个账号实际发布相近计划、发邀请、确认说明后接受；目标2/2满员，来源计划停止招募，刷新状态保留",
+      "status": "passed"
+    },
+    {
+      "name": "甲会话终态无横向溢出",
+      "status": "passed",
+      "layout": {
+        "name": "甲终态",
+        "width": 390,
+        "scrollWidth": 375,
+        "overflow": false
+      }
+    },
+    {
+      "name": "乙会话终态无横向溢出",
+      "status": "passed",
+      "layout": {
+        "name": "乙终态",
+        "width": 390,
+        "scrollWidth": 375,
+        "overflow": false
+      }
+    }
+  ],
+  "screenshots": [
+    "account-390.png",
+    "market-upload-390.png",
+    "market-other-account-779.png",
+    "chat-two-users-390.png",
+    "reservation-completed-390.png",
+    "invitation-confirm-390.png",
+    "invitation-accepted-390.png"
+  ],
+  "consoleErrors": [],
+  "limitations": [
+    "使用两个独立浏览器上下文及真实本机网络，不等于两台物理设备或微信真机验收",
+    "QA 使用隔离端口和独立数据库，未写入用户预览数据"
+  ],
+  "network": {
+    "uploadRequests": 1,
+    "rpcRequests": 97,
+    "failedResponses": []
+  },
+  "accountLayout": {
+    "name": "390px独立账号注册",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": false
+  },
+  "marketLayout": {
+    "name": "779px商品详情",
+    "width": 779,
+    "scrollWidth": 764,
+    "overflow": false
+  },
+  "chatLayout": {
+    "name": "390px双账号留言",
+    "width": 390,
+    "scrollWidth": 375,
+    "overflow": false
+  },
+  "status": "passed",
+  "finishedAt": "2026-10-25T16:00:21.059Z"
+}

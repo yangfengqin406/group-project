@@ -142,7 +142,7 @@
             >
               {{ appraising ? '正在估价…' : '查看参考估价' }}
             </button>
-            <view class="muted">本机演示按类别和成色给出示例区间，不识别照片内容；价格可自行填写。</view>
+            <view class="muted">按类别和成色给出规则参考区间，不识别照片内容；价格可自行填写。</view>
             <view v-if="appraisal" class="appraisal-result">
               <view class="appraisal-range">
                 参考估价：¥{{ (appraisal.minCents / 100).toFixed(2) }} ～
@@ -192,7 +192,7 @@
         <button class="secondary" @tap="chooseImages">添加图片</button>
       </view>
       <view class="muted">
-        演示图片只在本机预览；点图片移除。真实模式待接入公共上传服务。
+        {{ config.apiMode === 'mock' ? '演示图片只在本机预览。' : '图片上传后保存到校园服务，支持 JPG、PNG、WebP，每张最多 5 MB。' }}点图片移除。
       </view>
       <view class="actions">
         <button class="primary" :disabled="saving || uploading" @tap="save">
@@ -365,10 +365,6 @@ watch(() => session.user?.id, (userId) => {
 onUnload(() => { alive = false; ++loadVersion; invalidateAppraisal() })
 function chooseImages() {
   if (saving.value || uploading.value || !ready.value) return
-  if (type.value !== 'market' && config.apiMode !== 'mock') {
-    error.value = '请先接入真实公共上传服务，不能提交本机临时图片'
-    return
-  }
   const count =
     type.value === 'market' ? imageIds.value.length : form.images.length
   if (count >= 3) return
@@ -388,6 +384,12 @@ function chooseImages() {
             if (!alive || editorUserId !== session.user?.id) return
             imageIds.value.push(result.imageId)
             previews.value.push(result.url)
+          }
+        } else if (config.apiMode === 'http') {
+          for (const path of r.tempFilePaths) {
+            const result = await api.upload.create({ usage: 'content', data: path })
+            if (!alive || editorUserId !== session.user?.id) return
+            form.images.push(result.url)
           }
         } else {
           form.images.push(...r.tempFilePaths)

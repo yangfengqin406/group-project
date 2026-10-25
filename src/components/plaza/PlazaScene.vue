@@ -156,6 +156,7 @@ import PetAvatar from '../pet/PetAvatar.vue'
 import PlazaLeisure from './PlazaLeisure.vue'
 import { defaultPet } from '../../utils/pet-appearance.js'
 import { createPlazaWalker } from '../../utils/plaza-motion.js'
+import { plazaActorDepths } from '../../utils/plaza-depth.js'
 import { PLAZA_NEIGHBORS, createNeighborGreetings } from '../../utils/plaza-neighbors.js'
 import {
   createPlazaNavigator,
@@ -218,6 +219,7 @@ const visiblePeople = computed(() => [
   ...(props.appearance ? [{ id: 'self', ...player.value }] : []),
   ...people.value
 ])
+const actorDepths = computed(() => plazaActorDepths(visiblePeople.value))
 const hasCustomBack = computed(() => {
   const frame = props.appearance?.art?.back
   return Boolean(
@@ -288,7 +290,7 @@ function buildingStyle(id) {
 }
 const personStyle = (person) => ({
   ...locate(person.position),
-  zIndex: Math.round(person.position.y * 1000) + 100
+  zIndex: actorDepths.value[person.id]
 })
 function refreshPeople() {
   player.value = navigator.getState()

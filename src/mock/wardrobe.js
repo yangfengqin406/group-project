@@ -1,4 +1,5 @@
 import { ServiceError, requireThat } from '../utils/errors.js'
+import { DIVE_LEVELS } from '../utils/dive-game.js'
 import {
   WARDROBE_ITEMS,
   WARDROBE_SLOTS,
@@ -154,12 +155,38 @@ export function dispatchWardrobe(db, userId, action, params = {}) {
   throw new ServiceError('NOT_IMPLEMENTED', '衣柜操作尚未实现')
 }
 
-export function grantDiveReward(db, userId, levelId) {
+function validateDiveCollection(levelId, collectedPearls) {
+  const level = DIVE_LEVELS.find((entry) => entry.id === levelId)
   requireThat(
-    Number.isInteger(levelId) && levelId >= 1 && levelId <= 3,
+    level && Number.isInteger(levelId),
     'INVALID_ARGUMENT',
     '请选择第一至第三关'
   )
+  requireThat(
+    Number.isInteger(collectedPearls) &&
+      collectedPearls >= 0 && collectedPearls <= level.requiredPearls,
+    'INVALID_ARGUMENT',
+    '本次收获必须来自关卡中的珍珠'
+  )
+}
+
+export function grantDiveReturnReward(db, userId, levelId, collectedPearls) {
+  validateDiveCollection(levelId, collectedPearls)
+  const state = stateFor(db, userId)
+  requireThat(
+    levelId === 1 || state.clearedLevels.includes(levelId - 1),
+    'FORBIDDEN',
+    '请先完成上一关'
+  )
+  state.pearls += collectedPearls
+  return {
+    firstClear: false, items: [], pearls: collectedPearls,
+    state: getWardrobeState(db, userId)
+  }
+}
+
+export function grantDiveReward(db, userId, levelId, collectedPearls = 0) {
+  validateDiveCollection(levelId, collectedPearls)
   const state = stateFor(db, userId)
   requireThat(
     levelId === 1 || state.clearedLevels.includes(levelId - 1),
@@ -169,7 +196,7 @@ export function grantDiveReward(db, userId, levelId) {
   const firstClear = !state.clearedLevels.includes(levelId)
   const rule = diveRewards[levelId]
   const items = firstClear ? [...rule.items] : []
-  const pearls = firstClear ? rule.pearls : rule.replay
+  const pearls = (firstClear ? rule.pearls : rule.replay) + collectedPearls
   if (firstClear) {
     state.clearedLevels.push(levelId)
     for (const id of items) addOwned(state, id)

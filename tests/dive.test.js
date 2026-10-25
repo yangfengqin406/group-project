@@ -79,14 +79,14 @@ test('首次只解锁浅湾，服务签发种子与编号，真实回放成功�
   assert.deepEqual(result.reward, {
     firstClear: true,
     items: ['sailor-shirt', 'shell-shoes'],
-    pearls: 30
+    pearls: 33
   })
   assert.equal(result.state.unlockedLevel, 2)
   assert.equal(result.state.activeRun, null)
   assert.throws(() => run(db, 'finish', proof, startedAt + proof.ticks * 50), {
     code: 'CONFLICT'
   })
-  assert.equal(run(db, 'getState').pearls, 30)
+  assert.equal(run(db, 'getState').pearls, 33)
 })
 
 test('失败不给奖励、不扣衣柜，编号消费；新run、过期及他人run不能结算', () => {
@@ -100,8 +100,8 @@ test('失败不给奖励、不扣衣柜，编号消费；新run、过期及他�
       run(
         db,
         'finish',
-        { runId: stale.id, ticks: 800, trace: [] },
-        startedAt + 40000
+        { runId: stale.id, ticks: 1000, trace: [] },
+        startedAt + 50000
       ),
     { code: 'CONFLICT' }
   )
@@ -111,16 +111,16 @@ test('失败不给奖励、不扣衣柜，编号消费；新run、过期及他�
         db,
         'user_demo_b',
         'finish',
-        { runId: issued.id, ticks: 800, trace: [] },
-        { now: startedAt + 40000 }
+        { runId: issued.id, ticks: 1000, trace: [] },
+        { now: startedAt + 50000 }
       ),
     { code: 'CONFLICT' }
   )
   const failed = run(
     db,
     'finish',
-    { runId: issued.id, ticks: 800, trace: [] },
-    startedAt + 40000
+    { runId: issued.id, ticks: 1000, trace: [] },
+    startedAt + 50000
   )
   assert.equal(failed.status, 'failed')
   assert.equal(failed.reward, null)
@@ -131,8 +131,8 @@ test('失败不给奖励、不扣衣柜，编号消费；新run、过期及他�
       run(
         db,
         'finish',
-        { runId: issued.id, ticks: 800, trace: [] },
-        startedAt + 40000
+        { runId: issued.id, ticks: 1000, trace: [] },
+        startedAt + 50000
       ),
     { code: 'CONFLICT' }
   )
@@ -143,7 +143,7 @@ test('失败不给奖励、不扣衣柜，编号消费；新run、过期及他�
       run(
         db,
         'finish',
-        { runId: expired.id, ticks: 800, trace: [] },
+        { runId: expired.id, ticks: 1000, trace: [] },
         expired.expiresAt + 1
       ),
     { code: 'CONFLICT' }
@@ -153,7 +153,7 @@ test('失败不给奖励、不扣衣柜，编号消费；新run、过期及他�
 test('关卡递进首通固定奖励，重玩只给珍珠，返回值不能改写保存结果', () => {
   const db = createSeed()
   let now = startedAt
-  const amounts = [30, 45, 60]
+  const amounts = [33, 49, 65]
   for (const levelId of [1, 2, 3, 1]) {
     const issued = run(db, 'start', { levelId }, now)
     const proof = proofFor(issued)
@@ -162,13 +162,13 @@ test('关卡递进首通固定奖励，重玩只给珍珠，返回值不能改�
     assert.equal(result.status, 'cleared')
     const repeated = result.state.clearedLevels.length === 3 && levelId === 1
     assert.equal(result.reward.firstClear, !repeated)
-    assert.equal(result.reward.pearls, repeated ? 8 : amounts[levelId - 1])
+    assert.equal(result.reward.pearls, repeated ? 11 : amounts[levelId - 1])
     if (repeated) assert.deepEqual(result.reward.items, [])
     result.wardrobe.pearls = 99999
     result.state.clearedLevels.length = 0
   }
   assert.deepEqual(run(db, 'getState').clearedLevels, [1, 2, 3])
-  assert.equal(run(db, 'getState').pearls, 143)
+  assert.equal(run(db, 'getState').pearls, 158)
   assert.equal(dispatchDive(db, 'user_demo_b', 'getState').pearls, 0)
 })
 

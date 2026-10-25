@@ -24,6 +24,7 @@
         <button class="secondary" @tap="editProfile">编辑资料</button>
         <button class="secondary" @tap="publicProfile">查看我的公开主页</button>
         <button class="secondary" @tap="askSubscription">接收匹配通知</button>
+        <button v-if="!isMock" class="secondary" @tap="logout">退出账号</button>
       </view>
     </view>
     <view class="panel">
@@ -116,7 +117,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
-import { user, myContent, favorite } from '../../services/index.js'
+import { user, myContent, favorite, auth } from '../../services/index.js'
 import { demoUsers, switchDemoUser, resetDemo } from '../../mock/index.js'
 import { config } from '../../config/index.js'
 import { openProfile, contentNames, contentUrl, formatTime } from '../../utils/routes.js'
@@ -127,6 +128,9 @@ import ContentCard from '../../components/ContentCard.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
 import { session } from '../../utils/session.js'
+async function logout() {
+  try { await auth.logout() } catch (e) { error.value = errorText(e) }
+}
 const profile = ref(null),
   items = ref([]),
   error = ref(''),

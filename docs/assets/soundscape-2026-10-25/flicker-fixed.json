@@ -1,0 +1,59 @@
+{
+  "mode": "fixed",
+  "samples": 6000,
+  "falseSwaps": 0,
+  "realSwaps": 16,
+  "elapsedSceneSeconds": 198,
+  "detail": {
+    "samples": 6000,
+    "falseSwaps": [],
+    "realSwaps": 16,
+    "previous": {
+      "self:capybara": {
+        "actual": 1,
+        "drawn": 1
+      },
+      "self:squirrel": {
+        "actual": 1,
+        "drawn": 1
+      },
+      "self:mushroom": {
+        "actual": 1,
+        "drawn": 1
+      },
+      "capybara:squirrel": {
+        "actual": -1,
+        "drawn": -1
+      },
+      "capybara:mushroom": {
+        "actual": 1,
+        "drawn": 1
+      },
+      "squirrel:mushroom": {
+        "actual": 1,
+        "drawn": 1
+      }
+    },
+    "imageSources": {
+      "self": [
+        "/static/pets/rabbit-atlas.webp",
+        "/static/pets/wearables/leaf-backpack-front.webp"
+      ],
+      "capybara": [
+        "/static/pets/capybara-atlas.webp",
+        "/static/pets/wearables/legacy-scarf-front.webp"
+      ],
+      "squirrel": [
+        "/static/pets/squirrel-atlas.webp",
+        "/static/pets/wearables/leaf-backpack-front.webp"
+      ],
+      "mushroom": [
+        "/static/pets/mushroom-atlas.webp",
+        "/static/pets/wearables/legacy-flower-front.webp"
+      ]
+    },
+    "minOpacity": 1,
+    "maxOpacity": 1
+  },
+  "method": "Actual built H5 in isolated browser with accelerated Date.now and the original 33ms scene callback; computed CSS z-index sampled after Vue update, not real-time physical-device verification."
+}

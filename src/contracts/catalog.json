@@ -1,7 +1,7 @@
 {
   "auth": {
     "owner": "B",
-    "methods": ["login"]
+    "methods": ["login", "register", "logout"]
   },
   "user": {
     "owner": "B",

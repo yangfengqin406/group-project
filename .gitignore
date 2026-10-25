@@ -13,7 +13,7 @@ project.private.config.json
 !.vscode/extensions.json
 *.pem
 *.key
-backend/data/
+.local-campus/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm

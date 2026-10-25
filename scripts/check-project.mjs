@@ -2,7 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import assert from 'node:assert/strict'
 const pages = JSON.parse(fs.readFileSync('src/pages.json', 'utf8'))
-for (const page of pages.pages)
+const allPages = [...pages.pages, ...(pages.subPackages || pages.subpackages || []).flatMap(
+  (group) => group.pages.map((page) => ({ ...page, path: `${group.root}/${page.path}` }))
+)]
+assert.equal(new Set(allPages.map((page) => page.path)).size, allPages.length, '页面路由重复')
+for (const page of allPages)
   assert(fs.existsSync(`src/${page.path}.vue`), `缺失页面 ${page.path}`)
 for (const item of pages.tabBar.list) {
   assert(pages.pages.some((p) => p.path === item.pagePath))
@@ -35,5 +39,5 @@ for (const file of walk('src').filter((f) => /\.(js|vue)$/.test(f))) {
   }
 }
 console.log(
-  `结构检查通过：${pages.pages.length} 个页面，${Object.values(catalog).reduce((n, v) => n + v.methods.length, 0)} 个接口调用位置。`
+  `结构检查通过：${allPages.length} 个页面，${Object.values(catalog).reduce((n, v) => n + v.methods.length, 0)} 个接口调用位置。`
 )
