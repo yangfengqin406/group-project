@@ -84,14 +84,9 @@ async function initialize() {
   cursor.value = null
   error.value = ''
   try {
-    let next = null
-    do {
-      const r = await conversation.list({ cursor: next })
-      if (!currentRequest()) return
-      current.value = r.items.find((c) => c.id === id.value) || current.value
-      next = r.nextCursor
-    } while (next && !current.value)
-    if (!current.value) throw new Error('会话不存在或没有权限')
+    const result = await conversation.get({ id: id.value })
+    if (!currentRequest()) return
+    current.value = result
     await load(true)
   } catch (e) {
     if (currentRequest()) error.value = errorText(e)
@@ -167,5 +162,5 @@ onShow(() => {
   else load(true)
 })
 onHide(() => { visible = false; ++loadVersion; loading.value = false })
-onUnload(() => { ++loadVersion; pendingSend = null })
+onUnload(() => { visible = false; ++loadVersion; pendingSend = null })
 </script>

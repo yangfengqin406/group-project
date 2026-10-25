@@ -33,7 +33,7 @@
   },
   "conversation": {
     "owner": "C",
-    "methods": ["open", "list"]
+    "methods": ["open", "get", "list"]
   },
   "message": {
     "owner": "C",
