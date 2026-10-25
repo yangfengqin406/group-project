@@ -1,6 +1,6 @@
 # 接口维护清单
 
-本清单记录2026-10-25本机真实服务整合；本轮尚未合入main，交付状态见weekly-log.md。默认演示和公网GitHub Pages仍为mock。
+本清单记录2026-10-25本机真实服务整合；本轮已通过PR #25合入main，交付状态见weekly-log.md。默认演示和公网GitHub Pages仍为mock。
 
 完整函数定义在 src/services，具体输入返回看 interfaces.md；表中“演示”只表示本机实现。
 

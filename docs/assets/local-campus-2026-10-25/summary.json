@@ -55,6 +55,8 @@
     "official WeChat login and subscription",
     "team rehearsal and classmate trial"
   ],
-  "releaseStatus": "work branch; see weekly-log.md for current PR and merge state",
-  "finalVerifiedAt": "2026-10-26T00:00:21+08:00"
+  "releaseStatus": "merged to main via PR #25",
+  "finalVerifiedAt": "2026-10-26T00:00:21+08:00",
+  "mergeCommit": "a8d3a7a9053952028042e248b1e60ea8fa0a191a",
+  "ciRun": "https://github.com/yangfengqin406/group-project/actions/runs/40210356090"
 }

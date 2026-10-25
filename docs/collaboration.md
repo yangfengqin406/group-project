@@ -149,8 +149,10 @@ A 在 `codex/a-phase-one-plaza` 完成旧原型的广场画面与豆豆角色迁
 用户确认只丢本局未带回的收获，既有珍珠与装扮保留；斗地主先完成同一Wi-Fi下三设备可玩的局域网真实访客版，再接公网。A（杨凤琴）沿用A分支负责潜水引擎、结算/怪鱼外观与独立斗地主模块；不改B真实校园登录，不将独立访客令牌当作B认证交付。接口/规则/rooms分包和VITE_GAME_BASE_URL先登记interfaces.md。公共package脚本将增加局域网游戏构建与启动命令，不增加前端依赖；Node服务单独目录server/landlord，服务端规则不打入微信主包。周报仍是main的weekly-log，按实际本地验证与尚未公网/三台物理设备验收记录，不能编造上线。保留未提交manifest AppID及A/B/C工作分支。
 # 2026-10-25 本机后端集成协调
 
-A（杨凤琴）按用户确认接入独立账号、真实文件上传和 SQLite 校园服务，协作修改 B/C 公共契约并沿用原业务归属。新增接口、端点及模块协作约定已先记录在 [本机校园服务](local-campus-backend.md)；不触碰本机私有 AppID，不删除 main 与 A/B/C 工作分支。此增量尚未提交，不能预先记作 main 已完成。
+A（杨凤琴）按用户确认接入独立账号、真实文件上传和 SQLite 校园服务，协作修改 B/C 公共契约并沿用原业务归属。新增接口、端点及模块协作约定已先记录在 [本机校园服务](local-campus-backend.md)；不触碰本机私有 AppID，不删除 main 与 A/B/C 工作分支。此增量已通过[PR #25](https://github.com/yangfengqin406/group-project/pull/25)于10月26日合入main，代码与文档同PR交付。
 
 整合使用临时审阅分支 `codex/local-campus-backend-20261025`，基于已含PR #24周报的main，纳入本轮本机后端及此前授权的A本地潜水/斗地主/视觉音频扩展；不替换人员工作分支。代码、受影响文档和证据同PR交付，不提交本机AppID、project.config.json、账号数据库或真实上传文件。
+
+PR #25合入后，临时文档分支 `codex/docs-local-campus-delivery-20261026` 仅同步周报、进度和验证中的实际合并/CI状态，不改变业务代码，也不删除原人员分支。
 
 双端构建后实测主包 2,101,990 字节，超过团队 2 MiB 预算 4,838 字节。本次将现有 `pages/content` 发布/详情页声明为独立分包，保留全部原页面 URL 与源码位置；由 A（杨凤琴）协调公共 pages.json，构建后再记录实际包体。
