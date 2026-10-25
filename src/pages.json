@@ -52,18 +52,6 @@
       }
     },
     {
-      "path": "pages/content/detail",
-      "style": {
-        "navigationBarTitleText": "内容详情"
-      }
-    },
-    {
-      "path": "pages/content/publish",
-      "style": {
-        "navigationBarTitleText": "发布"
-      }
-    },
-    {
       "path": "pages/partner/candidates",
       "style": {
         "navigationBarTitleText": "计划推荐"
@@ -86,6 +74,32 @@
       "style": {
         "navigationBarTitleText": "编辑资料"
       }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "pages/content",
+      "pages": [
+        { "path": "detail", "style": { "navigationBarTitleText": "内容详情" } },
+        { "path": "publish", "style": { "navigationBarTitleText": "发布" } }
+      ]
+    },
+    {
+      "root": "rooms",
+      "pages": [
+        {
+          "path": "account/index",
+          "style": { "navigationBarTitleText": "来到小镇" }
+        },
+        {
+          "path": "landlord/index",
+          "style": {
+            "navigationBarTitleText": "歇脚亭·斗地主",
+            "navigationStyle": "custom",
+            "pageOrientation": "auto"
+          }
+        }
+      ]
     }
   ],
   "globalStyle": {

@@ -12,12 +12,16 @@
           <view class="dive-title">泡泡潜水冒险</view>
           <text class="dive-subtitle">带上伙伴，去水下捡一束星光。</text>
         </view>
-        <button class="shore-button" @tap="askClose">回岸边</button>
+        <view class="dive-header-actions">
+          <button class="shore-button dive-sound-button" :aria-pressed="soundState.effects" aria-label="切换水下音效" @tap="soundscape.toggleEffects()">{{ soundState.effects ? '水声开' : '水声关' }}</button>
+          <button class="shore-button" @tap="askClose">{{ gameState?.status === 'playing' ? '离开冒险' : '回岸边' }}</button>
+        </view>
       </view>
       <view v-if="error" class="dive-error" role="alert">
         {{ error }}
         <button :disabled="Boolean(busy)" @tap="retryRequest">重试</button>
       </view>
+      <view v-if="soundState.message" class="dive-error" role="status">{{ soundState.message }}</view>
 
       <scroll-view v-if="!gameState" class="level-scroll" scroll-y>
         <view class="dive-intro">
@@ -73,8 +77,7 @@
           </button>
         </view>
         <view class="adventure-rules">
-          每关 3
-          颗爱心。失败会安全回岸，已有装扮不会减少。首通装扮固定赠送，珍珠可去衣柜自选兑换。
+          每关3颗爱心。缺氧先扣1心，之后每5秒再扣1心；还有机会返航。每颗珍珠是1枚待带回收获，静止长按返航2秒可收好它们；生命归零只丢本局收获，已有珍珠与装扮保留。真正通关另得首通礼物或重游奖金。
         </view>
       </scroll-view>
 
@@ -93,13 +96,15 @@
             </text>
           </view>
           <view class="oxygen-group">
-            <text>氧气 {{ Math.ceil(gameState.oxygenTicks / 20) }}秒</text>
+            <text v-if="gameState.oxygenTicks > 0">氧气 {{ Math.ceil(gameState.oxygenTicks / 20) }}秒</text>
+            <text v-else class="hypoxia-warning">缺氧 · {{ Math.ceil((gameState.oxygenDamageTicks || 0) / 20) }}秒后扣心</text>
             <view class="oxygen-track">
               <view :style="{ width: oxygenPercent + '%' }"></view>
             </view>
           </view>
           <view class="pearl-count">
-            珍珠 {{ gameState.pearlsCollected }}/{{ gameState.requiredPearls }}
+            待带回 {{ gameState.pearlsCollected }} 珍珠
+            <text>出口目标 {{ gameState.pearlsCollected }}/{{ gameState.requiredPearls }}</text>
           </view>
           <button
             class="pause-button"
@@ -180,10 +185,16 @@
                   :data-id="enemy.id"
                   :style="entityStyle(enemy, enemy.radius * 2.2)"
                 >
-                  <view class="enemy-eye eye-left"></view>
-                  <view class="enemy-eye eye-right"></view>
-                  <view class="enemy-mouth"></view>
+                  <view class="piranha-fin"><view></view><view></view><view></view></view>
                   <view class="enemy-tail"></view>
+                  <view class="piranha-scales"><view></view><view></view><view></view></view>
+                  <view class="enemy-eye eye-left"></view>
+                  <view class="piranha-gill"></view>
+                  <view class="enemy-mouth">
+                    <view class="piranha-teeth teeth-upper"><view></view><view></view><view></view></view>
+                    <view class="piranha-teeth teeth-lower"><view></view><view></view><view></view></view>
+                  </view>
+                  <view class="piranha-side-fin"></view>
                   <text v-if="enemy.stunnedTicks">○</text>
                 </view>
                 <view
@@ -240,23 +251,23 @@
                   aria-live="polite"
                 >
                   <view class="result-symbol">
-                    {{ gameState.status === 'cleared' ? '✦' : '♡' }}
+                    {{ gameState.status === 'cleared' ? '✦' : gameState.status === 'returned' ? '⌂' : '♡' }}
                   </view>
                   <view class="pause-caption">
                     {{
                       gameState.status === 'cleared'
                         ? '找到出口啦！'
-                        : '已经安全回岸啦'
+                        : gameState.status === 'returned' ? '回到岸边啦' : '本次冒险结束'
                     }}
                   </view>
                   <text>
                     {{
                       gameState.status === 'failed'
-                        ? gameState.reason
+                        ? gameState.reason + ' · 本局' + gameState.pearlsCollected + '枚未带回的珍珠遗失，已有余额和装扮保留。'
                         : busy === 'finish'
                           ? '正在收好这次冒险的收获…'
                           : settled?.reward
-                            ? '+' + settled.reward.pearls + ' 珍珠'
+                            ? '已收好 +' + settled.reward.pearls + ' 珍珠' + (gameState.status === 'returned' ? '，休息后可以再次出发。' : '')
                             : '收获需读取成功后才会保存'
                     }}
                   </text>
@@ -303,6 +314,20 @@
               <view></view>
               <text>发射泡泡</text>
             </button>
+            <button
+              class="return-button"
+              :class="{ 'is-returning': gameState.returningTicks > 0 }"
+              :disabled="!canPlay"
+              @touchstart.stop.prevent="pressReturn"
+              @touchend.stop.prevent="releaseReturn"
+              @touchcancel.stop.prevent="releaseReturn"
+              @mousedown.prevent="pressReturn"
+              @mouseup="releaseReturn"
+              @mouseleave="releaseReturn"
+            >
+              <text>{{ gameState.returningTicks ? '返航 ' + Math.ceil((40 - gameState.returningTicks) / 20) + '秒' : '长按返航' }}</text>
+              <text class="return-note">静止2秒 · 受伤打断</text>
+            </button>
           </view>
           <view v-else class="result-actions">
             <button
@@ -330,8 +355,8 @@
           </view>
         </view>
         <view class="control-hint">
-          按住方向或拖动水面游动，面向小怪发泡泡。捡齐珍珠后去出口。
-          <text class="keyboard-hint">方向键 / WASD，空格发泡泡。</text>
+          方向或拖动水面游动，用泡泡推开食人鱼；捡齐珍珠去出口，低血时静止长按返航收好收获。
+          <text class="keyboard-hint">方向键 / WASD，空格发泡泡，按住R返航。</text>
         </view>
       </template>
       <view class="dive-footnote">
@@ -357,12 +382,14 @@ import {
 } from 'vue'
 import { onHide, onShow } from '@dcloudio/uni-app'
 import { dive, wardrobe } from '../../services/index.js'
+import { soundscape } from '../../services/soundscape.js'
 import { config } from '../../config/index.js'
 import { errorText } from '../../utils/errors.js'
 import { session } from '../../utils/session.js'
 import {
   createDiveGame,
   DIVE_LEVELS,
+  DIVE_RULES_VERSION,
   DIVE_STEP_MS
 } from '../../utils/dive-game.js'
 import { WARDROBE_ITEMS } from '../../utils/wardrobe-catalog.js'
@@ -374,6 +401,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'reward'])
 const instance = getCurrentInstance()
+const soundState = soundscape.state
 const progress = ref(null),
   gameState = ref(null),
   selectedLevel = ref(1),
@@ -446,6 +474,8 @@ let game = null,
   closed = false,
   heldDirection = '',
   heldFire = false,
+  heldReturn = false,
+  returnTouchId = null,
   firePulse = 0,
   dragPoint = null,
   dragTouchId = null,
@@ -453,6 +483,7 @@ let game = null,
   directionTouchId = null,
   boardRect = null,
   mouseHeld = false
+let breakReturnOnResume = false
 const heldKeys = new Set()
 const entityStyle = (point, diameter) => ({
   left: `${point.x}%`,
@@ -475,6 +506,8 @@ function clearInput() {
   heldKeys.clear()
   heldDirection = ''
   heldFire = false
+  heldReturn = false
+  returnTouchId = null
   firePulse = 0
   dragPoint = null
   dragTouchId = null
@@ -483,7 +516,9 @@ function clearInput() {
   mouseHeld = false
 }
 function pause() {
+  if (gameState.value?.returningTicks > 0) breakReturnOnResume = true
   paused.value = true
+  soundscape.setPaused(true)
   stopClock()
   clearInput()
 }
@@ -521,7 +556,7 @@ function loadProgress() {
       let recoveredWardrobe = null
       let wardrobeError = ''
       if (receipt && receipt.runId === runId &&
-          receipt.levelId === issued?.levelId &&
+          receipt.levelId === issued?.levelId && receipt.rulesVersion === issued?.rulesVersion &&
           gameState.value?.status !== 'playing' && !settled.value?.wardrobe) {
         try {
           recoveredWardrobe = await wardrobe.getState()
@@ -536,7 +571,7 @@ function loadProgress() {
       if (!issued || issued.id !== runId) return state
       const receipt = state.lastSettlement
       if (receipt && receipt.runId === runId &&
-          receipt.levelId === issued.levelId &&
+          receipt.levelId === issued.levelId && receipt.rulesVersion === issued.rulesVersion &&
           gameState.value?.status !== 'playing') {
         if (!settled.value) {
           settled.value = { ...receipt, wardrobe: recoveredWardrobe, state }
@@ -558,12 +593,17 @@ function loadProgress() {
 function startLevel(levelId) {
   if (busy.value || !progress.value || levelId > progress.value.unlockedLevel)
     return
+  soundscape.unlock()
   pause()
   selectedLevel.value = levelId
   return request(
     'start',
     () => dive.start({ levelId }),
     (run) => {
+      if (run.rulesVersion !== DIVE_RULES_VERSION) {
+        error.value = '潜水服务规则版本尚未更新，请稍后再试。'
+        return
+      }
       issued = run
       runUserId = session.user?.id
       game = createDiveGame(levelId, { seed: run.seed })
@@ -571,7 +611,9 @@ function startLevel(levelId) {
       trace = []
       lastInput = { dx: 0, dy: 0, fire: false }
       settled.value = null
+      breakReturnOnResume = false
       paused.value = false
+      soundscape.setScene('dive')
       nextTick(() => {
         measureBoard()
         startClock()
@@ -608,7 +650,7 @@ function currentInput() {
   }
   const fire = heldFire || heldKeys.has(' ') || firePulse > 0
   if (firePulse > 0) firePulse--
-  return { dx, dy, fire }
+  return heldReturn || heldKeys.has('r') ? { dx, dy, fire, returning: true } : { dx, dy, fire }
 }
 function startClock() {
   stopClock()
@@ -624,16 +666,25 @@ function startClock() {
   clock = setInterval(() => {
     if (!canPlay.value) return
     const input = currentInput()
+    if (breakReturnOnResume) {
+      delete input.returning
+      breakReturnOnResume = false
+    }
     if (
       input.dx !== lastInput.dx ||
       input.dy !== lastInput.dy ||
-      input.fire !== lastInput.fire
+      input.fire !== lastInput.fire || Boolean(input.returning) !== Boolean(lastInput.returning)
     )
       trace.push({ tick: gameState.value.tick, ...input })
     lastInput = input
     game.setInput(input)
+    const previous = gameState.value
     gameState.value = game.step()
+    if (gameState.value.bubbles.some((bubble) => !previous.bubbles.some((old) => old.id === bubble.id))) soundscape.effect('bubble')
+    if (gameState.value.pearlsCollected > previous.pearlsCollected) soundscape.effect('pearl')
+    if (gameState.value.player.hearts < previous.player.hearts) soundscape.effect('hurt')
     if (gameState.value.status !== 'playing') {
+      soundscape.setScene('dive-result')
       stopClock()
       clearInput()
       finishRun()
@@ -656,7 +707,10 @@ function finishRun() {
     'finish',
     () => dive.finish(proof),
     (value) => {
+      if (value.rulesVersion !== issued?.rulesVersion)
+        throw new Error('结算规则版本不一致，请重新读取本局回执。')
       settled.value = { ...value, runId: proof.runId }
+      soundscape.effect(value.status === 'cleared' ? 'clear' : value.status === 'returned' ? 'return' : 'fail')
       progress.value = value.state
       emit('reward', value.wardrobe)
     }
@@ -681,6 +735,8 @@ function resume() {
     return
   }
   paused.value = false
+  soundscape.unlock()
+  soundscape.setScene('dive')
   error.value = ''
   measureBoard()
   startClock()
@@ -696,32 +752,39 @@ function resetRun() {
   runUserId = null
   gameState.value = null
   settled.value = null
+  soundscape.setScene('dive-menu')
 }
 function backToLevels() {
-  resetRun()
-  error.value = ''
-  loadProgress()
+  confirmAbandon(() => {
+    resetRun()
+    error.value = ''
+    loadProgress()
+  })
 }
 function close() {
   closed = true
   revision++
   stopClock()
   clearInput()
+  soundscape.setScene('plaza')
   emit('close')
 }
 function askClose() {
-  if (!gameState.value || gameState.value.status !== 'playing') return close()
+  confirmAbandon(close)
+}
+function confirmAbandon(action) {
+  if (!gameState.value || gameState.value.status !== 'playing') return action()
   const wasPaused = paused.value
   pause()
   const current = revision
   uni.showModal({
-    title: '先回岸边吗？',
-    content: '本局未完成不计奖励，已经拥有的装扮都会保留。',
-    confirmText: '回岸边',
+    title: '放弃本局收获？',
+    content: '直接离开不保存本局收获；要带回珍珠，请继续探索后静止长按返航2秒。已有珍珠和装扮保留。',
+    confirmText: '放弃并离开',
     cancelText: '继续探索',
     success(result) {
       if (closed || !mounted || current !== revision) return
-      if (result.confirm) close()
+      if (result.confirm) action()
       else if (!wasPaused && active.value) resume()
     }
   })
@@ -759,6 +822,17 @@ function releaseFire(event) {
 }
 function pulseFire() {
   if (canPlay.value) firePulse = 2
+}
+function pressReturn(event) {
+  if (!canPlay.value || returnTouchId !== null) return
+  clearInput()
+  if (isTouchEvent(event)) returnTouchId = changedTouch(event)?.identifier ?? null
+  heldReturn = true
+}
+function releaseReturn(event) {
+  if (returnTouchId !== null && !endedTouch(event, returnTouchId)) return
+  heldReturn = false
+  returnTouchId = null
 }
 function measureBoard() {
   if (!mounted || !gameState.value) return
@@ -843,7 +917,8 @@ function keyDown(event) {
       'a',
       's',
       'd',
-      ' '
+      ' ',
+      'r'
     ].includes(key) ||
     /^(INPUT|TEXTAREA)$/.test(event.target?.tagName)
   )
@@ -963,6 +1038,9 @@ button:focus-visible {
   padding: 14px 20px 10px;
   flex-shrink: 0;
 }
+.dive-header > view:first-child { flex: 1; min-width: 0; }
+.dive-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.dive-sound-button { padding: 8px; font-size: 12px; }
 .dive-title {
   font-size: 23px;
   font-weight: 700;
@@ -1342,55 +1420,165 @@ button:focus-visible {
 }
 .dive-enemy {
   z-index: 4;
-  border-radius: 50%;
-  background: #dfbf7d;
-  border: 1px solid #b99664;
+  border: 1px solid #142d39;
+  border-radius: 43% 50% 39% 45%;
+  background: linear-gradient(165deg, #668a84 8%, #395d62 42%, #7f4b47 67%, #c08862 94%);
+  box-shadow: inset 1px 1px 0 #a3b8a1, inset -2px -2px 0 #263d46;
 }
 .enemy-tail {
   position: absolute;
-  right: -24%;
-  top: 25%;
-  width: 35%;
-  height: 50%;
-  transform: rotate(45deg);
-  border-radius: 2px;
-  background: #d5ab70;
+  z-index: -1;
+  left: -27%;
+  top: 18%;
+  width: 40%;
+  height: 62%;
+  background: #4b7679;
+  border: 1px solid #17313d;
+  border-radius: 4% 70% 70% 4%;
+  transform: skewY(-14deg);
+  box-shadow: inset 2px 0 0 #8ba69a;
 }
-.enemy-urchin {
-  background: #ae9cc6;
-  border: 2px dashed #d8bee4;
-  box-shadow: 0 0 0 2px #a58eb7;
-}
-.enemy-urchin .enemy-tail {
-  display: none;
+.enemy-tail::after {
+  position: absolute;
+  content: '';
+  left: 10%;
+  top: 48%;
+  width: 65%;
+  height: 1px;
+  background: #203c48;
+  transform: rotate(-15deg);
 }
 .enemy-eye {
   position: absolute;
-  z-index: 2;
-  width: 10%;
-  height: 15%;
-  top: 33%;
-  border-radius: 50%;
-  background: #516375;
+  z-index: 3;
+  left: 59%;
+  top: 15%;
+  width: 19%;
+  height: 18%;
+  border-radius: 12% 10% 55% 45%;
+  background: #ee7d57;
+  border-top: 2px solid #152a36;
+  box-shadow: 0 1px 0 #132c38;
+  transform: rotate(17deg);
 }
-.enemy-eye.eye-left {
-  left: 25%;
-}
-.enemy-eye.eye-right {
-  right: 25%;
+.enemy-eye::after {
+  position: absolute;
+  content: '';
+  width: 26%;
+  height: 70%;
+  right: 20%;
+  top: 4%;
+  background: #161e26;
+  border-radius: 45%;
 }
 .enemy-mouth {
   position: absolute;
-  width: 18%;
-  height: 12%;
-  border-bottom: 1px solid #65717b;
-  left: 41%;
-  top: 55%;
-  border-radius: 0 0 50% 50%;
+  z-index: 4;
+  left: 55%;
+  top: 37%;
+  width: 49%;
+  height: 49%;
+  overflow: hidden;
+  border: 1px solid #d59e78;
+  border-radius: 10% 16% 46% 40%;
+  background: #18202c;
+  box-shadow: 0 1px 0 #24323b;
 }
 .dive-enemy.is-stunned {
   opacity: 0.45;
 }
+.piranha-fin {
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+  left: 12%;
+  top: -27%;
+  width: 54%;
+  height: 33%;
+  z-index: -1;
+}
+.piranha-fin view {
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 8px solid #263f4d;
+  transform: skewX(-18deg);
+}
+.piranha-fin view:nth-child(2) { border-bottom-width: 11px; }
+.piranha-gill {
+  position: absolute;
+  left: 42%;
+  top: 37%;
+  width: 14%;
+  height: 36%;
+  border-right: 2px solid #1e3b47;
+  border-radius: 50%;
+  transform: rotate(-12deg);
+}
+.piranha-scales {
+  position: absolute;
+  left: 12%;
+  top: 30%;
+  width: 28%;
+  height: 32%;
+  display: flex;
+  align-items: center;
+}
+.piranha-scales view {
+  width: 35%;
+  height: 70%;
+  border-right: 1px solid #a6b5a0;
+  border-radius: 50%;
+  opacity: 0.65;
+}
+.piranha-side-fin {
+  position: absolute;
+  left: 20%;
+  bottom: -8%;
+  width: 24%;
+  height: 25%;
+  background: #8d6252;
+  border: 1px solid #263e48;
+  border-radius: 0 0 70% 15%;
+  transform: rotate(-22deg);
+}
+.piranha-teeth {
+  position: absolute;
+  left: 3%;
+  width: 94%;
+  height: 45%;
+  display: flex;
+  justify-content: space-between;
+}
+.teeth-upper { top: 0; }
+.teeth-lower { bottom: 0; transform: rotate(180deg); }
+.piranha-teeth view {
+  width: 0;
+  height: 0;
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+  border-top: 5px solid #fff4d1;
+}
+.piranha-teeth view:nth-child(2) { border-top-width: 7px; }
+.hypoxia-warning { color: #ffd1a5; font-weight: 650; }
+.pearl-count text { display: block; font-size: 10px; opacity: 0.8; margin-top: 4px; }
+.return-button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 80px;
+  padding: 12px 8px;
+  border: 1px solid #b3ceaa;
+  border-radius: 12px;
+  color: #eff1cf;
+  background: #416f69;
+  font-size: 13px;
+  touch-action: none;
+  user-select: none;
+}
+.return-button.is-returning { background: #7c8359; }
+.return-note { font-size: 10px; opacity: 0.8; }
 .dive-enemy text {
   position: absolute;
   bottom: 100%;
@@ -1476,7 +1664,7 @@ button:focus-visible {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 26px;
+  gap: 12px;
   flex-shrink: 0;
 }
 .direction-pad {

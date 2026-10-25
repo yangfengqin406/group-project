@@ -1,0 +1,26 @@
+小程序头像生成记录
+
+日期：2026-10-25
+用途：校园小镇小程序官方头像上传用素材；尚未在微信后台设置。
+生成方式：Codex 内置 image_gen.imagegen（tools.image_gen__imagegen）。
+图像类型：全新生成，无参考图片，transparent_background=false。
+保存文件：app-avatar-v1.png
+实际尺寸：1254 × 1254 像素（1:1，24-bit RGB，不透明）。
+原始输出：C:\Users\Lenovo\.codex\generated_images\01a17389-2815-7601-bff2-f90e17423307\exec-2f350726-abbd-4d31-ab84-479c5f7854eb.png
+说明：主体为原创奶油白小兔抱暖色小屋，薄荷绿背景；无文字、水印、品牌或现成 IP。
+验收：已人工看图，确认画布为正方形，主体清晰，耳朵、爪子及小屋完整，圆形裁切留有安全距离。
+部署：此文件保留在 docs/assets，不放入 src/static，不增加小程序主包体积。
+验证：未执行代码测试与构建；本次子任务仅新增图片及本记录，代码检查由集成任务统一执行。
+
+Exact generation prompt:
+Use case: stylized-concept.
+Asset type: a polished WeChat mini-program app avatar / app icon for a cozy campus neighborhood game.
+Primary request: one beautiful, extremely cute original cream-white bunny tenderly hugging a tiny warm cottage, on a fresh mint-green background. This is a finished square app-icon illustration, not a mockup.
+Subject: one chubby baby bunny with a large round head, short soft upright ears with peach-pink inner ears, warm chocolate-brown bead eyes, tiny nose and a gentle happy smile, small rosy cheeks and tiny rounded paws. The bunny hugs a single little cottage close to its chest; cottage has a warm apricot terracotta roof, creamy walls, one tiny glowing golden window and a little sage-green door. Character design must feel original, welcoming and affectionate.
+Style/medium: premium softly shaded storybook illustration with a tactile plush/clay softness, subtle painterly details, clean warm outlines, refined gentle lighting, delightful but restrained. Not photorealistic, not flat clipart, not anime, not a 3D plastic toy render. Cozy campus-town feeling.
+Composition/framing: exactly 1:1 square, one centered large readable bunny-and-cottage silhouette filling about 75% of the canvas. Entire ears, paws and cottage comfortably inside the center circular safe area; generous breathing room so both square and circle crops work. Simple close-up portrait from head to little paws, no full-body landscape.
+Scene/backdrop: full-bleed opaque mint-green background, slightly lighter soft halo behind the bunny, very subtle texture only. No elaborate scenery, no floor, no extra characters, no busy decorations.
+Lighting/mood: warm morning light, cheerful, calming, adorable and friendly.
+Text: absolutely no letters, words, numbers or lettering.
+Constraints: a single final high-quality 1024x1024 square image. Original mascot, no existing character/IP resemblance, no brand, no watermark, no borders, no rounded-square mask, no UI, no collage or comparison panels. Preserve a complete square opaque background.
+

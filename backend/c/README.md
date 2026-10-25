@@ -52,3 +52,7 @@ const handler = createCRpcHandler({ service, authenticate, onError })
 运行 `node --test tests/c-backend.test.js` 或全组 `npm test`。测试使用临时 SQLite 文件，关库重开验证持久化，两个工作线程的独立连接验证并发重试。测试账号、上传记录和 bearer 仅为桩，不是生产登录。HTTP 测试绑定本机随机端口，结束即关闭。
 
 上线仍需 B 认证/上传和数据库适配、A/B 内容与通知接入、真实前端上传、HTTPS 部署、两个账号两台设备走查、微信真机和订阅发送。具体检查及两端构建结果见 docs/verification.md，不把尚未执行的线上联调计为完成。
+# 本轮本机集成补记
+
+`backend/campus` 将真实账号、文件登记和 A/B 内容接到本模块，并共用 SQLite 连接。`createCService` 默认只接受 HTTPS 图片；仅本地集成显式传 `trustedUploadOrigins` 允许指定 HTTP 源，继续检查真实登记、所有权、用途、确认、类型和大小。`notifyInTransaction` 只供同连接事务内的可信 A/B 服务使用，不在公开 RPC 目录；独立调用仍用 `notify`。原业务归属 C（姜澜）。
+

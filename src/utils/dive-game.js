@@ -3,8 +3,11 @@ import { requireThat } from './errors.js'
 export const DIVE_STEP_MS = 50
 export const DIVE_WIDTH = 100
 export const DIVE_HEIGHT = 64
-export const DIVE_MAX_TICKS = 900
-export const DIVE_MAX_TRACE = 1800
+export const DIVE_RULES_VERSION = 2
+export const DIVE_MAX_TICKS = 1200
+export const DIVE_MAX_TRACE = DIVE_MAX_TICKS
+export const DIVE_RETURN_TICKS = 40
+export const DIVE_OXYGEN_DAMAGE_TICKS = 100
 export const DIVE_LEVELS = Object.freeze([
   Object.freeze({
     id: 1,
@@ -93,17 +96,28 @@ function validInput(input) {
     input &&
       typeof input === 'object' &&
       !Array.isArray(input) &&
-      Reflect.ownKeys(input).length === 3 &&
+      Reflect.ownKeys(input).every((key) =>
+        ['dx', 'dy', 'fire', 'returning'].includes(key)
+      ) &&
       ['dx', 'dy', 'fire'].every((key) =>
         Object.prototype.hasOwnProperty.call(input, key)
       ) &&
       [-1, 0, 1].includes(input.dx) &&
       [-1, 0, 1].includes(input.dy) &&
-      typeof input.fire === 'boolean',
+      typeof input.fire === 'boolean' &&
+      (!Object.prototype.hasOwnProperty.call(input, 'returning') ||
+        typeof input.returning === 'boolean'),
     'INVALID_ARGUMENT',
-    '潜水输入只接受方向和泡泡操作'
+    '潜水输入只接受方向、泡泡和返航操作'
   )
-  return { dx: input.dx, dy: input.dy, fire: input.fire }
+  return {
+    dx: input.dx,
+    dy: input.dy,
+    fire: input.fire,
+    returning: Object.prototype.hasOwnProperty.call(input, 'returning')
+      ? input.returning
+      : false
+  }
 }
 
 function intersectsWall(point, radius, wall) {
@@ -123,6 +137,7 @@ export function createDiveGame(levelId, { seed = 1 } = {}) {
   const config = configurations[levelId]
   const state = {
     levelId,
+    rulesVersion: DIVE_RULES_VERSION,
     tick: 0,
     status: 'playing',
     reason: '',
@@ -135,6 +150,8 @@ export function createDiveGame(levelId, { seed = 1 } = {}) {
       invulnerableTicks: 0
     },
     oxygenTicks: (level.oxygenSeconds * 1000) / DIVE_STEP_MS,
+    oxygenDamageTicks: 0,
+    returningTicks: 0,
     pearlsCollected: 0,
     requiredPearls: level.requiredPearls,
     exit: { x: config.exit[0], y: config.exit[1], radius: 4 },
@@ -194,6 +211,7 @@ export function createDiveGame(levelId, { seed = 1 } = {}) {
   function tick() {
     if (state.status !== 'playing') return
     const player = state.player
+    let damaged = false
     const magnitude = Math.hypot(input.dx, input.dy)
     if (magnitude) {
       aim = { x: input.dx / magnitude, y: input.dy / magnitude }
@@ -279,6 +297,7 @@ export function createDiveGame(levelId, { seed = 1 } = {}) {
       )
       if (enemy) {
         player.hearts--
+        damaged = true
         player.invulnerableTicks = 30
         const dx = player.x - enemy.x
         const dy = player.y - enemy.y
@@ -296,18 +315,40 @@ export function createDiveGame(levelId, { seed = 1 } = {}) {
       }
     })
     state.tick++
-    state.oxygenTicks--
+    let oxygenDamageDue = false
+    if (state.oxygenTicks > 0) {
+      state.oxygenTicks--
+      if (state.oxygenTicks === 0) oxygenDamageDue = true
+    } else {
+      state.oxygenDamageTicks--
+      if (state.oxygenDamageTicks <= 0) oxygenDamageDue = true
+    }
+    if (oxygenDamageDue) {
+      state.oxygenDamageTicks = DIVE_OXYGEN_DAMAGE_TICKS
+      // A collision on the same simulation step already paid this heart.
+      if (!damaged) {
+        player.hearts--
+        player.invulnerableTicks = 30
+        damaged = true
+      }
+    }
+    if (input.returning && magnitude === 0 && !damaged)
+      state.returningTicks++
+    else state.returningTicks = 0
     if (player.hearts <= 0) {
       state.status = 'failed'
-      state.reason = '有点累了，先回岸边休息吧'
+      state.reason = '爱心用完了，本次未带回的收获留在水里；已有珍珠和装扮保留。'
     } else if (
       state.pearlsCollected === state.requiredPearls &&
       distance(player, state.exit) <= playerRadius + state.exit.radius
     )
       state.status = 'cleared'
-    else if (state.oxygenTicks <= 0) {
+    else if (state.returningTicks >= DIVE_RETURN_TICKS) {
+      state.status = 'returned'
+      state.reason = '已带着本局收获返回岸边，新一局会恢复爱心和氧气。'
+    } else if (state.tick >= DIVE_MAX_TICKS) {
       state.status = 'failed'
-      state.reason = '氧气用完啦，已经安全回到岸边'
+      state.reason = '本次探索时间结束，未带回的收获留在水里；已有珍珠和装扮保留。'
     }
   }
   return {
@@ -343,7 +384,9 @@ export function replayDive(levelId, { seed, ticks, trace }) {
       event &&
         typeof event === 'object' &&
         !Array.isArray(event) &&
-        Reflect.ownKeys(event).length === 4 &&
+        Reflect.ownKeys(event).every((key) =>
+          ['tick', 'dx', 'dy', 'fire', 'returning'].includes(key)
+        ) &&
         ['tick', 'dx', 'dy', 'fire'].every((key) =>
           Object.prototype.hasOwnProperty.call(event, key)
         ) &&
@@ -357,15 +400,22 @@ export function replayDive(levelId, { seed, ticks, trace }) {
     lastTick = event.tick
     return {
       tick: event.tick,
-      ...validInput({ dx: event.dx, dy: event.dy, fire: event.fire })
+      ...validInput({
+        dx: event.dx,
+        dy: event.dy,
+        fire: event.fire,
+        ...(Object.prototype.hasOwnProperty.call(event, 'returning')
+          ? { returning: event.returning }
+          : {})
+      })
     }
   })
   const game = createDiveGame(levelId, { seed })
   let eventIndex = 0
   for (let tick = 0; tick < ticks; tick++) {
     if (events[eventIndex]?.tick === tick) {
-      const { dx, dy, fire } = events[eventIndex++]
-      game.setInput({ dx, dy, fire })
+      const { dx, dy, fire, returning } = events[eventIndex++]
+      game.setInput({ dx, dy, fire, returning })
     }
     game.step()
   }

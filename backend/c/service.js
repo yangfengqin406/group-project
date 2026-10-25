@@ -36,7 +36,7 @@ export const C_METHODS = new Set([
   'report.create', 'report.adminResolve', 'subscription.send'
 ])
 
-export function createCService({ store, getUser, getExternalContent, getUploadByUrl, now = () => new Date().toISOString() }) {
+export function createCService({ store, getUser, getExternalContent, getUploadByUrl, trustedUploadOrigins = [], now = () => new Date().toISOString() }) {
   requireThat(store && typeof getUser === 'function', 'SERVICE_UNAVAILABLE', '必须接入服务端存储和账号适配')
   const user = (id) => sync(getUser(id))
   const publicUser = (id) => ({ ...profile(user(id)), id })
@@ -124,7 +124,8 @@ export function createCService({ store, getUser, getExternalContent, getUploadBy
       requireThat(typeof url === 'string' && url.length <= 2048, 'INVALID_ARGUMENT', '图片地址无效')
       let parsed
       try { parsed = new URL(url) } catch { /* Reject local and malformed URLs. */ }
-      requireThat(parsed?.protocol === 'https:' && !parsed.username && !parsed.password, 'INVALID_ARGUMENT', '图片须为已上传的 HTTPS 地址')
+      const localUpload = parsed?.protocol === 'http:' && trustedUploadOrigins.includes(parsed.origin)
+      requireThat((parsed?.protocol === 'https:' || localUpload) && !parsed.username && !parsed.password, 'INVALID_ARGUMENT', '图片须来自已配置的公共上传服务')
       const upload = sync(getUploadByUrl(url))
       requireThat(upload && upload.ownerId === currentUser.id && upload.usage === 'content' && upload.status === 'confirmed' &&
         upload.url === url && ['image/jpeg', 'image/png', 'image/webp'].includes(upload.mime) &&
@@ -285,6 +286,9 @@ export function createCService({ store, getUser, getExternalContent, getUploadBy
       })
     },
     // Trusted A/B server events only. Deliberately absent from C_METHODS.
-    notify(event) { return store.transaction(() => notify(event)) }
+    notify(event) { return store.transaction(() => notify(event)) },
+    // Only trusted modules sharing this SQLite connection may call this inside
+    // their existing transaction; never expose it through the RPC catalog.
+    notifyInTransaction(event) { return notify(event) }
   }
 }

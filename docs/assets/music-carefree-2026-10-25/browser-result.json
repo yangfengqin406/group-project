@@ -1,0 +1,49 @@
+{
+  "title": "Carefree现成录音接入验收",
+  "startedAt": "2026-10-25T11:18:30.497Z",
+  "cases": [
+    {
+      "name": "实际播放官方Carefree录音副本，约205秒，音频输出非零",
+      "status": "passed",
+      "audio": {
+        "src": "http://127.0.0.1:8787/static/h5/audio/carefree.mp3",
+        "duration": 205.139594,
+        "currentTime": 0.260581,
+        "volume": 0.2,
+        "loop": true,
+        "rms": 0.015019917359261222
+      }
+    },
+    {
+      "name": "开关可用、重复开启单实例、不回退合成音乐",
+      "status": "passed"
+    },
+    {
+      "name": "音乐来源可见且完整，390px控制可达无横溢",
+      "status": "passed",
+      "credit": "Carefree\nKevin MacLeod (incompetech.com)\nCC BY 4.0\nhttps://creativecommons.org/licenses/by/4.0/\n来源：https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037\nH5音频作格式压缩，曲目内容未改动；微信使用作者原始录音。"
+    },
+    {
+      "name": "离开广场录音立即暂停，运行时异常0",
+      "status": "passed"
+    }
+  ],
+  "limitations": [
+    "H5本地录音实际播放与输出采样；微信官方HTTPS原曲联网和真机另验"
+  ],
+  "layout": {
+    "width": 390,
+    "overflow": false,
+    "music": {
+      "top": 720.15625,
+      "left": 104,
+      "bottom": 777
+    },
+    "hint": {
+      "top": 638.5,
+      "bottom": 701
+    }
+  },
+  "status": "passed",
+  "finishedAt": "2026-10-25T11:18:32.958Z"
+}

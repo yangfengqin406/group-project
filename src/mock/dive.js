@@ -1,6 +1,8 @@
 import { requireThat } from '../utils/errors.js'
-import { DIVE_LEVELS, DIVE_STEP_MS, replayDive } from '../utils/dive-game.js'
-import { getWardrobeState, grantDiveReward } from './wardrobe.js'
+import {
+  DIVE_LEVELS, DIVE_STEP_MS, DIVE_MAX_TICKS, DIVE_RULES_VERSION, replayDive
+} from '../utils/dive-game.js'
+import { getWardrobeState, grantDiveReward, grantDiveReturnReward } from './wardrobe.js'
 
 const clone = (value) => JSON.parse(JSON.stringify(value))
 const fields = {
@@ -44,7 +46,8 @@ export function dispatchDive(
     while (unlockedLevel < 3 && clearedLevels.includes(unlockedLevel))
       unlockedLevel++
     const run = db.diveRuns[userId]
-    if (run && now > run.expiresAt) delete db.diveRuns[userId]
+    if (run && (now > run.expiresAt || run.rulesVersion !== DIVE_RULES_VERSION))
+      delete db.diveRuns[userId]
     return {
       clearedLevels,
       unlockedLevel,
@@ -66,9 +69,10 @@ export function dispatchDive(
     const run = {
       id: `dive_${db.diveSequence}_${now}`,
       levelId: params.levelId,
+      rulesVersion: DIVE_RULES_VERSION,
       seed: Math.floor(random() * 0x100000000) >>> 0,
       startedAt: now,
-      expiresAt: now + level.oxygenSeconds * 1000 + 300000
+      expiresAt: now + DIVE_MAX_TICKS * DIVE_STEP_MS + 300000
     }
     db.diveRuns[userId] = run
     return clone(run)
@@ -78,9 +82,10 @@ export function dispatchDive(
     typeof params.runId === 'string' &&
       run &&
       run.id === params.runId &&
+      run.rulesVersion === DIVE_RULES_VERSION &&
       now <= run.expiresAt,
     'CONFLICT',
-    '这次潜水已结束或过期，请重新出发'
+    '这次潜水已结束、过期或规则已更新，请重新出发'
   )
   const replay = replayDive(run.levelId, {
     seed: run.seed,
@@ -100,8 +105,9 @@ export function dispatchDive(
   )
   let reward = null
   let wardrobe
-  if (replay.status === 'cleared') {
-    const result = grantDiveReward(db, userId, run.levelId)
+  if (replay.status === 'cleared' || replay.status === 'returned') {
+    const grant = replay.status === 'cleared' ? grantDiveReward : grantDiveReturnReward
+    const result = grant(db, userId, run.levelId, replay.pearlsCollected)
     reward = {
       firstClear: result.firstClear,
       items: result.items,
@@ -112,9 +118,14 @@ export function dispatchDive(
   db.diveSettlements[userId] = {
     runId: run.id,
     levelId: run.levelId,
+    rulesVersion: DIVE_RULES_VERSION,
     status: replay.status,
+    collectedPearls: replay.pearlsCollected,
     reward: clone(reward)
   }
   delete db.diveRuns[userId]
-  return { status: replay.status, reward, wardrobe, state: currentState() }
+  return {
+    status: replay.status, rulesVersion: DIVE_RULES_VERSION,
+    collectedPearls: replay.pearlsCollected, reward, wardrobe, state: currentState()
+  }
 }

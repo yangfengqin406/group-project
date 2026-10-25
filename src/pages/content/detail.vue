@@ -80,6 +80,30 @@
           </view>
         </view>
       </view>
+      <view v-if="config.apiMode === 'http' && type === 'market' && item.marketType === 'sell'" class="panel">
+        <view class="row">
+          <view class="section-title">交接预约</view>
+          <button class="secondary small" :disabled="reservationsLoading || busy" @tap="loadReservations()">刷新</button>
+        </view>
+        <view v-if="reservationsError" class="error">{{ reservationsError }}</view>
+        <view v-if="reservationsLoading" class="muted">正在读取预约…</view>
+        <view v-else-if="!reservations.length && !reservationsError" class="muted">{{ isOwn ? '还没有同学预约交接。' : '预约后可在这里查看发布者的回应。' }}</view>
+        <view v-for="r in reservations" :key="r.id" class="match-item">
+          <view class="row">
+            <text>{{ isOwn ? r.buyer?.nickname || '同学' : r.seller?.nickname || '发布者' }}</text>
+            <text class="tag">{{ reservationLabel(r.status) }}</text>
+          </view>
+          <view class="muted">{{ formatTime(r.createdAt) }}</view>
+          <view class="actions">
+            <template v-if="isOwn && r.status === 'pending'">
+              <button class="primary" :disabled="busy" @tap="respondReservation(r, true)">接受预约</button>
+              <button class="secondary" :disabled="busy" @tap="respondReservation(r, false)">拒绝预约</button>
+            </template>
+            <button v-if="r.status === 'accepted'" class="primary" :disabled="busy" @tap="completeReservation(r)">确认交接完成</button>
+          </view>
+        </view>
+        <button v-if="reservationsCursor" class="secondary" :disabled="reservationsLoading || busy" @tap="loadReservations({ reset: false })">更多预约</button>
+      </view>
       <view class="actions">
         <button v-if="!isOwn" class="primary" :disabled="busy" @tap="contact">
           联系发布者
@@ -101,7 +125,7 @@
           编辑计划 / 调整人数
         </button>
         <button
-          v-if="!isOwn && type === 'market' && item.status === 'active'"
+          v-if="!isOwn && type === 'market' && item.marketType === 'sell' && item.status === 'active'"
           class="primary"
           :disabled="busy"
           @tap="reserve"
@@ -203,6 +227,7 @@ import {
   formatTime
 } from '../../utils/routes.js'
 import { errorText } from '../../utils/errors.js'
+import { config } from '../../config/index.js'
 const type = ref('plan'),
   id = ref(''),
   item = ref(null),
@@ -218,7 +243,11 @@ const type = ref('plan'),
   matchesLoading = ref(false),
   matchesCursor = ref(null),
   matchesError = ref(''),
-  planRefreshing = ref(false)
+  planRefreshing = ref(false),
+  reservations = ref([]),
+  reservationsCursor = ref(null),
+  reservationsLoading = ref(false),
+  reservationsError = ref('')
 const isOwn = computed(() => item.value?.ownerId === session.user?.id)
 const canManagePlan = computed(
   () => isOwn.value && type.value === 'plan' &&
@@ -227,6 +256,7 @@ const canManagePlan = computed(
 let loadVersion = 0
 let commentsVersion = 0
 let matchesVersion = 0
+let reservationsVersion = 0
 let visible = false
 const service = () =>
   api[type.value === 'lost_found' ? 'lostFound' : type.value]
@@ -247,6 +277,7 @@ async function load({ preserveError = false } = {}) {
   matchesCursor.value = null
   matchesError.value = ''
   matchesLoading.value = false
+  resetReservations()
   if (contentType === 'plan') planRefreshing.value = true
   try {
     const result = await service().get({ id: contentId })
@@ -265,12 +296,44 @@ async function load({ preserveError = false } = {}) {
     if (type.value === 'lost_found') await loadComments()
     if (isOwn.value && type.value === 'market' && item.value.marketType === 'buy')
       await loadMatches()
+    if (config.apiMode === 'http' && type.value === 'market' && item.value.marketType === 'sell')
+      await loadReservations()
   } catch (e) {
     if (!current()) return
     if (contentType === 'plan') item.value = null
     if (!preserveError || !error.value) error.value = errorText(e)
   } finally {
     if (current()) planRefreshing.value = false
+  }
+}
+function resetReservations() {
+  ++reservationsVersion
+  reservations.value = []
+  reservationsCursor.value = null
+  reservationsLoading.value = false
+  reservationsError.value = ''
+}
+async function loadReservations({ reset = true } = {}) {
+  if (config.apiMode !== 'http' || type.value !== 'market' || item.value?.marketType !== 'sell' ||
+    (!reset && (reservationsLoading.value || !reservationsCursor.value))) return
+  const version = ++reservationsVersion, pageVersion = loadVersion
+  const userId = session.user?.id, contentId = id.value
+  const current = () => visible && version === reservationsVersion && pageVersion === loadVersion &&
+    userId === session.user?.id && contentId === id.value && type.value === 'market'
+  const cursor = reset ? null : reservationsCursor.value
+  reservationsLoading.value = true
+  reservationsError.value = ''
+  if (reset) { reservations.value = []; reservationsCursor.value = null }
+  try {
+    const result = await api.market.getCandidates({ id: contentId, cursor, pageSize: 20 })
+    if (!current()) return
+    const next = reset ? result.items : [...reservations.value, ...result.items]
+    reservations.value = next.filter((r, index) => next.findIndex((other) => other.id === r.id) === index)
+    reservationsCursor.value = result.nextCursor
+  } catch (e) {
+    if (current()) reservationsError.value = errorText(e)
+  } finally {
+    if (current()) reservationsLoading.value = false
   }
 }
 async function loadMatches({ reset = true } = {}) {
@@ -361,6 +424,7 @@ watch(() => session.user?.id, () => {
   matchesCursor.value = null
   matchesError.value = ''
   matchesLoading.value = false
+  resetReservations()
   item.value = null
   comments.value = []
   commentsCursor.value = null
@@ -380,6 +444,7 @@ onHide(() => {
   ++loadVersion
   ++commentsVersion
   ++matchesVersion
+  resetReservations()
   matchesLoading.value = false
   commentsLoading.value = false
   planRefreshing.value = false
@@ -389,6 +454,7 @@ onUnload(() => {
   ++loadVersion
   ++commentsVersion
   ++matchesVersion
+  resetReservations()
 })
 async function run(fn) {
   if (busy.value) return
@@ -405,7 +471,7 @@ async function run(fn) {
   } catch (e) {
     if (!current()) return
     error.value = errorText(e)
-    if (type.value === 'plan' && ['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
+    if ((type.value === 'plan' || (config.apiMode === 'http' && type.value === 'market')) && ['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
       await load({ preserveError: true })
   } finally {
     busy.value = false
@@ -441,6 +507,26 @@ function reserve() {
     if (!current()) return
     uni.showToast({ title: '已提交预约', icon: 'success' })
     await load()
+  })
+}
+function respondReservation(reservation, accept) {
+  if (!visible || config.apiMode !== 'http' || !isOwn.value || reservation.status !== 'pending') return
+  return run(async (current) => {
+    await api.reservation.respond({ reservationId: reservation.id, accept })
+    if (current()) await load()
+  })
+}
+function completeReservation(reservation) {
+  if (!visible || config.apiMode !== 'http' || reservation.status !== 'accepted' || busy.value) return
+  const same = confirmationCurrent()
+  uni.showModal({
+    title: '确认交接完成', content: '请确认已完成物品与款项交接。确认后商品将标记已完成，不能再次预约。',
+    success: (result) => {
+      if (result.confirm && same()) run(async (current) => {
+        await api.reservation.complete({ reservationId: reservation.id })
+        if (current()) await load()
+      })
+    }
   })
 }
 function confirmationCurrent() {
@@ -583,6 +669,7 @@ const statusLabels = {
 const lostCategories = { card: '卡片', key: '钥匙', misc: '杂物' }
 const lostKinds = { lost: '丢失', found: '拾获' }
 const statusLabel = (status) => statusLabels[status] || status
+const reservationLabel = (status) => ({ pending: '待回应', accepted: '已接受，待交接', rejected: '已拒绝', completed: '交接完成', cancelled: '已取消' })[status] || status
 const lostCategoryLabel = (category) => lostCategories[category] || category
 const lostKindLabel = (kind) => lostKinds[kind] || '失物'
 </script>
