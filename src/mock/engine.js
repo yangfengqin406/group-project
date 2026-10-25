@@ -66,13 +66,14 @@ export function dispatch(db, method, p = {}) {
     owner: user(item.ownerId)
   })
   const all = () => Object.values(db.contents).flat()
-  const note = (recipientId, title, type, id) =>
+  const note = (recipientId, title, type, id, conversationId) =>
     db.notifications.unshift({
       id: makeId('note'),
       recipientId,
       title,
       contentType: type,
       contentId: id,
+      ...(conversationId ? { conversationId } : {}),
       read: false,
       createdAt: new Date().toISOString()
     })
@@ -436,6 +437,18 @@ export function dispatch(db, method, p = {}) {
       )
     if (type === 'market')
       requireThat(item.status === 'active', 'CONFLICT', '商品状态已变化')
+    if (type === 'lost_found' && action === 'markReturned') {
+      if (item.status === 'returned') return summarize(item)
+      requireThat(item.status === 'active', 'CONFLICT', '失物已结束，不能再次修改')
+      item.returnedAt = new Date().toISOString()
+      const recipients = new Set()
+      for (const c of db.conversations.filter((c) => c.contentType === type && c.contentId === item.id)) {
+        for (const id of c.participantIds) if (id !== me().id && !recipients.has(id)) {
+          recipients.add(id)
+          note(id, '联系过的失物已完成归还', type, item.id, c.id)
+        }
+      }
+    }
     item.status =
       action === 'markReturned'
         ? 'returned'
@@ -700,6 +713,18 @@ export function dispatch(db, method, p = {}) {
     db.conversations.unshift(conversation)
     return clone(conversation)
   }
+  if (method === 'conversation.get') {
+    const c = db.conversations.find((c) => c.id === p.id)
+    requireThat(c, 'NOT_FOUND', '会话不存在')
+    requireThat(c.participantIds.includes(me().id), 'FORBIDDEN', '无权访问这段会话')
+    return {
+      ...clone(c),
+      peer: user(c.participantIds.find((id) => id !== me().id)),
+      lastMessage: clone(db.messages.filter((m) => m.conversationId === c.id).reduce(
+        (latest, m) => !latest || Date.parse(m.createdAt) >= Date.parse(latest.createdAt) ? m : latest, null
+      ))
+    }
+  }
   if (method === 'conversation.list') {
     const userId = me().id
     const source = p.contentType === undefined ? '' : p.contentType
@@ -748,6 +773,8 @@ export function dispatch(db, method, p = {}) {
           .map((m) => ({ ...m, sender: user(m.senderId) }))
       )
     return idem(() => {
+      const original = content(c.contentType, c.contentId)
+      requireThat(original.visibility === 'public', 'FORBIDDEN', '原内容已转为私有，不能继续留言')
       requireThat(
         typeof p.body === 'string' &&
           p.body.trim().length > 0 &&
@@ -765,7 +792,7 @@ export function dispatch(db, method, p = {}) {
       db.messages.push(message)
       for (const id of c.participantIds)
         if (id !== me().id)
-          note(id, '收到一条联系消息', c.contentType, c.contentId)
+          note(id, '收到一条联系消息', c.contentType, c.contentId, c.id)
       return clone(message)
     })
   }

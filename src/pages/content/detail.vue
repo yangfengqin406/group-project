@@ -502,8 +502,10 @@ function finish() {
   }
   const same = confirmationCurrent()
   uni.showModal({
-    title: '确认操作',
-    content: '确认更新这条内容的状态吗？',
+    title: type.value === 'lost_found' ? '确认失物已归还？' : '确认操作',
+    content: type.value === 'lost_found'
+      ? '请确认已找到物品或交还失主。完成后会显示“已完成”，不能重新改为处理中。'
+      : '确认更新这条内容的状态吗？',
     success: (r) => {
       if (r.confirm && same())
         run(async (current) => {

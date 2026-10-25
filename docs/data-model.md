@@ -2,6 +2,10 @@
 
 这是后端实现建议，尚未创建任何真实数据库集合。演示的单个本机对象不能直接用作生产数据库架构。
 
+2026-10-25 C 增加 `backend/c/store.js` 参考存储：c_records 持久保存失物/会话/留言/评论/通知/举报，带唯一业务组合/事件及接收人/会话/作者索引；c_receipts 按账号+方法+幂等键保存参数指纹和回执；c_settings 保存仅服务端使用的游标签名密钥。所有业务写入与关联通知在事务内提交。未创建云数据库或部署，最终数据库仍由 B 协调。
+
+Conversation 增补 contentTitle、activeAt；Notification 可选 conversationId 用于打开原会话；失物归还记录 returnedAt。Report 审核增补 status（pending/resolved/dismissed）、resolution、resolvedBy、resolvedAt。账号角色只从服务端读取，公开资料不返回 roles/凭证；内部 uniqueKey 和游标签名密钥不返回前端。
+
 | 实体 | 核心字段 | 关系 / 权限 |
 | --- | --- | --- |
 | User | id、nickname、campusId、skillTags、bio、avatarImageId | 各模块作者共用；公开资料不包含凭证、手机号等私有字段；avatarImageId 关联 Upload，展示时由服务解析出可访问地址（待群里确认） |

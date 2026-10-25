@@ -4,7 +4,7 @@
 
 页面调用 src/services 中的模块函数，例如 `market.list({ keyword, cursor, pageSize })`。call 内部在 mock/http 模式之间切换。
 
-真实 HTTP 适配建议统一 RPC：`POST <VITE_API_BASE_URL>/rpc`，body 为 `{ method, params }`，登录后带 `Authorization: Bearer <token>`。这是本骨架约定，**还没有实现服务器**。如果后端采用 CloudBase 云函数，在 transport.js 增加云函数适配；页面调用名称和输入结果不变，不要把 CloudBase 环境 ID 当成 HTTP URL。
+真实 HTTP 适配建议统一 RPC：`POST <VITE_API_BASE_URL>/rpc`，body 为 `{ method, params }`，登录后带 `Authorization: Bearer <token>`。C 模块服务端及可挂载的 HTTP 处理器位于 `backend/c/`，尚未接入 B 的认证/上传、部署公网服务器。如果后端采用 CloudBase 云函数，在 transport.js 增加云函数适配；页面调用名称和输入结果不变，不要把 CloudBase 环境 ID 当成 HTTP URL。
 
 返回 envelope：`{ code: 'OK', message: '', data, requestId }`。call 成功只返回 data，失败抛 ServiceError，不回退演示数据。错误有 INVALID_ARGUMENT、UNAUTHENTICATED、FORBIDDEN、NOT_FOUND、CONFLICT、SERVICE_UNAVAILABLE；骨架补充 NOT_IMPLEMENTED / NOT_SUPPORTED，明确尚未实现或平台不支持。
 
@@ -112,6 +112,7 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 | invitation.respond | `{invitationId,action,idempotencyKey}` | `{invitation,targetPlan}`；action=accept/reject/cancel |
 | invitation.cancel | `{invitationId,idempotencyKey}` | 与 respond(cancel) 一致 |
 | conversation.open | `{contentType,contentId,peerUserId}` | 会话，含原内容链接和 participantIds |
+| conversation.get | `{id}` | 仅参与者读取单个会话，含 peer、lastMessage 和原内容字段；直接打开聊天链接，无须遍历全部会话 |
 | conversation.list | `{contentType?,cursor?,pageSize?}` | 当前用户会话先按来源筛选、按最近消息时间（无消息时按创建时间）倒序，再分页；contentType省略/空串表示全部，非空为plan/help/market/lost_found。含peer摘要、lastMessage与原内容字段 |
 | message.list | `{conversationId,cursor?,pageSize?}` | Message 分页，含 sender 摘要，按新到旧排列 |
 | message.send | `{conversationId,body,idempotencyKey}` | 保存的 Message |
@@ -120,6 +121,7 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 | notification.list/markRead | 分页 / `{notificationId}` | 通知分页 / 保存的通知 |
 | favorite.set/list | `{contentType,contentId,selected}` / 分页 | `{selected}` / 收藏分页 |
 | report.create | `{contentType,contentId,reason}` | 举报编号与状态 |
+| report.adminResolve | `{reportId,action:'resolve'|'dismiss',resolution}` | 管理员处理举报，返回状态 resolved/dismissed；记录审核结果与通知，不自动修改其他模块内容 |
 
 所有预留的方法名称及维护人见 src/contracts/catalog.json；未实现项见 docs/status.md。reservation、event、appraisal 和服务器订阅发送只留调用位置，不伪造成功。
 
@@ -163,3 +165,13 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 ## 服务端必须校验
 
 身份来自登录态；不接受前端伪造 ownerId/currentUserId。查看公开与本人内容分开；修改检查作者；会话/消息检查参与者；通知标读检查归属；管理员处理举报需要管理员权限；上传校验类型、大小、归属。演示检查只能辅助理解，不能当作生产安全措施。
+
+## C 第二阶段服务端边界（2026-10-25）
+
+- `backend/c/` 提供独立 SQLite 参考实现、事务及可挂载 RPC 处理器，不新增前端依赖，不替代 B 的认证/上传或决定全组云数据库方案。接入回调见 `backend/c/README.md`。
+- 失物仍使用 `images`；服务端核验每张上传记录属于本人、content 用途、已确认、允许的图片类型/大小及 HTTPS 地址。缺少上传适配时拒绝创建；前端真实失物选图等待 B 公共上传，不能提交临时路径。
+- 仅 active 失物可修改或标记 returned；归还与给既有联系人的通知同事务完成，重复归还不重发通知，终态不能恢复。私有失物只供作者读取。
+- 会话只允许围绕公开内容联系发布者；双方及原内容组合唯一。原内容下架/删除后历史会话仍限参与者读取，保留原链接及留言；转私有/删除后禁止发送新留言，不从会话泄露私有详情。仍公开的已完成内容可继续沟通交接。
+- 留言按账号+方法+幂等键绑定业务参数，同键改文案或会话返回 CONFLICT；消息、通知、回执同事务提交。评论 1～500 字，留言 1～1000 字，举报原因 2～500 字。
+- C 服务端不透明游标绑定账号、方法及筛选；消息/评论/通知按稳定序号翻页，新插入不挤掉旧页。会话按最近活动排序后分页，期间活动更新可能需要刷新，页面按 ID 去重。
+- 联系通知可选 `conversationId`，有值时打开原会话；其他通知继续打开原内容。内部 `notify` 只供 A/B 可信服务端按事件编号去重调用，不注册客户端 RPC。微信订阅发送仍未接入，`subscription.send` 明确返回 NOT_IMPLEMENTED。

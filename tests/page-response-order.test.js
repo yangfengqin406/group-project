@@ -25,6 +25,58 @@ function page(file, services, names) {
 }
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0))
 
+test('聊天链接只读取指定会话；换身份后的迟到会话摘要不能回填', async () => {
+  let finish, lists = 0
+  const chat = page('messages/chat', {
+    conversation: {
+      get: ({ id }) => new Promise((resolve) => { assert.equal(id, 'direct-chat'); finish = resolve }),
+      list: async () => { lists++; return { items: [], nextCursor: null } }
+    }, message: { list: async () => ({ items: [], nextCursor: null }) }
+  }, ['id', 'current'])
+  chat.id.value = 'direct-chat'
+  chat.hooks.show()
+  await flush()
+  chat.session.user = { id: 'other' }
+  finish({ id: 'direct-chat', peer: { nickname: '旧账号联系人' } })
+  await flush()
+  assert.equal(chat.current.value, null)
+  assert.equal(lists, 0)
+})
+
+test('通知成功标读后立即更新，联系通知进会话，旧通知仍进原内容', async () => {
+  const routes = []
+  const empty = async () => ({ items: [], nextCursor: null })
+  const inbox = page('messages/index', {
+    conversation: { list: empty }, invitation: { list: empty }, plan: {},
+    notification: { list: empty, markRead: async () => ({ read: true }) },
+    uni: { navigateTo: ({ url }) => routes.push(url) },
+    openContent: (type, id) => routes.push(`${type}:${id}`)
+  }, ['read'])
+  inbox.hooks.show(); await flush()
+  const note = { id: 'note', read: false, conversationId: 'chat-1', contentType: 'market', contentId: 'item-1' }
+  await inbox.read(note)
+  assert.equal(note.read, true)
+  assert.match(routes[0], /messages\/chat\?id=chat-1$/)
+  await inbox.read({ id: 'old', contentType: 'plan', contentId: 'plan-1' })
+  assert.equal(routes[1], 'plan:plan-1')
+})
+
+test('通知标读未完成时离开消息页，迟到结果不能触发跳转', async () => {
+  let finish
+  const routes = []
+  const empty = async () => ({ items: [], nextCursor: null })
+  const inbox = page('messages/index', {
+    conversation: { list: empty }, invitation: { list: empty }, plan: {},
+    notification: { list: empty, markRead: () => new Promise((resolve) => { finish = resolve }) },
+    uni: { navigateTo: ({ url }) => routes.push(url) }, openContent: () => routes.push('content')
+  }, ['read'])
+  inbox.hooks.show(); await flush()
+  const reading = inbox.read({ id: 'late', conversationId: 'chat-1' })
+  inbox.hooks.hide()
+  finish({ read: true }); await reading
+  assert.deepEqual(routes, [])
+})
+
 test('小屋快速切换筛选：慢到的旧列表不能覆盖最新筛选', async () => {
   const requests = []
   const home = page('home/index', {
@@ -45,7 +97,7 @@ test('小屋快速切换筛选：慢到的旧列表不能覆盖最新筛选', as
 test('刷新期间发送留言：发送后的新列表生效，旧响应不能抹掉新留言', async () => {
   const requests = []
   const chat = page('messages/chat', {
-    conversation: { list: async () => ({ items: [], nextCursor: null }) },
+    conversation: { get: async () => { throw new Error('会话不存在') } },
     message: {
       list: () => new Promise((resolve) => requests.push(resolve)),
       send: async (params) => ({ id: 'new', body: params.body })

@@ -2,6 +2,8 @@
 
 完整函数定义在 src/services，具体输入返回看 interfaces.md；表中“演示”只表示本机实现。
 
+2026-10-25：C 下列失物/会话/消息/评论/通知/举报接口新增 `backend/c/` SQLite 参考服务（详见其 README），已提供持久化及权限集成测试；尚未接 B 认证/上传、未部署和双设备验收。表中较早的“真实后端待实现”按此补记更新为“C服务代码已有，团队适配及线上接入待完成”。订阅发送仍未实现。
+
 | 接口 | 负责人 | 当前状态 |
 | --- | --- | --- |
 | auth.login | B | H5参数非空时切固定演示身份；不验证学号密码，微信明确未实现；真实认证待接 |
@@ -25,6 +27,7 @@
 | upload.create | B | 本机记录content/avatar用途与临时地址，返回imageId；无云存储/文件类型大小校验，真实上传待接 |
 | upload.confirm | B | 本机校验图片归属并标记confirmed；真实业务关联与存储待接 |
 | conversation.open | C | 本机演示；真实后端待实现 |
+| conversation.get | C | 参与者直接读取会话；mock 与 C 服务端已有，线上待接入 |
 | conversation.list | C | 本机演示；真实后端待实现 |
 | message.send | C | 本机演示；真实后端待实现 |
 | message.list | C | 本机演示；真实后端待实现 |
@@ -36,7 +39,7 @@
 | favorite.list | B | 本机演示；真实后端待实现 |
 | myContent.list | B | 本机演示；真实后端待实现 |
 | report.create | C | 本机演示；真实后端待实现 |
-| report.adminResolve | C | 仅预留，未实现 |
+| report.adminResolve | C | C 服务端校验真实管理员角色后处理并通知；演示仍未实现，管理员后台待接 |
 | plan.create | A | 本机演示；真实后端待实现 |
 | plan.update | A | 本机演示；真实后端待实现 |
 | plan.get | A | 本机演示；真实后端待实现 |
