@@ -8,7 +8,7 @@
 
 [原生编译证据](assets/weixin-wxss-2026-10-26/summary.json)及[SHA256清单](assets/weixin-wxss-2026-10-26/after-wxss-manifest.json)不含AppID、账号或本机绝对路径。`check:mp-styles`及两条CI步骤只检查已知通配问题，不冒充完整WXSS编译器。
 
-未操作用户微信工具界面或真机，重新编译后的模拟器画面待用户确认；未重新走查未改动的H5业务流程。本机入口配置和私有AppID保留，不提交工具配置。本次源码/文档待同一PR交付，实际合并状态见周报。
+未操作用户微信工具界面或真机，重新编译后的模拟器画面待用户确认；未重新走查未改动的H5业务流程。本机入口配置和私有AppID保留，不提交工具配置。本次源码与文档已通过[PR #27](https://github.com/yangfengqin406/group-project/pull/27)合入main（`bc3b7f9`），[CI](https://github.com/yangfengqin406/group-project/actions/runs/40263327938)通过；本次补充只记录实际合并状态。
 
 ## 全组完成度复核：2026-10-25（C PR #23合入后）
 
