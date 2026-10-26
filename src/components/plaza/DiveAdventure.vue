@@ -1960,7 +1960,16 @@ button:focus-visible {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dive-water * {
+  .water-light,
+  .seaweed,
+  .dive-coral,
+  .dive-pearl,
+  .dive-exit,
+  .dive-enemy,
+  .dive-bubble,
+  .dive-player,
+  .player-air-bubble,
+  .water-cover {
     animation: none !important;
   }
 }

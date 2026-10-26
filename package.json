@@ -13,6 +13,7 @@
     "build:mp-weixin": "uni build -p mp-weixin",
     "test": "node --test tests/*.test.js",
     "check": "node scripts/check-project.mjs",
+    "check:mp-styles": "node scripts/check-weixin-styles.mjs",
     "game:local": "node scripts/start-landlord-local.mjs",
     "game:serve": "node server/landlord/index.mjs",
     "campus:local": "node scripts/start-campus-local.mjs",
