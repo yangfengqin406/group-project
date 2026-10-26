@@ -5,7 +5,9 @@
   "versionName": "0.1.0",
   "versionCode": "100",
   "transformPx": false,
-  "uniStatistics": { "enable": false },
+  "uniStatistics": {
+    "enable": false
+  },
   "h5": {
     "router": {
       "mode": "hash"
@@ -17,6 +19,7 @@
     "setting": {
       "urlCheck": true
     },
-    "usingComponents": true
+    "usingComponents": true,
+    "lazyCodeLoading": "requiredComponents"
   }
 }

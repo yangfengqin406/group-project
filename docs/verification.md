@@ -1,5 +1,15 @@
 # 交付验证记录
 
+## 2026-10-26 微信伙伴/衣柜与两项代码质量续修
+
+按用户13:17截图检查：电脑当前WLAN与后端均正常，电脑直接访问回环/当前LAN健康端点均200。用户开启工具服务端口后，使用官方miniprogram-automator连接当前项目，直接执行真实wx.request：回环健康200/OK/local-persistent，当前LAN却502；未定位到具体代理环节，未改网络类型、代理或防火墙。回环地址未登录时，pet.get与wardrobe.getState均HTTP200/UNAUTHENTICATED，不以默认角色冒充读取成功。两个方法本身已接入，切换地址后的原账号登录需单独完成，模拟器页面的旧错误原因未凭电脑请求推断为已证实。
+
+代码质量根因：uni Vue3按源码路径输出仅由rooms使用的landlord/game-transport/game-session，导致主包含未使用JS；manifest未设置按需注入。微信专用Rollup插件将三份私有JS输出到rooms并自动重写require，主包误引用会构建失败；H5沿用原规则，源服务仍在src/services，页面URL和RPC不改。manifest仅增加lazyCodeLoading=requiredComponents，不提交本机AppID。配置依据为[uni官方manifest](https://uniapp.dcloud.net.cn/collocation/manifest.html#mp-weixin)。新增check:mp-quality及两条CI步骤只检查这两类产物条件，不等同工具完整质量扫描。
+
+Node22实际验证：check16页/74调用，**397/397测试通过**；新增8项打包/产物测试含真实Rollup图与跨分包误用拒绝，新增1项真实HTTP临时数据库测试覆盖两个账号宠物隔离、重启保留、衣柜23目录与匿名拒绝。真实模式H5、微信隔离构建和当前项目微信重建均通过；定向质量检查通过，32份WXSS通配检查0问题；主包2,060,378字节，内容分包39,550、rooms38,195，均在2MiB预算内。样式未改，未重复既有原生WXSS编译与未改业务的完整H5走查。
+
+当前项目已只清理“编译缓存”，未清空存储/授权。SDK页面跳转、元素读取与截图调用曾挂起，已结束本轮自建挂起脚本；随后通过SDK currentPage实际确认当前路由为rooms/account/index，已进入登录页，但尚未用用户账号验证登录后的画面。真实衣柜目前仅目录可读，奖励、兑换与穿戴未接入，WardrobePanel提示已纠正；新回归验证未实现操作仍明确NOT_IMPLEMENTED。黄色选择器警告、框架外部资源与物理设备另验；没有注册/修改实际用户账号，SDK仅安装于临时辅助目录，不进入依赖或源码。脱敏结果见[摘要](assets/weixin-quality-2026-10-26/summary.json)。本轮交付分支codex/fix-weixin-quality-20261026，合并状态见周报。
+
 ## 2026-10-26 微信本机502恢复
 
 用户截图的业务请求仍指向旧Wi-Fi地址，实测旧地址不可达、本机8788无监听；当前Preferred WLAN地址已变化。使用原数据库及上传目录恢复服务后，回环与当前LAN的 `/api/health` 均为HTTP200/OK，匿名 `pet.get` 返回真实 `UNAUTHENTICATED`，不再是502。未清空账号或文件，未改系统代理/防火墙。

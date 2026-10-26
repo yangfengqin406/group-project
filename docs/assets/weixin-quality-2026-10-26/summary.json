@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-26",
+  "node": "22.22.0",
+  "desktopHealth": { "loopback": 200, "currentLan": 200 },
+  "weixinNativeRequest": {
+    "loopbackHealth": { "status": 200, "code": "OK", "mode": "local-persistent" },
+    "currentLanHealth": { "status": 502 },
+    "anonymousPet": { "status": 200, "code": "UNAUTHENTICATED" },
+    "anonymousWardrobe": { "status": 200, "code": "UNAUTHENTICATED" },
+    "currentRoute": "rooms/account/index",
+    "mocked": false,
+    "privateCredentialsExported": false
+  },
+  "quality": {
+    "lazyCodeLoading": "requiredComponents",
+    "roomsPrivateJs": ["services/landlord.js", "services/game-transport.js", "utils/game-session.js"],
+    "oldMainPrivateJsAbsent": true,
+    "targetedArtifactCheck": "passed",
+    "fullDevtoolsScan": "not verified"
+  },
+  "validation": {
+    "check": { "pages": 16, "calls": 74 },
+    "tests": { "passed": 397, "failed": 0, "skipped": 0 },
+    "realModeH5Build": "passed",
+    "realModeWeixinBuild": "passed",
+    "wxssWildcardGuard": { "files": 32, "issues": 0 },
+    "rawBytes": { "main": 2060378, "pages/content": 39550, "rooms": 38195 }
+  },
+  "remaining": ["user login and loaded UI", "full Devtools quality rescan", "component selector warnings", "framework external resources", "physical device acceptance", "real wardrobe rewards, redeem and equip"],
+  "compileCacheOnlyCleared": true,
+  "userStorageCleared": false,
+  "proxyChanged": false,
+  "firewallChanged": false,
+  "privateAppIdPublished": false
+}

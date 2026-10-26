@@ -106,6 +106,43 @@ test('真实HTTP：私有内容图片不因确认/收藏/指定目标而公开�
   assert.equal((await fetch(avatar.url)).status, 200)
 })
 
+test('真实HTTP：伙伴按账号保存并跨重启保留，衣柜目录可读且未接入操作明确拒绝', async (t) => {
+  const f = await fixture(t), alice = await f.register('pet-alice'), bob = await f.register('pet-bob')
+  for (const method of ['pet.get', 'wardrobe.getState'])
+    assert.equal((await f.rpc(method)).code, 'UNAUTHENTICATED')
+  const original = await f.rpc('pet.get', {}, bob.token)
+  assert.equal(original.code, 'OK', original.message)
+  assert.equal(original.data.species, 'rabbit')
+  const appearance = {
+    species: 'capybara', palette: 'sage', feature: 'perky', accessory: 'scarf', name: '伙伴栗栗'
+  }
+  const saved = await f.rpc('pet.save', appearance, alice.token)
+  assert.equal(saved.code, 'OK', saved.message)
+  assert.deepEqual(saved.data, appearance)
+  assert.deepEqual((await f.rpc('pet.get', {}, alice.token)).data, appearance)
+  assert.deepEqual((await f.rpc('pet.get', {}, bob.token)).data, original.data)
+  const readWardrobe = async (token) => {
+    const response = await f.rpc('wardrobe.getState', {}, token)
+    assert.equal(response.code, 'OK', response.message)
+    const state = response.data
+    assert.equal(state.catalog.length, 23)
+    assert.ok(state.catalog.some((item) => item.id === 'lily-pad' && item.slot === 'head'))
+    assert.deepEqual(state.owned, [])
+    assert.equal(state.pearls, 0)
+    assert.deepEqual(state.clearedLevels, [])
+    assert.deepEqual(state.equipped, { hair: null, head: null, outfit: null, feet: null, bag: null, hand: null, charm: null })
+    return state
+  }
+  const initialWardrobe = await readWardrobe(alice.token)
+  assert.deepEqual(await readWardrobe(bob.token), initialWardrobe)
+  assert.equal((await f.rpc('wardrobe.redeem', { itemId: 'lily-pad' }, alice.token)).code, 'NOT_IMPLEMENTED')
+  assert.equal((await f.rpc('wardrobe.equip', { slot: 'head', itemId: 'lily-pad' }, alice.token)).code, 'NOT_IMPLEMENTED')
+  await f.restart()
+  assert.deepEqual((await f.rpc('pet.get', {}, alice.token)).data, appearance)
+  assert.deepEqual((await f.rpc('pet.get', {}, bob.token)).data, original.data)
+  assert.deepEqual(await readWardrobe(alice.token), initialWardrobe)
+})
+
 test('真实HTTP：拒绝恶意源、伪造文件、无身份上传与未配置微信/订阅，不回退演示成功', async (t) => {
   const f = await fixture(t), a = await f.register('guard-test')
   const hostile = await fetch(`${f.origin}/api/rpc`, { method: 'POST', headers: { Origin: 'https://evil.example', 'Content-Type': 'application/json' }, body: '{}' })
