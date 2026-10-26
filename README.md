@@ -31,6 +31,8 @@ npm run dev:mp-weixin
 
 在微信开发者工具中导入 `dist/dev/mp-weixin`，用你们自己的 AppID。`src/manifest.json` 的 `mp-weixin.appid` 需要在实际接入时统一填写；个人工具私有配置不要提交。
 
+发布构建用 `npm run build:mp-weixin` 并导入 `dist/build/mp-weixin`。若缺少 `app.json`，核对是否选了编译目录；若白屏，先看工具 Console 的红色错误。构建后运行 `npm run check:mp-styles` 排查不兼容通配选择器，uni-app构建不能代替微信自身WXSS编译或真机验收。
+
 ## 同一 Wi-Fi 试玩斗地主（本地）
 
 本轮新增三人真人匹配与完整牌局，需要一台电脑运行独立访客服务。它与校园账号、消息等本机演示分开；上方 GitHub Pages 链接尚未接入这项联机服务。

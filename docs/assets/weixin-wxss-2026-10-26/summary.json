@@ -1,0 +1,28 @@
+{
+  "scope": "Native WeChat WXSS compiler validation; simulator and physical device not operated",
+  "compiler": {
+    "name": "WeChat Stylesheet Compiler",
+    "version": "v0.4me_20200724_db"
+  },
+  "before": {
+    "wxssFiles": 37,
+    "exitCode": 1,
+    "error": "components/plaza/DiveAdventure.wxss(1:16526): unexpected token `*`",
+    "diveWxssSha256": "bf641f7fb789a739ab5ba151cb2964df80ebdca8170c766a40a1955ed6e25f21"
+  },
+  "after": {
+    "wxssFiles": 32,
+    "exitCode": 0,
+    "stderr": "",
+    "diveWxss": {
+      "file": "components/plaza/DiveAdventure.wxss",
+      "bytes": 16826,
+      "sha256": "beef4a880d87fc4a83f447ae6f7df9779f1018d987179a12379bdb27543418e0"
+    },
+    "wxssManifestSha256": "144271aad2dca9236bb99ae7ec19ca54580fd95e251cc8b18d0121d04a0f27b9",
+    "appJsonSha256": "82f3e33b676e3cd8ad474181564c3583f587079af0381c67d5af1f5604818b63",
+    "compiledOutputBytes": 166721
+  },
+  "command": "wcsc.exe -lc -pc <count> -o <temporary-output.js> <all-relative-wxss-paths>",
+  "manifestFormat": "UTF-8 JSON array of file, bytes, sha256; sorted by file path"
+}

@@ -80,6 +80,8 @@ Remove-Item Env:UNI_H5_BASE
 
 ## 最终提交物
 
+微信构建后运行 `npm run check:mp-styles`，阻断已知的WXSS通配选择器兼容错误；检查与部署CI均已加入此步骤。它不是完整微信编译器。10月26日潜水样式引起的白屏已修复，并用本机微信编译器验证全部32份样式通过，证据见 verification.md；模拟器与真机画面仍按实际执行记录。
+
 构建后运行`node scripts/report-build-size.mjs`或`--json`复核目录体积，并运行`node scripts/check-weixin-package.mjs`；每包2MiB原始目录预算检查已加入PR与main部署工作流。本轮新增`rooms`独立分包容纳斗地主页面，Node服务代码不打入小程序，当前主包/分包字节数以[最新验证记录](verification.md)为准。2062368字节是此前A素材优化、未分包时的快照，2075448字节是PR #20整合后的快照，均不能代替本轮分包测量。
 
 仍须微信开发者工具依赖分析、实际上传与真机验收，不能凭build/预算通过声称微信已发布。本机AppID修改保留且不提交，不提交私有工具配置或密钥。

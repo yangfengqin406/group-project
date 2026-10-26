@@ -17,4 +17,5 @@ jobs:
       - run: npm test
       - run: npm run build:h5
       - run: npm run build:mp-weixin
+      - run: npm run check:mp-styles
       - run: node scripts/check-weixin-package.mjs
