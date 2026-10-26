@@ -17,6 +17,7 @@
     "game:local": "node scripts/start-landlord-local.mjs",
     "game:serve": "node server/landlord/index.mjs",
     "campus:local": "node scripts/start-campus-local.mjs",
+    "campus:weixin": "node scripts/start-campus-weixin.mjs",
     "campus:serve": "node backend/campus/server.js",
     "campus:admin": "node scripts/campus-admin.mjs"
   },
