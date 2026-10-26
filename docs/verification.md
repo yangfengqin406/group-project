@@ -12,7 +12,7 @@ Node22实际验证：check16页/74调用位置，**388/388测试通过**，包�
 
 其余截图信息：9个黄色警告来自组件标签/属性选择器，原生样式编译可通过但局部样式仍有兼容隐患，本轮未改；`shadow-grey.png` 已定位为uni-app生产运行时预加载的外部资源，非业务图片；`report-online.../SdkReport` 归属微信SDK上报为名称推断，未找到项目内引用。它们不用于解释或掩盖已复现的后端连接故障。
 
-源码、启动说明与[脱敏摘要](assets/weixin-network-2026-10-26/summary.json)同PR交付；当前分支`codex/fix-weixin-local-network-20261026`待合入，实际状态见团队周报。
+源码、启动说明与[脱敏摘要](assets/weixin-network-2026-10-26/summary.json)已通过[PR #29](https://github.com/yangfengqin406/group-project/pull/29)合入main（`97eafcd`），[CI](https://github.com/yangfengqin406/group-project/actions/runs/40267393461)通过；本次文档补充只记录实际合并状态。
 
 ## 2026-10-26 微信WXSS白屏修复
 
