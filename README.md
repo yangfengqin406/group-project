@@ -33,6 +33,8 @@ npm run dev:mp-weixin
 
 发布构建用 `npm run build:mp-weixin` 并导入 `dist/build/mp-weixin`。若缺少 `app.json`，核对是否选了编译目录；若白屏，先看工具 Console 的红色错误。构建后运行 `npm run check:mp-styles` 排查不兼容通配选择器，uni-app构建不能代替微信自身WXSS编译或真机验收。
 
+**微信电脑模拟器连接本机真实后端**：使用Node22运行 `npm run campus:weixin`。命令先确认或启动SQLite后端，再以 `127.0.0.1:8788` 构建微信目录，避免换Wi-Fi后仍请求旧IP；若本命令启动了后端，终端需保持运行。回工具重新编译并登录已有独立账号。局域网HTTP调试需在工具本地设置关闭域名校验，正式发布仍需HTTPS；手机不能使用电脑的127.0.0.1，改用当前WLAN地址，见[部署步骤](docs/deployment.md#微信本机模拟器真实服务调试)。
+
 ## 同一 Wi-Fi 试玩斗地主（本地）
 
 本轮新增三人真人匹配与完整牌局，需要一台电脑运行独立访客服务。它与校园账号、消息等本机演示分开；上方 GitHub Pages 链接尚未接入这项联机服务。

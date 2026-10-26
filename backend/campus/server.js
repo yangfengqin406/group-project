@@ -1,16 +1,14 @@
 import { randomUUID } from 'node:crypto'
 import { createReadStream, mkdirSync } from 'node:fs'
-import { networkInterfaces } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { openCStore } from '../c/store.js'
 import { createCampusService } from './service.js'
+import { localAddresses } from './network.js'
 import { createLandlordServer } from '../../server/landlord/index.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const fail = (code, message) => Object.assign(new Error(message), { code })
-const localAddresses = () => ['127.0.0.1', 'localhost', ...Object.values(networkInterfaces()).flatMap(
-  (rows) => (rows || []).filter((row) => row.family === 'IPv4' && !row.internal).map((row) => row.address))]
 
 async function readBody(request, limit) {
   let bytes = 0
