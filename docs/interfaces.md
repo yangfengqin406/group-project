@@ -14,7 +14,7 @@
 
 页面调用 src/services 中的模块函数，例如 `market.list({ keyword, cursor, pageSize })`。校园业务的call在mock/http模式之间切换；斗地主独立走`game-transport.js`的真实访客HTTP服务，见文末，不复用mock身份或校园令牌。
 
-真实校园HTTP适配建议统一RPC：`POST <VITE_API_BASE_URL>/rpc`，body为`{method,params}`，登录后带`Authorization: Bearer <token>`；此校园后端尚未实现。独立`server/landlord/`仅实现牌桌访客与牌局。若校园后端采用CloudBase云函数，在transport.js增加适配，页面调用名称和输入结果不变；不要把CloudBase环境ID当成HTTP URL。
+真实校园HTTP统一RPC：`POST <VITE_API_BASE_URL>/rpc`，body为`{method,params}`，登录后带`Authorization: Bearer <token>`；本机Node22/SQLite实现见[接入契约](local-campus-backend.md)，公网HTTPS适配及验收尚待完成。独立`server/landlord/`仅实现牌桌访客与牌局。若后续改用CloudBase云函数，在transport.js增加适配，页面调用名称和输入结果不变；不要把CloudBase环境ID当成HTTP URL。
 
 返回 envelope：`{ code: 'OK', message: '', data, requestId }`。call 成功只返回 data，失败抛 ServiceError，不回退演示数据。错误有 INVALID_ARGUMENT、UNAUTHENTICATED、FORBIDDEN、NOT_FOUND、CONFLICT、SERVICE_UNAVAILABLE；骨架补充 NOT_IMPLEMENTED / NOT_SUPPORTED，明确尚未实现或平台不支持。
 
