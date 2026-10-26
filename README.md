@@ -6,6 +6,8 @@
 
 **[团队周报（监督查看）](docs/weekly-log.md)**：按周查看A/B/C完成内容、成果证据、问题和下一步。固定入口为[main分支周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)；详细测试过程见[验证记录](docs/verification.md)。
 
+**[H5备用方案与上线条件](docs/h5-backup-and-release.md)**：微信审核前的公网演示、现场真实业务和网络故障备用步骤；区分课程演示与正式多人上线，不将本机端口当公网交付。
+
 ## 先跑起来
 
 **本机真实业务版（2026-10-25）**：使用 Node.js 22，执行 `npm run campus:local`，打开终端显示的 8788 地址并注册账号。账号、真实图片、二手、搭子、失物和消息保存到本机 SQLite，同网络设备共用数据；默认演示和 GitHub Pages 仍用虚构数据。独立账号未核验学籍，微信登录/公网部署尚待配置。见[接入契约](docs/local-campus-backend.md)和[部署说明](docs/deployment.md#本机与同-wi-fi-真实校园服务)。
