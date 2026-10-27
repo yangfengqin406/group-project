@@ -12,7 +12,7 @@ if(!['http:','https:'].includes(parsed.protocol)||parsed.origin!==wechatOrigin||
 for(const [platform,api,game] of [['h5','/api','/game'],['mp-weixin',wechatOrigin+'/api',wechatOrigin+'/game']]){
   const output=path.join(root,'dist/release',platform)
   const child=spawn(process.execPath,[path.join(root,'node_modules/@dcloudio/vite-plugin-uni/bin/uni.js'),'build',...(platform==='h5'?[]:['-p',platform])],{
-    cwd:root,stdio:'inherit',env:{...process.env,VITE_API_MODE:'http',VITE_API_BASE_URL:api,VITE_GAME_BASE_URL:game,UNI_H5_BASE:'/',UNI_OUTPUT_DIR:output}
+    cwd:root,stdio:'inherit',env:{...process.env,VITE_PHONE_PREVIEW_DEBUG:'false',VITE_API_MODE:'http',VITE_API_BASE_URL:api,VITE_GAME_BASE_URL:game,UNI_H5_BASE:'/',UNI_OUTPUT_DIR:output}
   })
   const code=await new Promise((done,reject)=>{child.once('error',reject);child.once('exit',done)})
   if(code!==0)throw new Error(platform+'构建失败：'+code)

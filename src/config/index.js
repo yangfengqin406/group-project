@@ -1,4 +1,5 @@
 export const config = Object.freeze({
+  phonePreviewDebug: import.meta.env.VITE_PHONE_PREVIEW_DEBUG === 'true',
   apiMode: import.meta.env.VITE_API_MODE || 'mock',
   apiBaseUrl: (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, ''),
   gameBaseUrl: (import.meta.env.VITE_GAME_BASE_URL || '').replace(/\/$/, ''),

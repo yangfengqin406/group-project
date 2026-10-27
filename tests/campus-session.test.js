@@ -3,11 +3,12 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 
-function transport(mode = 'http') {
+function transport(mode = 'http', previewReady) {
   const requests = [], session = { user: null }
   let token = 'saved-real-token', loginRequests = 0
   const context = vm.createContext({
-    config: { apiMode: mode, apiBaseUrl: '/api' }, session,
+    config: { apiMode: mode, apiBaseUrl: '/api', phonePreviewDebug: Boolean(previewReady) }, session,
+    ensurePhonePreview: previewReady || (() => Promise.resolve()),
     getToken: () => token, setToken: (value) => { token = value }, setSession: (value) => { session.user = value },
     openLogin: () => { loginRequests++ }, mockRequest: async () => ({ code: 'OK', data: { items: [] } }),
     ServiceError: class extends Error { constructor(code, message) { super(message); this.code = code } },
@@ -20,6 +21,26 @@ function transport(mode = 'http') {
   return { ...context.api, session, requests, reply, setToken: (value) => { token = value }, get loginRequests() { return loginRequests } }
 }
 const flush = () => new Promise((done) => setImmediate(done))
+
+test('手机预览在调试准备完成前不发身份或业务HTTP请求，默认构建不等待',async()=>{
+  let release,preparations=0
+  const ready=new Promise(resolve=>{release=resolve})
+  const f=transport('http',()=>{preparations++;return ready})
+  const pending=f.call('pet.get')
+  await flush();assert.equal(f.requests.length,0)
+  release();await flush();assert.ok(preparations>=1);assert.equal(f.requests.length,1)
+  f.reply(0,{id:'author'});await flush();assert.equal(f.requests.length,2)
+  f.reply(1,{species:'rabbit'});assert.equal((await pending).species,'rabbit')
+})
+
+test('微信域名、超时、证书失败各自提示且不改变账号或回退演示',async()=>{
+  for(const [errMsg,expected] of [['request:fail url not in domain list',/域名/],['request:fail timeout',/超时/],['request:fail SSL handshake error',/HTTPS/],['request:fail disconnected',/网络连接失败/]]){
+    const f=transport();f.session.user={id:'author'}
+    const pending=f.call('pet.get'),rejected=assert.rejects(pending,error=>error.code==='SERVICE_UNAVAILABLE'&&expected.test(error.message))
+    await flush();f.requests[0].fail({errMsg});await rejected
+    assert.equal(f.session.user.id,'author');assert.equal(f.loginRequests,0);assert.equal(f.requests.length,1)
+  }
+})
 
 test('HTTP冷启动共享一次身份恢复，详情和预约请求在当前身份确定后发出', async () => {
   const f = transport()

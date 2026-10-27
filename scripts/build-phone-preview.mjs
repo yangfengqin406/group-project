@@ -47,7 +47,7 @@ export async function buildPhonePreview(env=process.env){
   if(Number(process.versions.node.split('.')[0])!==22)throw new Error('手机预览构建请使用Node22')
   const config=phonePreviewConfig(env),root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),output=path.join(root,'dist/release/mp-weixin-public')
   const child=spawn(process.execPath,[path.join(root,'node_modules/@dcloudio/vite-plugin-uni/bin/uni.js'),'build','-p','mp-weixin'],{
-    cwd:root,stdio:'inherit',env:{...env,VITE_API_MODE:'http',VITE_API_BASE_URL:config.origin+'/api',VITE_GAME_BASE_URL:config.origin+'/game',UNI_OUTPUT_DIR:output}
+    cwd:root,stdio:'inherit',env:{...env,VITE_PHONE_PREVIEW_DEBUG:'true',VITE_API_MODE:'http',VITE_API_BASE_URL:config.origin+'/api',VITE_GAME_BASE_URL:config.origin+'/game',UNI_OUTPUT_DIR:output}
   })
   const code=await new Promise((done,reject)=>{child.once('error',reject);child.once('exit',done)})
   if(code!==0)throw new Error('手机预览构建失败：'+code)
