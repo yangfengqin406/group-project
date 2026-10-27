@@ -1,61 +1,63 @@
 <template>
-  <view class="dive-overlay">
+  <view class="dive-overlay wx-v">
     <view
-      class="dive-panel"
+      class="dive-panel wx-v"
       role="dialog"
       aria-modal="true"
       aria-label="泡泡潜水冒险"
       :class="{ 'less-motion': reducedMotion }"
     >
-      <view class="dive-header">
-        <view>
-          <view class="dive-title">泡泡潜水冒险</view>
-          <text class="dive-subtitle">带上伙伴，去水下捡一束星光。</text>
+      <view class="dive-header wx-v">
+        <view class="wx-v">
+          <view class="dive-title wx-v">泡泡潜水冒险</view>
+          <text class="dive-subtitle wx-t">带上伙伴，去水下捡一束星光。</text>
         </view>
-        <view class="dive-header-actions">
-          <button class="shore-button dive-sound-button" :aria-pressed="soundState.effects" aria-label="切换水下音效" @tap="soundscape.toggleEffects()">{{ soundState.effects ? '水声开' : '水声关' }}</button>
-          <button class="shore-button" @tap="askClose">{{ gameState?.status === 'playing' ? '离开冒险' : '回岸边' }}</button>
+        <view class="dive-header-actions wx-v">
+          <button class="shore-button dive-sound-button wx-b" :aria-pressed="soundState.effects" aria-label="切换水下音效" @tap="soundscape.toggleEffects()">{{ soundState.effects ? '水声开' : '水声关' }}</button>
+          <button class="shore-button wx-b" @tap="askClose">{{ gameState?.status === 'playing' ? '离开冒险' : '回岸边' }}</button>
         </view>
       </view>
-      <view v-if="error" class="dive-error" role="alert">
+      <view v-if="error" class="dive-error wx-v" role="alert">
         {{ error }}
-        <button :disabled="Boolean(busy)" @tap="retryRequest">重试</button>
+        <button :class="{'wx-disabled':Boolean(Boolean(busy))}" class="wx-b" :disabled="Boolean(busy)" @tap="retryRequest">重试</button>
       </view>
-      <view v-if="soundState.message" class="dive-error" role="status">{{ soundState.message }}</view>
+      <view v-if="soundState.message" class="dive-error wx-v" role="status">{{ soundState.message }}</view>
 
       <scroll-view v-if="!gameState" class="level-scroll" scroll-y>
-        <view class="dive-intro">
-          <view v-if="appearance" class="intro-pet">
+        <view class="dive-intro wx-v">
+          <view v-if="appearance" class="intro-pet wx-v">
             <PetAvatar :appearance="appearance" :wardrobe="equipment" />
           </view>
-          <view>
-            <view class="intro-title">小小冒险，慢慢探索</view>
-            <text>躲开珊瑚，用泡泡推开怪鱼。捡齐珍珠，就能打开出口。</text>
+          <view class="wx-v">
+            <view class="intro-title wx-v">小小冒险，慢慢探索</view>
+            <text class="wx-t">躲开珊瑚，用泡泡推开怪鱼。捡齐珍珠，就能打开出口。</text>
           </view>
         </view>
-        <view class="level-list">
+        <view class="level-list wx-v">
           <button
             v-for="level in DIVE_LEVELS"
             :key="level.id"
-            class="level-card"
-            :class="'level-' + level.id"
+            class="level-card wx-b"
+            :class="['level-' + level.id,{'wx-disabled':Boolean(
+              Boolean(busy) || !progress || level.id > progress.unlockedLevel
+            )}]"
             :disabled="
               Boolean(busy) || !progress || level.id > progress.unlockedLevel
             "
             @tap="startLevel(level.id)"
           >
-            <view class="level-icon" aria-hidden="true">
-              <view></view>
-              <view></view>
-              <view></view>
+            <view class="level-icon wx-v" aria-hidden="true">
+              <view class="wx-v"></view>
+              <view class="wx-v"></view>
+              <view class="wx-v"></view>
             </view>
-            <view class="level-copy">
-              <view class="level-name">{{ level.name }}</view>
-              <view class="level-target">
+            <view class="level-copy wx-v">
+              <view class="level-name wx-v">{{ level.name }}</view>
+              <view class="level-target wx-v">
                 {{ level.requiredPearls }} 颗珍珠 ·
                 {{ level.oxygenSeconds }} 秒氧气
               </view>
-              <view class="level-prize">
+              <view class="level-prize wx-v">
                 {{
                   progress?.clearedLevels.includes(level.id)
                     ? '已通关 · 重游 ' + replayPearls[level.id] + ' 珍珠'
@@ -63,7 +65,7 @@
                 }}
               </view>
             </view>
-            <text class="level-state">
+            <text class="level-state wx-t">
               {{
                 !progress
                   ? '读取中'
@@ -76,18 +78,18 @@
             </text>
           </button>
         </view>
-        <view class="adventure-rules">
+        <view class="adventure-rules wx-v">
           每关3颗爱心。缺氧先扣1心，之后每5秒再扣1心；还有机会返航。每颗珍珠是1枚待带回收获，静止长按返航2秒可收好它们；生命归零只丢本局收获，已有珍珠与装扮保留。真正通关另得首通礼物或重游奖金。
         </view>
       </scroll-view>
 
       <template v-else>
-        <view class="dive-hud">
+        <view class="dive-hud wx-v">
           <view
-            class="heart-group"
+            class="heart-group wx-v"
             :aria-label="gameState.player.hearts + '颗爱心'"
           >
-            <text
+            <text class="wx-t"
               v-for="heart in [1, 2, 3]"
               :key="heart"
               :class="{ empty: heart > gameState.player.hearts }"
@@ -95,29 +97,29 @@
               ♥
             </text>
           </view>
-          <view class="oxygen-group">
-            <text v-if="gameState.oxygenTicks > 0">氧气 {{ Math.ceil(gameState.oxygenTicks / 20) }}秒</text>
-            <text v-else class="hypoxia-warning">缺氧 · {{ Math.ceil((gameState.oxygenDamageTicks || 0) / 20) }}秒后扣心</text>
-            <view class="oxygen-track">
-              <view :style="{ width: oxygenPercent + '%' }"></view>
+          <view class="oxygen-group wx-v">
+            <text class="wx-t" v-if="gameState.oxygenTicks > 0">氧气 {{ Math.ceil(gameState.oxygenTicks / 20) }}秒</text>
+            <text v-else class="hypoxia-warning wx-t">缺氧 · {{ Math.ceil((gameState.oxygenDamageTicks || 0) / 20) }}秒后扣心</text>
+            <view class="oxygen-track wx-v">
+              <view class="wx-v" :style="{ width: oxygenPercent + '%' }"></view>
             </view>
           </view>
-          <view class="pearl-count">
+          <view class="pearl-count wx-v">
             待带回 {{ gameState.pearlsCollected }} 珍珠
-            <text>出口目标 {{ gameState.pearlsCollected }}/{{ gameState.requiredPearls }}</text>
+            <text class="wx-t">出口目标 {{ gameState.pearlsCollected }}/{{ gameState.requiredPearls }}</text>
           </view>
-          <button
-            class="pause-button"
+          <button :class="{'wx-disabled':Boolean(Boolean(busy) || gameState.status !== 'playing')}"
+            class="pause-button wx-b"
             :disabled="Boolean(busy) || gameState.status !== 'playing'"
             @tap="togglePause"
           >
             {{ paused ? '继续' : '暂停' }}
           </button>
         </view>
-        <view class="play-layout">
-          <view class="board-wrap">
+        <view class="play-layout wx-v">
+          <view class="board-wrap wx-v">
             <view
-              class="dive-water"
+              class="dive-water wx-v"
               :class="'depth-' + gameState.levelId"
               :style="{ width: boardWidth + 'px' }"
               @touchstart.stop.prevent="beginDrag"
@@ -129,55 +131,55 @@
               @mouseup="endDrag"
               @mouseleave="endDrag"
             >
-              <view class="water-ratio">
-                <view class="water-light light-one"></view>
-                <view class="water-light light-two"></view>
-                <view class="seaweed weed-one">
-                  <view></view>
-                  <view></view>
-                  <view></view>
+              <view class="water-ratio wx-v">
+                <view class="water-light light-one wx-v"></view>
+                <view class="water-light light-two wx-v"></view>
+                <view class="seaweed weed-one wx-v">
+                  <view class="wx-v"></view>
+                  <view class="wx-v"></view>
+                  <view class="wx-v"></view>
                 </view>
-                <view class="seaweed weed-two">
-                  <view></view>
-                  <view></view>
-                  <view></view>
+                <view class="seaweed weed-two wx-v">
+                  <view class="wx-v"></view>
+                  <view class="wx-v"></view>
+                  <view class="wx-v"></view>
                 </view>
                 <view
                   v-for="wall in gameState.obstacles"
                   :key="wall.id"
-                  class="dive-coral"
+                  class="dive-coral wx-v"
                   :data-id="wall.id"
                   :style="wallStyle(wall)"
                 >
-                  <view></view>
-                  <view></view>
+                  <view class="wx-v"></view>
+                  <view class="wx-v"></view>
                 </view>
                 <view
                   v-for="pearl in gameState.pearls.filter(
                     (item) => !item.collected
                   )"
                   :key="pearl.id"
-                  class="dive-pearl"
+                  class="dive-pearl wx-v"
                   :data-id="pearl.id"
                   :style="entityStyle(pearl, 3.4)"
                 >
-                  <view></view>
+                  <view class="wx-v"></view>
                 </view>
                 <view
-                  class="dive-exit"
+                  class="dive-exit wx-v"
                   :class="{
                     'is-open':
                       gameState.pearlsCollected === gameState.requiredPearls
                   }"
                   :style="entityStyle(gameState.exit, 10)"
                 >
-                  <view></view>
-                  <text>出口</text>
+                  <view class="wx-v"></view>
+                  <text class="wx-t">出口</text>
                 </view>
                 <view
                   v-for="enemy in gameState.enemies"
                   :key="enemy.id"
-                  class="dive-enemy"
+                  class="dive-enemy wx-v"
                   :class="[
                     'enemy-' + enemy.type,
                     { 'is-stunned': enemy.stunnedTicks > 0 }
@@ -185,26 +187,26 @@
                   :data-id="enemy.id"
                   :style="entityStyle(enemy, enemy.radius * 2.2)"
                 >
-                  <view class="piranha-fin"><view></view><view></view><view></view></view>
-                  <view class="enemy-tail"></view>
-                  <view class="piranha-scales"><view></view><view></view><view></view></view>
-                  <view class="enemy-eye eye-left"></view>
-                  <view class="piranha-gill"></view>
-                  <view class="enemy-mouth">
-                    <view class="piranha-teeth teeth-upper"><view></view><view></view><view></view></view>
-                    <view class="piranha-teeth teeth-lower"><view></view><view></view><view></view></view>
+                  <view class="piranha-fin wx-v"><view class="wx-v"></view><view class="wx-v"></view><view class="wx-v"></view></view>
+                  <view class="enemy-tail wx-v"></view>
+                  <view class="piranha-scales wx-v"><view class="wx-v"></view><view class="wx-v"></view><view class="wx-v"></view></view>
+                  <view class="enemy-eye eye-left wx-v"></view>
+                  <view class="piranha-gill wx-v"></view>
+                  <view class="enemy-mouth wx-v">
+                    <view class="piranha-teeth teeth-upper wx-v"><view class="wx-v"></view><view class="wx-v"></view><view class="wx-v"></view></view>
+                    <view class="piranha-teeth teeth-lower wx-v"><view class="wx-v"></view><view class="wx-v"></view><view class="wx-v"></view></view>
                   </view>
-                  <view class="piranha-side-fin"></view>
-                  <text v-if="enemy.stunnedTicks">○</text>
+                  <view class="piranha-side-fin wx-v"></view>
+                  <text class="wx-t" v-if="enemy.stunnedTicks">○</text>
                 </view>
                 <view
                   v-for="bubble in gameState.bubbles"
                   :key="bubble.id"
-                  class="dive-bubble"
+                  class="dive-bubble wx-v"
                   :style="entityStyle(bubble, 3)"
                 ></view>
                 <view
-                  class="dive-player"
+                  class="dive-player wx-v"
                   :class="{
                     'is-invulnerable': gameState.player.invulnerableTicks > 0
                   }"
@@ -225,19 +227,19 @@
                         : gameState.player.facing
                     "
                   />
-                  <view class="player-air-bubble"></view>
+                  <view class="player-air-bubble wx-v"></view>
                 </view>
                 <view
                   v-if="paused && gameState.status === 'playing'"
-                  class="water-cover"
+                  class="water-cover wx-v"
                 >
-                  <view class="pause-caption">在水里歇一会儿</view>
-                  <text>氧气暂停消耗，准备好再继续。</text>
-                  <button :disabled="Boolean(busy) || !active" @tap="resume">
+                  <view class="pause-caption wx-v">在水里歇一会儿</view>
+                  <text class="wx-t">氧气暂停消耗，准备好再继续。</text>
+                  <button :class="{'wx-disabled':Boolean(Boolean(busy) || !active)}" class="wx-b" :disabled="Boolean(busy) || !active" @tap="resume">
                     继续探索
                   </button>
-                  <button
-                    class="quiet-water-button"
+                  <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
+                    class="quiet-water-button wx-b"
                     :disabled="Boolean(busy)"
                     @tap="backToLevels"
                   >
@@ -246,21 +248,21 @@
                 </view>
                 <view
                   v-if="gameState.status !== 'playing'"
-                  class="water-cover result-cover"
+                  class="water-cover result-cover wx-v"
                   role="status"
                   aria-live="polite"
                 >
-                  <view class="result-symbol">
+                  <view class="result-symbol wx-v">
                     {{ gameState.status === 'cleared' ? '✦' : gameState.status === 'returned' ? '⌂' : '♡' }}
                   </view>
-                  <view class="pause-caption">
+                  <view class="pause-caption wx-v">
                     {{
                       gameState.status === 'cleared'
                         ? '找到出口啦！'
                         : gameState.status === 'returned' ? '回到岸边啦' : '本次冒险结束'
                     }}
                   </view>
-                  <text>
+                  <text class="wx-t">
                     {{
                       gameState.status === 'failed'
                         ? gameState.reason + ' · 本局' + gameState.pearlsCollected + '枚未带回的珍珠遗失，已有余额和装扮保留。'
@@ -273,7 +275,7 @@
                   </text>
                   <view
                     v-if="settled?.reward?.items.length"
-                    class="earned-items"
+                    class="earned-items wx-v"
                   >
                     首通礼物：{{ earnedNames }}
                   </view>
@@ -281,12 +283,12 @@
               </view>
             </view>
           </view>
-          <view v-if="gameState.status === 'playing'" class="game-controls">
-            <view class="direction-pad" aria-label="按住方向游动">
-              <button
+          <view v-if="gameState.status === 'playing'" class="game-controls wx-v">
+            <view class="direction-pad wx-v" aria-label="按住方向游动">
+              <button class="wx-b"
                 v-for="direction in directions"
                 :key="direction.id"
-                :class="'direction-' + direction.id"
+                :class="['direction-' + direction.id,{'wx-disabled':Boolean(!canPlay)}]"
                 :aria-label="direction.label"
                 :disabled="!canPlay"
                 @touchstart.stop.prevent="pressDirection(direction.id, $event)"
@@ -298,10 +300,10 @@
               >
                 {{ direction.symbol }}
               </button>
-              <view class="pad-center"></view>
+              <view class="pad-center wx-v"></view>
             </view>
-            <button
-              class="bubble-button"
+            <button :class="{'wx-disabled':Boolean(!canPlay)}"
+              class="bubble-button wx-b"
               :disabled="!canPlay"
               @touchstart.stop.prevent="pressFire"
               @touchend.stop.prevent="releaseFire"
@@ -311,12 +313,12 @@
               @mouseleave="releaseFire"
               @tap="pulseFire"
             >
-              <view></view>
-              <text>发射泡泡</text>
+              <view class="wx-v"></view>
+              <text class="wx-t">发射泡泡</text>
             </button>
             <button
-              class="return-button"
-              :class="{ 'is-returning': gameState.returningTicks > 0 }"
+              class="return-button wx-b"
+              :class="[{ 'is-returning': gameState.returningTicks > 0 },{'wx-disabled':Boolean(!canPlay)}]"
               :disabled="!canPlay"
               @touchstart.stop.prevent="pressReturn"
               @touchend.stop.prevent="releaseReturn"
@@ -325,28 +327,28 @@
               @mouseup="releaseReturn"
               @mouseleave="releaseReturn"
             >
-              <text>{{ gameState.returningTicks ? '返航 ' + Math.ceil((40 - gameState.returningTicks) / 20) + '秒' : '长按返航' }}</text>
-              <text class="return-note">静止2秒 · 受伤打断</text>
+              <text class="wx-t">{{ gameState.returningTicks ? '返航 ' + Math.ceil((40 - gameState.returningTicks) / 20) + '秒' : '长按返航' }}</text>
+              <text class="return-note wx-t">静止2秒 · 受伤打断</text>
             </button>
           </view>
-          <view v-else class="result-actions">
-            <button
-              class="dive-primary"
+          <view v-else class="result-actions wx-v">
+            <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
+              class="dive-primary wx-b"
               :disabled="Boolean(busy)"
               @tap="startLevel(selectedLevel)"
             >
               再试一次
             </button>
-            <button
+            <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
               v-if="settled?.status === 'cleared' && selectedLevel < 3"
-              class="dive-primary"
+              class="dive-primary wx-b"
               :disabled="Boolean(busy)"
               @tap="startLevel(selectedLevel + 1)"
             >
               去下一关
             </button>
-            <button
-              class="dive-secondary"
+            <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
+              class="dive-secondary wx-b"
               :disabled="Boolean(busy)"
               @tap="backToLevels"
             >
@@ -354,12 +356,12 @@
             </button>
           </view>
         </view>
-        <view class="control-hint">
+        <view class="control-hint wx-v">
           方向或拖动水面游动，用泡泡推开食人鱼；捡齐珍珠去出口，低血时静止长按返航收好收获。
-          <text class="keyboard-hint">方向键 / WASD，空格发泡泡，按住R返航。</text>
+          <text class="keyboard-hint wx-t">方向键 / WASD，空格发泡泡，按住R返航。</text>
         </view>
       </template>
-      <view class="dive-footnote">
+      <view class="dive-footnote wx-v">
         {{
           config.apiMode === 'mock'
             ? '本机演示 · 收获只保存在当前演示身份'
@@ -1014,19 +1016,19 @@ onUnmounted(() => {
   overflow: hidden;
   box-shadow: 0 16px 60px #071e3c77;
 }
-button {
+.wx-b {
   min-height: 44px;
   margin: 0;
   font-size: 14px;
   line-height: 1.4;
 }
-button::after {
+.wx-b::after {
   border: 0;
 }
-button[disabled] {
+.wx-b.wx-disabled {
   opacity: 0.5;
 }
-button:focus-visible {
+.wx-b:focus-visible {
   outline: 3px solid #ffe7ad;
   outline-offset: 3px;
 }
@@ -1038,7 +1040,7 @@ button:focus-visible {
   padding: 14px 20px 10px;
   flex-shrink: 0;
 }
-.dive-header > view:first-child { flex: 1; min-width: 0; }
+.dive-header > .wx-v:first-child { flex: 1; min-width: 0; }
 .dive-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .dive-sound-button { padding: 8px; font-size: 12px; }
 .dive-title {
@@ -1082,7 +1084,7 @@ button:focus-visible {
   font-weight: 650;
   margin-bottom: 8px;
 }
-.dive-intro text {
+.dive-intro .wx-t {
   display: block;
   max-width: 330px;
   font-size: 13px;
@@ -1142,7 +1144,7 @@ button:focus-visible {
   border-radius: 50%;
   background: #22576b;
 }
-.level-icon view {
+.level-icon .wx-v {
   position: absolute;
   bottom: 10px;
   width: 9px;
@@ -1151,24 +1153,24 @@ button:focus-visible {
   background: #a7c9a1;
   transform: rotate(-18deg);
 }
-.level-icon view:first-child {
+.level-icon .wx-v:first-child {
   left: 14px;
 }
-.level-icon view:nth-child(2) {
+.level-icon .wx-v:nth-child(2) {
   left: 29px;
   height: 38px;
   transform: rotate(9deg);
   background: #c5d5ac;
 }
-.level-icon view:nth-child(3) {
+.level-icon .wx-v:nth-child(3) {
   right: 13px;
   height: 23px;
   transform: rotate(22deg);
 }
-.level-2 .level-icon view {
+.level-2 .level-icon .wx-v {
   background: #d6a4a0;
 }
-.level-3 .level-icon view {
+.level-3 .level-icon .wx-v {
   background: #abafe0;
 }
 .adventure-rules {
@@ -1203,7 +1205,7 @@ button:focus-visible {
   line-height: 1.7;
   flex-shrink: 0;
 }
-.dive-error button {
+.dive-error .wx-b {
   flex-shrink: 0;
   padding: 8px 12px;
   color: #fff2d5;
@@ -1239,7 +1241,7 @@ button:focus-visible {
   background: #346d7b;
   overflow: hidden;
 }
-.oxygen-track view {
+.oxygen-track .wx-v {
   height: 100%;
   background: #c1dec0;
 }
@@ -1324,7 +1326,7 @@ button:focus-visible {
   height: 16%;
   transform: scaleX(-1);
 }
-.seaweed view {
+.seaweed .wx-v {
   position: absolute;
   bottom: 0;
   left: 30%;
@@ -1334,13 +1336,13 @@ button:focus-visible {
   border-radius: 80% 10% 0 0;
   transform: rotate(-15deg);
 }
-.seaweed view:nth-child(2) {
+.seaweed .wx-v:nth-child(2) {
   left: 50%;
   height: 100%;
   transform: rotate(10deg);
   background: #75b5a1;
 }
-.seaweed view:nth-child(3) {
+.seaweed .wx-v:nth-child(3) {
   left: 70%;
   height: 45%;
   transform: rotate(20deg);
@@ -1353,7 +1355,7 @@ button:focus-visible {
   background: #c18d91;
   box-shadow: inset -4px 0 0 #9c7d8a;
 }
-.dive-coral view {
+.dive-coral .wx-v {
   position: absolute;
   top: 15%;
   width: 32%;
@@ -1361,10 +1363,10 @@ button:focus-visible {
   border-radius: 8px;
   background: #e0b1a6;
 }
-.dive-coral view:first-child {
+.dive-coral .wx-v:first-child {
   left: -15%;
 }
-.dive-coral view:nth-child(2) {
+.dive-coral .wx-v:nth-child(2) {
   right: -15%;
   top: 54%;
 }
@@ -1386,7 +1388,7 @@ button:focus-visible {
   border: 2px solid #d8cfad;
   box-shadow: 0 0 8px #fff8ce66;
 }
-.dive-pearl view {
+.dive-pearl .wx-v {
   position: absolute;
   width: 25%;
   height: 25%;
@@ -1409,7 +1411,7 @@ button:focus-visible {
     0 0 0 4px #ccddad33,
     inset 0 0 15px #cae6c422;
 }
-.dive-exit text {
+.dive-exit .wx-t {
   position: absolute;
   left: -20%;
   width: 140%;
@@ -1497,7 +1499,7 @@ button:focus-visible {
   height: 33%;
   z-index: -1;
 }
-.piranha-fin view {
+.piranha-fin .wx-v {
   width: 0;
   height: 0;
   border-left: 3px solid transparent;
@@ -1505,7 +1507,7 @@ button:focus-visible {
   border-bottom: 8px solid #263f4d;
   transform: skewX(-18deg);
 }
-.piranha-fin view:nth-child(2) { border-bottom-width: 11px; }
+.piranha-fin .wx-v:nth-child(2) { border-bottom-width: 11px; }
 .piranha-gill {
   position: absolute;
   left: 42%;
@@ -1525,7 +1527,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
 }
-.piranha-scales view {
+.piranha-scales .wx-v {
   width: 35%;
   height: 70%;
   border-right: 1px solid #a6b5a0;
@@ -1553,16 +1555,16 @@ button:focus-visible {
 }
 .teeth-upper { top: 0; }
 .teeth-lower { bottom: 0; transform: rotate(180deg); }
-.piranha-teeth view {
+.piranha-teeth .wx-v {
   width: 0;
   height: 0;
   border-left: 2px solid transparent;
   border-right: 2px solid transparent;
   border-top: 5px solid #fff4d1;
 }
-.piranha-teeth view:nth-child(2) { border-top-width: 7px; }
+.piranha-teeth .wx-v:nth-child(2) { border-top-width: 7px; }
 .hypoxia-warning { color: #ffd1a5; font-weight: 650; }
-.pearl-count text { display: block; font-size: 10px; opacity: 0.8; margin-top: 4px; }
+.pearl-count .wx-t { display: block; font-size: 10px; opacity: 0.8; margin-top: 4px; }
 .return-button {
   display: flex;
   flex-direction: column;
@@ -1579,7 +1581,7 @@ button:focus-visible {
 }
 .return-button.is-returning { background: #7c8359; }
 .return-note { font-size: 10px; opacity: 0.8; }
-.dive-enemy text {
+.dive-enemy .wx-t {
   position: absolute;
   bottom: 100%;
   color: #d9efda;
@@ -1632,12 +1634,12 @@ button:focus-visible {
   font-weight: 650;
   color: #f1edcf;
 }
-.water-cover text {
+.water-cover .wx-t {
   font-size: 12px;
   line-height: 1.7;
   color: #bddbd3;
 }
-.water-cover button {
+.water-cover .wx-b {
   min-width: 120px;
   padding: 9px 16px;
   border-radius: 12px;
@@ -1673,7 +1675,7 @@ button:focus-visible {
   grid-template-rows: repeat(3, 44px);
   gap: 4px;
 }
-.direction-pad button {
+.direction-pad .wx-b {
   padding: 0;
   min-width: 44px;
   color: #dcebd6;
@@ -1722,7 +1724,7 @@ button:focus-visible {
   box-shadow: 0 4px 0 #2d6875;
   font-size: 12px;
 }
-.bubble-button view {
+.bubble-button .wx-v {
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -1790,7 +1792,7 @@ button:focus-visible {
   .intro-title {
     font-size: 16px;
   }
-  .dive-intro text {
+  .dive-intro .wx-t {
     font-size: 12px;
   }
   .level-list {
@@ -1822,13 +1824,13 @@ button:focus-visible {
     padding: 7px 10px;
     font-size: 11px;
   }
-  .level-icon view:first-child {
+  .level-icon .wx-v:first-child {
     left: 8px;
   }
-  .level-icon view:nth-child(2) {
+  .level-icon .wx-v:nth-child(2) {
     left: 20px;
   }
-  .level-icon view:nth-child(3) {
+  .level-icon .wx-v:nth-child(3) {
     right: 4px;
   }
   .dive-hud {
@@ -1858,7 +1860,7 @@ button:focus-visible {
   .water-cover {
     gap: 4px;
   }
-  .water-cover text {
+  .water-cover .wx-t {
     font-size: 11px;
   }
   .earned-items {

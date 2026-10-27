@@ -106,7 +106,7 @@ test('真实HTTP：私有内容图片不因确认/收藏/指定目标而公开�
   assert.equal((await fetch(avatar.url)).status, 200)
 })
 
-test('真实HTTP：伙伴按账号保存并跨重启保留，衣柜目录可读且未接入操作明确拒绝', async (t) => {
+test('真实HTTP：伙伴按账号保存并跨重启保留，空衣柜不能越权穿戴或透支兑换', async (t) => {
   const f = await fixture(t), alice = await f.register('pet-alice'), bob = await f.register('pet-bob')
   for (const method of ['pet.get', 'wardrobe.getState'])
     assert.equal((await f.rpc(method)).code, 'UNAUTHENTICATED')
@@ -135,8 +135,8 @@ test('真实HTTP：伙伴按账号保存并跨重启保留，衣柜目录可读�
   }
   const initialWardrobe = await readWardrobe(alice.token)
   assert.deepEqual(await readWardrobe(bob.token), initialWardrobe)
-  assert.equal((await f.rpc('wardrobe.redeem', { itemId: 'lily-pad' }, alice.token)).code, 'NOT_IMPLEMENTED')
-  assert.equal((await f.rpc('wardrobe.equip', { slot: 'head', itemId: 'lily-pad' }, alice.token)).code, 'NOT_IMPLEMENTED')
+  assert.equal((await f.rpc('wardrobe.redeem', { itemId: 'lily-pad' }, alice.token)).code, 'CONFLICT')
+  assert.equal((await f.rpc('wardrobe.equip', { slot: 'head', itemId: 'lily-pad' }, alice.token)).code, 'FORBIDDEN')
   await f.restart()
   assert.deepEqual((await f.rpc('pet.get', {}, alice.token)).data, appearance)
   assert.deepEqual((await f.rpc('pet.get', {}, bob.token)).data, original.data)
@@ -149,7 +149,7 @@ test('真实HTTP：拒绝恶意源、伪造文件、无身份上传与未配置�
   assert.equal(hostile.status, 403)
   assert.equal((await f.rpc('auth.login', { type: 'wechat', code: 'anything' })).code, 'NOT_IMPLEMENTED')
   assert.equal((await f.rpc('subscription.send', {}, a.token)).code, 'NOT_IMPLEMENTED')
-  assert.equal((await f.rpc('dive.start', {}, a.token)).code, 'NOT_IMPLEMENTED')
+  assert.equal((await f.rpc('dive.start', {}, a.token)).code, 'INVALID_ARGUMENT')
   const body = new FormData(); body.append('file', new Blob(['<svg onload="alert(1)"></svg>'], { type: 'image/png' }), 'fake.png')
   const bad = await fetch(`${f.origin}/api/upload?usage=content`, { method: 'POST', headers: { Authorization: `Bearer ${a.token}` }, body })
   assert.equal((await bad.json()).code, 'INVALID_ARGUMENT')

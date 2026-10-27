@@ -1,0 +1,13 @@
+{
+  "environment": "isolated Edge H5 real SQLite, unpacked release without node_modules",
+  "checks": [
+    "two isolated browser accounts login through real UI",
+    "real wardrobe remove/equip/front-back and database state",
+    "real-time fishing UI cast/hook/green-zone land and persisted first reward",
+    "two real UI accounts contact/send/reply/refresh"
+  ],
+  "errors": [],
+  "runtimeErrors": [],
+  "failedHttp": [],
+  "status": "passed"
+}

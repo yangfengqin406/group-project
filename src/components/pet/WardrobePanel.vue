@@ -1,15 +1,15 @@
 <template>
-  <view class="wardrobe-panel">
-    <view class="wardrobe-heading">
-      <view><view class="wardrobe-title">我的衣柜</view></view>
-      <view class="pearl-balance">
-        <view class="pearl-icon"></view>
+  <view class="wardrobe-panel wx-v">
+    <view class="wardrobe-heading wx-v">
+      <view class="wx-v"><view class="wardrobe-title wx-v">我的衣柜</view></view>
+      <view class="pearl-balance wx-v">
+        <view class="pearl-icon wx-v"></view>
         {{ state?.pearls ?? '—' }} 珍珠
       </view>
     </view>
-    <view class="wardrobe-preview">
-      <view class="preview-ground"></view>
-      <view class="wardrobe-model">
+    <view class="wardrobe-preview wx-v">
+      <view class="preview-ground wx-v"></view>
+      <view class="wardrobe-model wx-v">
         <PetAvatar
           :appearance="appearance"
           :wardrobe="state?.equipped || {}"
@@ -17,46 +17,46 @@
         />
       </view>
       <button
-        class="turn-model"
+        class="turn-model wx-b"
         @tap="view = view === 'front' ? 'back' : 'front'"
       >
         {{ view === 'front' ? '看看背面' : '看看正面' }}
       </button>
-      <view class="model-caption">
+      <view class="model-caption wx-v">
         {{ appearance?.name || '我的伙伴' }}的今日搭配
       </view>
     </view>
-    <view class="wardrobe-intro">
+    <view class="wardrobe-intro wx-v">
       通关收集喜欢的装扮，不同部位可以一起穿戴。
     </view>
-    <view v-if="error" class="wardrobe-error" role="alert">
+    <view v-if="error" class="wardrobe-error wx-v" role="alert">
       {{ error }}
-      <button v-if="!state" @tap="refresh">重新打开</button>
+      <button class="wx-b" v-if="!state" @tap="refresh">重新打开</button>
     </view>
-    <view v-if="state" class="adventure-goals">
-      <view class="goal-heading">
-        <view class="goal-title">潜水首通收藏</view>
-        <text class="goal-progress">已通关 {{ clearedCount }}/3</text>
+    <view v-if="state" class="adventure-goals wx-v">
+      <view class="goal-heading wx-v">
+        <view class="goal-title wx-v">潜水首通收藏</view>
+        <text class="goal-progress wx-t">已通关 {{ clearedCount }}/3</text>
       </view>
-      <view v-if="nextGoal" class="next-goal" :data-next-goal="nextGoal.level">
-        <view class="next-goal-stage">
-          <view class="next-goal-model">
+      <view v-if="nextGoal" class="next-goal wx-v" :data-next-goal="nextGoal.level">
+        <view class="next-goal-stage wx-v">
+          <view class="next-goal-model wx-v">
             <PetAvatar
               :appearance="previewPet"
               :wardrobe="nextGoalWardrobe"
               :view="view"
             />
           </view>
-          <text class="next-goal-tag">
+          <text class="next-goal-tag wx-t">
             {{ nextGoalHasUnowned ? '未拥有装扮 · 仅预览' : '首通搭配 · 仅预览' }}
           </text>
         </view>
-        <view class="next-goal-details">
-          <text class="next-goal-title">下一站，第{{ levelLabels[nextGoal.level] }}关</text>
-          <text class="next-goal-names">{{ nextGoal.names }}</text>
-          <text class="goal-pearls">首次通关获得装扮和 {{ nextGoal.pearls }} 珍珠</text>
-          <button
-            class="adventure-action"
+        <view class="next-goal-details wx-v">
+          <text class="next-goal-title wx-t">下一站，第{{ levelLabels[nextGoal.level] }}关</text>
+          <text class="next-goal-names wx-t">{{ nextGoal.names }}</text>
+          <text class="goal-pearls wx-t">首次通关获得装扮和 {{ nextGoal.pearls }} 珍珠</text>
+          <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
+            class="adventure-action wx-b"
             :disabled="Boolean(busy)"
             @tap="adventure"
           >
@@ -64,13 +64,13 @@
           </button>
         </view>
       </view>
-      <view v-else class="goals-completed">
-        <view>
-          <view class="next-goal-title">三关首通收藏已完成</view>
-          <view class="goal-pearls">重游攒珍珠，挑选更多喜欢的装扮。</view>
+      <view v-else class="goals-completed wx-v">
+        <view class="wx-v">
+          <view class="next-goal-title wx-v">三关首通收藏已完成</view>
+          <view class="goal-pearls wx-v">重游攒珍珠，挑选更多喜欢的装扮。</view>
         </view>
-        <button
-          class="adventure-action"
+        <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
+          class="adventure-action wx-b"
           :disabled="Boolean(busy)"
           @tap="adventure"
         >
@@ -80,16 +80,16 @@
       <view
         v-for="goal in firstClearGoals"
         :key="goal.level"
-        class="goal-row"
+        class="goal-row wx-v"
         :class="{ 'goal-cleared': hasCleared(goal.level) }"
         :data-goal="goal.level"
       >
-        <text class="goal-level">第{{ levelLabels[goal.level] }}关</text>
-        <view class="goal-rewards">
-          <text>{{ goal.names }}</text>
-          <text class="goal-pearls">首通另得 {{ goal.pearls }} 珍珠</text>
+        <text class="goal-level wx-t">第{{ levelLabels[goal.level] }}关</text>
+        <view class="goal-rewards wx-v">
+          <text class="wx-t">{{ goal.names }}</text>
+          <text class="goal-pearls wx-t">首通另得 {{ goal.pearls }} 珍珠</text>
         </view>
-        <text class="goal-state">
+        <text class="goal-state wx-t">
           {{
             hasCleared(goal.level)
               ? '已通关'
@@ -101,8 +101,8 @@
       </view>
     </view>
     <scroll-view scroll-x class="wardrobe-tabs">
-      <view class="slot-row">
-        <button
+      <view class="slot-row wx-v">
+        <button class="wx-b"
           v-for="slot in slots"
           :key="slot.id"
           :data-slot="slot.id"
@@ -111,71 +111,71 @@
           @tap="selected = slot.id"
         >
           {{ slot.label }}
-          <text>{{ ownedInSlot(slot.id) }}/{{ countInSlot(slot.id) }}</text>
+          <text class="wx-t">{{ ownedInSlot(slot.id) }}/{{ countInSlot(slot.id) }}</text>
         </button>
       </view>
     </scroll-view>
-    <view v-if="!state && !error" class="wardrobe-loading">正在整理衣柜…</view>
-    <view v-if="state" class="wardrobe-grid">
+    <view v-if="!state && !error" class="wardrobe-loading wx-v">正在整理衣柜…</view>
+    <view v-if="state" class="wardrobe-grid wx-v">
       <view
         v-for="item in visibleItems"
         :key="item.id"
-        class="wardrobe-card"
+        class="wardrobe-card wx-v"
         :class="{ 'is-worn': isWorn(item), 'is-locked': !isOwned(item.id) }"
         :data-item="item.id"
       >
-        <view class="item-stage">
-          <view class="item-model">
+        <view class="item-stage wx-v">
+          <view class="item-model wx-v">
             <PetAvatar
               :appearance="previewPet"
               :wardrobe="{ [item.slot]: item.id }"
             />
           </view>
-          <text class="item-tag">
+          <text class="item-tag wx-t">
             {{
               isWorn(item) ? '穿戴中' : isOwned(item.id) ? '已拥有' : '待收集'
             }}
           </text>
         </view>
-        <text class="item-name">{{ item.name }}</text>
-        <text class="item-description">{{ item.description }}</text>
-        <text class="item-source">
+        <text class="item-name wx-t">{{ item.name }}</text>
+        <text class="item-description wx-t">{{ item.description }}</text>
+        <text class="item-source wx-t">
           {{ item.source }}
-          <text v-if="ownedCount(item.id) > 1">
+          <text class="wx-t" v-if="ownedCount(item.id) > 1">
             · {{ ownedCount(item.id) }} 件
           </text>
         </text>
-        <text v-if="!isOwned(item.id)" class="item-cost">
+        <text v-if="!isOwned(item.id)" class="item-cost wx-t">
           兑换需 {{ item.cost }} 珍珠
         </text>
         <button
           v-if="isOwned(item.id)"
-          class="item-action"
-          :class="{ 'remove-action': isWorn(item) }"
+          class="item-action wx-b"
+          :class="[{ 'remove-action': isWorn(item) },{'wx-disabled':Boolean(Boolean(busy))}]"
           :disabled="Boolean(busy)"
           @tap="equip(item)"
         >
           {{ busy === item.id ? '整理中…' : isWorn(item) ? '脱下' : '穿戴' }}
         </button>
-        <button
+        <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
           v-else-if="isLevelLocked(item)"
-          class="item-action collect-action"
+          class="item-action collect-action wx-b"
           :disabled="Boolean(busy)"
           @tap="adventure"
         >
           先通关第{{ levelLabels[item.unlockLevel] }}关
         </button>
-        <button
+        <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
           v-else-if="missingPearls(item) > 0"
-          class="item-action collect-action"
+          class="item-action collect-action wx-b"
           :disabled="Boolean(busy)"
           @tap="adventure"
         >
           还差 {{ missingPearls(item) }} 珍珠 · 去闯关
         </button>
-        <button
+        <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
           v-else
-          class="item-action redeem-action"
+          class="item-action redeem-action wx-b"
           :disabled="Boolean(busy)"
           @tap="redeem(item)"
         >
@@ -183,12 +183,12 @@
         </button>
       </view>
     </view>
-    <view class="wardrobe-hint">
+    <view class="wardrobe-hint wx-v">
       首通收好固定装扮，重游攒珍珠。更多服饰通关后开放兑换；三种池塘小饰品也可钓鱼收集。
       {{
         config.apiMode === 'mock'
           ? '装扮按当前演示身份保存在本机。'
-          : '当前账号可查看衣柜目录；奖励、兑换和穿戴尚未接入真实服务。'
+          : '装扮、珍珠与通关进度保存到当前账号，重新登录后仍可读取。'
       }}
     </view>
   </view>
@@ -474,7 +474,7 @@ onUnmounted(() => {
   margin: 12px 0;
   line-height: 1.7;
 }
-.goals-completed > view {
+.goals-completed > .wx-v {
   flex: 1;
 }
 .adventure-action {
@@ -532,7 +532,7 @@ onUnmounted(() => {
   gap: 4px;
   padding: 8px 0;
 }
-.slot-row button {
+.slot-row .wx-b {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -547,11 +547,11 @@ onUnmounted(() => {
   color: #7d8469;
   background: transparent;
 }
-.slot-row button text {
+.slot-row .wx-b .wx-t {
   font-size: 9px;
   opacity: 0.7;
 }
-.slot-row button.selected {
+.slot-row .wx-b.selected {
   color: #355a50;
   background: #dce9da;
 }
@@ -647,8 +647,8 @@ onUnmounted(() => {
   background: #e5ebd9;
   color: #60774f;
 }
-.adventure-action[disabled],
-.item-action[disabled] {
+.adventure-action.wx-disabled,
+.item-action.wx-disabled {
   background: #eeeadd;
   color: #aba791;
   opacity: 1;
@@ -669,10 +669,10 @@ onUnmounted(() => {
   color: #8e927c;
   font-size: 13px;
 }
-button::after {
+.wx-b::after {
   border: 0;
 }
-button:focus-visible {
+.wx-b:focus-visible {
   outline: 2px solid #456957;
   outline-offset: 2px;
 }
@@ -703,7 +703,7 @@ button:focus-visible {
   .wardrobe-card {
     padding: 8px;
   }
-  .slot-row button {
+  .slot-row .wx-b {
     min-width: 56px;
     padding: 6px 10px;
   }

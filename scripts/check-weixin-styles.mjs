@@ -21,7 +21,24 @@ function universalOffset(selector) {
   return -1
 }
 
-export function findWxssSelectorIssues(css) {
+function componentSelectorIssue(selector) {
+  for (let i = 0; i < selector.length; i++) {
+    const c = selector[i]
+    if (c === '\\') { i++; continue }
+    if (c === '[') return { offset: i, kind: 'attribute' }
+    if (c === '#') return { offset: i, kind: 'id' }
+    if (c === ':' && /^:nth-[\w-]+\(/.test(selector.slice(i))) {
+      i = selector.indexOf(')', i)
+      if (i < 0) break
+      continue
+    }
+    if (/[a-zA-Z_]/.test(c) && (i === 0 || /[\s>+~,(]/.test(selector[i - 1])))
+      return { offset: i, kind: 'tag' }
+  }
+  return null
+}
+
+export function findWxssSelectorIssues(css, { component = false } = {}) {
   const issues = []
   let start = 0, quote = '', comment = false, parentheses = 0, attributes = 0
   for (let i = 0; i < css.length; i++) {
@@ -41,10 +58,13 @@ export function findWxssSelectorIssues(css) {
       const header = css.slice(start, i).replace(/\/\*[\s\S]*?\*\//g, (value) => ' '.repeat(value.length))
       if (!header.trimStart().startsWith('@')) {
         const star = universalOffset(header)
-        if (star >= 0) {
-          const offset = start + star, before = css.slice(0, offset)
+        const keyframe = header.split(',').every(value => /^(?:from|to|\d+(?:\.\d+)?%)$/.test(value.trim()))
+        const problem = star >= 0 ? { offset: star, kind: 'universal' }
+          : component && !keyframe ? componentSelectorIssue(header) : null
+        if (problem) {
+          const offset = start + problem.offset, before = css.slice(0, offset)
           issues.push({ selector: header.trim(), line: before.split('\n').length,
-            column: offset - before.lastIndexOf('\n') })
+            column: offset - before.lastIndexOf('\n'), kind: problem.kind })
         }
       }
       start = i + 1
@@ -66,8 +86,12 @@ export function inspectWeixinStyles(buildDirectory = defaultBuild) {
   }
   walk(directory)
   if (!files.length) throw new Error('未找到 WXSS 构建产物')
-  const issues = files.flatMap((filename) => findWxssSelectorIssues(fs.readFileSync(filename, 'utf8'))
-    .map((issue) => ({ file: path.relative(directory, filename).replaceAll('\\', '/'), ...issue })))
+  const issues = files.flatMap((filename) => {
+    const jsonFile = filename.slice(0, -5) + '.json'
+    const component = fs.existsSync(jsonFile) && JSON.parse(fs.readFileSync(jsonFile, 'utf8')).component === true
+    return findWxssSelectorIssues(fs.readFileSync(filename, 'utf8'), { component })
+      .map((issue) => ({ file: path.relative(directory, filename).replaceAll('\\', '/'), ...issue }))
+  })
   return { files: files.length, issues, ok: issues.length === 0 }
 }
 
@@ -75,8 +99,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === scriptFile) {
   try {
     const report = inspectWeixinStyles(process.argv[2])
     for (const issue of report.issues)
-      process.stderr.write(`${issue.file}:${issue.line}:${issue.column} 微信不兼容通配选择器：${issue.selector}\n`)
-    process.stdout.write(`微信样式通配检查：${report.files} 份WXSS，${report.issues.length} 处问题。仅覆盖此类兼容问题，不代替微信编译或真机验收。\n`)
+      process.stderr.write(`${issue.file}:${issue.line}:${issue.column} 微信不兼容选择器（${issue.kind}）：${issue.selector}\n`)
+    process.stdout.write(`微信样式检查：${report.files} 份WXSS，${report.issues.length} 处问题。覆盖通配及组件标签/ID/属性选择器，不代替微信编译或真机验收。\n`)
     process.exitCode = report.ok ? 0 : 1
   } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 1 }
 }

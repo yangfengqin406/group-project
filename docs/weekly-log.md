@@ -1,6 +1,6 @@
 # 团队周报（监督查看）
 
-更新至：2026-10-26（北京时间） · 汇总负责人：A（杨凤琴）
+更新至：2026-10-27（北京时间） · 汇总负责人：A（杨凤琴）
 
 团队成员：**A（杨凤琴）、B（孙瑞）、C（姜澜）**。以下分别记录本人负责的业务、协作整合和待完成工作。
 
@@ -12,8 +12,9 @@
 
 | 日期 | 执行成员 | 实际更新与成果证据 | 实际验证、剩余工作与合并状态 |
 | --- | --- | --- | --- |
+| 10月27日 | A（杨凤琴），完整真实玩法与展示交付 | 按用户确认补齐真实钓鱼、三关潜水、衣柜/珍珠及原创画稿SQLite持久化；补HTTPS公共源、可信代理与Secure Cookie；减少静止角色/镜头无效更新，改组件选择器并扩展门禁。提供隔离虚构样例的便携展示/空数据部署包及流程、逐字稿、答辩。[展示手册](showcase-2026-10-27.md)、[发布说明](release-2026-10-27.md)、[浏览器结果](assets/release-2026-10-27/browser-result.json)；B（孙瑞）二手/个人空间和C（姜澜）失物/消息原创归属不变 | 411测试、check16页/74调用、真实双端构建、32WXSS原生编译与门禁、定向质量/包体通过；独立真实H5两账号登录、衣柜穿脱/正背面、实时钓鱼、双向留言通过，HTTP失败/运行异常0。无服务器域名，实际Linux/TLS、微信完整重扫/真机、物理设备与团队排练尚未执行；当前待PR审阅合入，分支codex/release-showcase-20261027，实际合并后补链接 |
 | 10月26日 | A（杨凤琴），H5备用与性能/上线核查 | 提供三层H5备用步骤，公网浏览器单页走查及隔离H5常规/CPU节流测量，原生微信启动缓冲检查；复现本机后端HTTPS反代适配缺口。见[备用方案](h5-backup-and-release.md)和[验证记录](verification.md) | 397测试、check、双端构建及定向门禁/包体通过；公网画面最终完整但冷图像慢，H5表单较快，原生逐点击trace/真机仍缺。没有修改产品交互或声称卡顿已消除；正式公网/审核条件未齐。[PR #34](https://github.com/yangfengqin406/group-project/pull/34)已合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40343122440)通过 |
-| 10月26日 | A（杨凤琴），微信读取与代码质量续修 | 模拟器真实请求确认回环可达而当前LAN返回502；补宠物/衣柜账号隔离与重启HTTP回归，纠正真实衣柜说明；修按需注入及斗地主私有JS分包，加入CI定向检查。见[验证记录](verification.md)及[脱敏摘要](assets/weixin-quality-2026-10-26/summary.json) | 397项测试、check、两端构建、定向质量/样式/包体通过。原生回环健康200、未登录业务明确拒绝；实际账号登录画面、工具完整扫描和真机仍另验，黄色警告未清理。[PR #31](https://github.com/yangfengqin406/group-project/pull/31)已合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40331651526)通过；用户确认后已在独立终端启动、健康200，终端需保持运行，未提交本机AppID/用户数据 |
+| 10月26日 | A（杨凤琴），微信读取与代码质量续修 | 模拟器真实请求确认回环可达而当前LAN返回502；补宠物/衣柜账号隔离与重启HTTP回归，纠正真实衣柜说明；修按需注入及斗地主私有JS分包，加入CI定向检查。见[验证记录](verification.md)及[脱敏摘要](assets/weixin-quality-2026-10-26/summary.json) | 397项测试、check、两端构建、定向质量/样式/包体通过。[PR #31](https://github.com/yangfengqin406/group-project/pull/31)已合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40331651526)通过。原生回环健康200、未登录业务明确拒绝；实际账号登录画面、工具完整扫描和真机仍另验，黄色警告未清理；用户确认后已在独立终端启动、健康200，终端需保持运行，未提交本机AppID/用户数据 |
 | 10月26日 | A（杨凤琴），微信本机网络恢复 | 确认旧WLAN地址失效且服务停止，保留数据恢复后端；补微信本机启动命令、回环接口与未配置网卡过滤。见[验证记录](verification.md)和[脱敏摘要](assets/weixin-network-2026-10-26/summary.json) | 388项测试、check、两端构建及包体通过；本机/LAN健康200，匿名业务真实拒绝，启动与复用流程均实测。[PR #29](https://github.com/yangfengqin406/group-project/pull/29)已合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40267393461)通过；CLI安全端口未开启，模拟器与真机实际请求仍待确认，黄色兼容警告及外部资源问题未冒充已清理 |
 | 10月26日 | A（杨凤琴），微信兼容修复 | 根据白屏截图复现并修复潜水通配选择器导致的WXSS编译失败，补产物检查与CI步骤，无业务或接口变化。见[验证记录](verification.md)和[原生编译证据](assets/weixin-wxss-2026-10-26/summary.json) | 本地379测试、check、两端构建及包体通过；32份WXSS经微信编译器验证通过。[PR #27](https://github.com/yangfengqin406/group-project/pull/27)已合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40263327938)通过；模拟器画面和真机待确认 |
 | 10月26日 | A（杨凤琴），跨夜整合复验 | 续10月25日用户确认的本机真实后端，修复冷启动与账号切换竞态；代码、头像与文档同整合PR交付，原B/C业务归属不变。见[验证记录](verification.md)和[最终浏览器证据](assets/local-campus-2026-10-25/browser-result.json) | 最终374项测试、check、H5/微信构建和原始包体通过；00:00完成最终双隔离会话复验，97次RPC、1次实际上传、异常0。[PR #25](https://github.com/yangfengqin406/group-project/pull/25)已于10月26日合入main，[GitHub CI](https://github.com/yangfengqin406/group-project/actions/runs/40210356090)通过；物理设备/微信/公网、试用排练和头像后台设置仍待完成 |

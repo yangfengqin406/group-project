@@ -56,3 +56,18 @@ test('WXSS检查在缺失构建或没有样式时明确失败', (t) => {
   fs.unlinkSync(path.join(directory, 'app.json'))
   assert.throws(() => inspectWeixinStyles(directory), /缺少微信构建 app.json/)
 })
+
+test('组件样式检查拒绝标签、ID、属性选择器，但不误报类名、nth公式或关键帧',()=>{
+  const issues=findWxssSelectorIssues('.slot-row button{color:red}\n#old{color:red}\n.wx-b[disabled]{opacity:.5}',{component:true})
+  assert.deepEqual(issues.map(x=>x.kind),['tag','id','attribute'])
+  assert.deepEqual(findWxssSelectorIssues('.wx-b.wx-disabled::after{border:0}.wx-v:nth-child(2n+1){opacity:1}@keyframes bob{from{opacity:0}to{opacity:1}}',{component:true}),[])
+  assert.deepEqual(findWxssSelectorIssues('.literal\\#name{color:red} .literal\\[name{color:red}',{component:true}),[])
+})
+test('按编译JSON的component标记检查，页面允许的标签样式不作为组件告警',t=>{
+  const directory=fixture(t)
+  fs.writeFileSync(path.join(directory,'page.wxss'),'button{color:red}')
+  fs.writeFileSync(path.join(directory,'panel.wxss'),'button{color:red}')
+  fs.writeFileSync(path.join(directory,'panel.json'),'{"component":true}')
+  const report=inspectWeixinStyles(directory)
+  assert.equal(report.issues.length,1);assert.equal(report.issues[0].file,'panel.wxss')
+})

@@ -13,23 +13,23 @@
     @mouseleave="mouseUp"
   >
     <image
-      class="scene-surround"
+      class="scene-surround wx-i"
       src="/static/plaza/world-phase-one.webp"
       mode="aspectFill"
     />
     <view class="scene-map" :style="worldStyle">
       <image
-        class="scene-art"
+        class="scene-art wx-i"
         src="/static/plaza/world-phase-one.webp"
         mode="scaleToFill"
         @error="imageError = true"
-        @load="imageError = false"
+        @load="imageError = false; imageReady = true"
       />
       <PlazaLeisure />
       <button
         v-for="house in PLAZA_HOUSES"
         :key="'building-' + house.id"
-        class="building-hotspot"
+        class="building-hotspot wx-b"
         :class="'building-' + house.id"
         :style="buildingStyle(house.id)"
         :aria-label="'走到' + house.name + '门口'"
@@ -50,7 +50,7 @@
         <view v-if="person.id === 'self'" class="player-ground-mark"></view>
         <PetAvatar
           :appearance="person.id === 'self' ? appearance : person.appearance"
-          :walking="person.moving && greetingId !== person.id && (person.id === 'self' || !reducedMotion)"
+          :walking="active && person.moving && greetingId !== person.id && (person.id === 'self' || !reducedMotion)"
           :facing="
             person.id === 'self' && appearance.species === 'custom'
               ? 1
@@ -62,7 +62,7 @@
         />
         <button
           v-if="person.id !== 'self'"
-          class="neighbor-hotspot"
+          class="neighbor-hotspot wx-b"
           :aria-label="'和' + PLAZA_NEIGHBORS[person.id].name + '打招呼'"
           @touchstart.stop
           @mousedown.stop
@@ -72,7 +72,7 @@
       <button
         v-for="house in PLAZA_HOUSES"
         :key="house.id"
-        class="entrance"
+        class="entrance wx-b"
         :class="[
           'entrance-' + house.id,
           { 'is-target': player.entering === house.id }
@@ -89,13 +89,13 @@
             <view class="icon-part part-one"></view>
             <view class="icon-part part-two"></view>
           </view>
-          <text>{{ house.name }}</text>
+          <text class="wx-t">{{ house.name }}</text>
         </view>
       </button>
       <button
         v-for="area in PLAZA_AREAS"
         :key="area.id"
-        class="area-hotspot"
+        class="area-hotspot wx-b"
         :class="[
           'area-' + area.id,
           { 'is-target': player.entering === area.id }
@@ -106,39 +106,42 @@
       >
         <view class="area-sign">
           <view class="area-dot"></view>
-          <text>{{ area.name }}</text>
+          <text class="wx-t">{{ area.name }}</text>
         </view>
       </button>
       <button
-        class="board-hotspot"
+        class="board-hotspot wx-b"
         :style="locate({ x: 0.563, y: 0.54 })"
         aria-label="查看广场公告"
         @tap.stop="openBoard"
       >
-        <text class="board-label">公告</text>
+        <text class="board-label wx-t">公告</text>
       </button>
       <button
-        class="guide-puppy"
+        class="guide-puppy wx-b"
         :style="locate({ x: 0.61, y: 0.565 })"
         aria-label="和小狗麦麦聊聊广场指南"
         @touchstart.stop
         @mousedown.stop
         @tap.stop="openGuide"
       >
-        <image src="/static/village/guide-puppy.webp" mode="aspectFit" />
+        <image class="wx-i" src="/static/village/guide-puppy.webp" mode="aspectFit" />
       </button>
     </view>
     <view v-if="neighborMessage" class="neighbor-message" role="status" @tap.stop @touchstart.stop @mousedown.stop>
-      <button class="neighbor-dismiss" aria-label="结束打招呼" @tap="closeGreeting">×</button>
-      <view class="neighbor-name">{{ neighborMessage.name }}<text>广场邻居</text></view>
+      <button class="neighbor-dismiss wx-b" aria-label="结束打招呼" @tap="closeGreeting">×</button>
+      <view class="neighbor-name">{{ neighborMessage.name }}<text class="wx-t">广场邻居</text></view>
       <view class="neighbor-copy">{{ detailedGreeting ? neighborMessage.tip : neighborMessage.hello }}</view>
-      <button v-if="!detailedGreeting" class="neighbor-action" @tap="greetNeighbor(greetingId)">打个招呼，聊一聊</button>
-      <button v-else class="neighbor-action" @tap="walkToHouse(neighborMessage.destination)">{{ neighborMessage.action }} ›</button>
+      <button v-if="!detailedGreeting" class="neighbor-action wx-b" @tap="greetNeighbor(greetingId)">打个招呼，聊一聊</button>
+      <button v-else class="neighbor-action wx-b" @tap="walkToHouse(neighborMessage.destination)">{{ neighborMessage.action }} ›</button>
     </view>
     <view v-if="imageError" class="scene-image-error">
       场景图片暂未加载，请稍后重试。
     </view>
-    <view v-if="preparing" class="scene-preparing">伙伴正赶来广场…</view>
+    <view v-if="preparing || (!imageReady && !imageError)" class="scene-preparing" role="status">
+      {{ !imageReady && !imageError ? '正在准备广场画面…' : '伙伴正赶来广场…' }}
+    </view>
+    <view v-else-if="player.entering" class="scene-preparing" role="status">正在前往{{ entryNames[player.entering] || '目的地' }}…</view>
   </view>
 </template>
 
@@ -157,6 +160,7 @@ import PlazaLeisure from './PlazaLeisure.vue'
 import { defaultPet } from '../../utils/pet-appearance.js'
 import { createPlazaWalker } from '../../utils/plaza-motion.js'
 import { plazaActorDepths } from '../../utils/plaza-depth.js'
+import { sameWalkerState, cameraFrame } from '../../utils/plaza-render.js'
 import { PLAZA_NEIGHBORS, createNeighborGreetings } from '../../utils/plaza-neighbors.js'
 import {
   createPlazaNavigator,
@@ -180,6 +184,8 @@ const viewport = ref({ width: 390, height: 760, left: 0, top: 0 })
 const camera = ref({ x: 0, y: 0 })
 const dragging = ref(false)
 const imageError = ref(false)
+const imageReady = ref(false)
+const entryNames = Object.fromEntries([...PLAZA_HOUSES, ...PLAZA_AREAS].map(item => [item.id, item.name]))
 const reducedMotion = ref(false)
 const people = ref([])
 const greetingId = ref(null)
@@ -210,8 +216,9 @@ const actorWidth = computed(() =>
 const worldStyle = computed(() => ({
   width: `${world.value.width}px`,
   height: `${world.value.height}px`,
-  left: `${camera.value.x}px`,
-  top: `${camera.value.y}px`,
+  left: '0px',
+  top: '0px',
+  transform: `translate3d(${camera.value.x}px, ${camera.value.y}px, 0)`,
   '--actor-width': `${actorWidth.value}px`,
   '--actor-height': `${actorWidth.value * 1.13}px`
 }))
@@ -293,11 +300,14 @@ const personStyle = (person) => ({
   zIndex: actorDepths.value[person.id]
 })
 function refreshPeople() {
-  player.value = navigator.getState()
-  people.value = walkers.map((walker, index) => ({
-    ...residents[index],
-    ...walker.getState()
-  }))
+  const nextPlayer = navigator.getState()
+  if (!sameWalkerState(player.value, nextPlayer)) player.value = nextPlayer
+  const nextPeople = walkers.map((walker, index) => {
+    const state = walker.getState(), previous = people.value[index]
+    return previous?.id === residents[index].id && sameWalkerState(previous, state)
+      ? previous : { ...residents[index], ...state }
+  })
+  if (nextPeople.some((person, index) => person !== people.value[index])) people.value = nextPeople
   const busy = Boolean(player.value.entering || entryLocked)
   if (busy !== lastBusy) {
     lastBusy = busy
@@ -324,17 +334,12 @@ function playerCamera() {
 }
 function updateCamera(immediate = false) {
   if (props.overview) {
-    camera.value = clampCamera({ x: 0, y: 0 })
+    camera.value = cameraFrame(camera.value, clampCamera({ x: 0, y: 0 }), true)
     return
   }
   if (!followPlayer || dragging.value) return
   const target = playerCamera()
-  camera.value = immediate
-    ? target
-    : {
-        x: camera.value.x + (target.x - camera.value.x) * 0.2,
-        y: camera.value.y + (target.y - camera.value.y) * 0.2
-      }
+  camera.value = cameraFrame(camera.value, target, immediate)
 }
 function measureScene() {
   if (!mounted) return
@@ -587,7 +592,7 @@ defineExpose({ walkToHouse, walkToArea, centerPlayer, releaseEntry })
   background: transparent;
   pointer-events: auto;
 }
-.neighbor-hotspot::after, .guide-puppy::after, .neighbor-message button::after { border: 0; }
+.neighbor-hotspot::after, .guide-puppy::after, .neighbor-message .wx-b::after { border: 0; }
 .neighbor-hotspot:focus-visible, .guide-puppy:focus-visible { outline: 2px solid #fff5d9; outline-offset: 2px; }
 .guide-puppy {
   position: absolute;
@@ -599,7 +604,7 @@ defineExpose({ walkToHouse, walkToArea, centerPlayer, releaseEntry })
   transform: translate(-50%, -92%);
   background: transparent;
 }
-.guide-puppy image { width: 100%; height: 100%; }
+.guide-puppy .wx-i { width: 100%; height: 100%; }
 .neighbor-message {
   position: absolute;
   z-index: 2000;
@@ -617,9 +622,9 @@ defineExpose({ walkToHouse, walkToArea, centerPlayer, releaseEntry })
   cursor: auto;
 }
 .neighbor-name { padding-right: 32px; font-size: 16px; font-weight: 700; }
-.neighbor-name text { margin-left: 9px; color: #82826a; font-size: 11px; font-weight: 400; }
+.neighbor-name .wx-t { margin-left: 9px; color: #82826a; font-size: 11px; font-weight: 400; }
 .neighbor-copy { margin-top: 8px; line-height: 1.7; font-size: 14px; }
-.neighbor-message button { min-height: 44px; margin: 0; font-size: 13px; line-height: 1.5; background: transparent; color: #3e654f; }
+.neighbor-message .wx-b { min-height: 44px; margin: 0; font-size: 13px; line-height: 1.5; background: transparent; color: #3e654f; }
 .neighbor-dismiss { position: absolute; right: 2px; top: 0; width: 44px; padding: 9px; font-size: 23px !important; }
 .neighbor-action { padding: 10px 0 6px; text-align: left; font-weight: 600; }
 .plaza-scene {
@@ -642,7 +647,9 @@ defineExpose({ walkToHouse, walkToArea, centerPlayer, releaseEntry })
   width: 100%;
   height: 100%;
   opacity: 0.6;
+  /* #ifdef H5 */
   filter: blur(10px);
+  /* #endif */
   transform: scale(1.04);
   pointer-events: none;
 }
