@@ -1,0 +1,22 @@
+[Unit]
+Description=Campus Plaza Node 22 SQLite service
+After=network.target
+
+[Service]
+Type=simple
+User=campus
+Group=campus
+WorkingDirectory=/opt/campus
+EnvironmentFile=/etc/campus.env
+ExecStart=/usr/bin/node /opt/campus/backend/campus/server.js
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/campus
+
+[Install]
+WantedBy=multi-user.target

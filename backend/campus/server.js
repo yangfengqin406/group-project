@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { openCStore } from '../c/store.js'
 import { createCampusService } from './service.js'
 import { localAddresses } from './network.js'
+import { publicAccess } from './public-access.js'
 import { createLandlordServer } from '../../server/landlord/index.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -57,6 +58,7 @@ function multipart(buffer, header) {
 }
 
 export function createCampusServer(options = {}) {
+  const access = publicAccess(options)
   const dataDir = resolve(options.dataDir || process.env.CAMPUS_DATA_DIR || resolve(ROOT, '.local-campus'))
   mkdirSync(dataDir, { recursive: true })
   const store = options.store || openCStore(resolve(dataDir, 'campus.sqlite'))
@@ -71,10 +73,10 @@ export function createCampusServer(options = {}) {
   // Keep one address for stored image URLs. Every H5 client uses this origin,
   // including the host computer, so cookies and uploads work on all devices.
   const publicHost = options.publicHost || process.env.CAMPUS_PUBLIC_HOST || localAddresses().find((host) => !['127.0.0.1', 'localhost'].includes(host)) || '127.0.0.1'
-  const publicOrigin = () => `http://${publicHost}:${server.address()?.port}`
+  const publicOrigin = () => access.origin || `http://${publicHost}:${server.address()?.port}`
   const origins = () => {
     const port = server.address()?.port
-    const values = [...new Set([...localAddresses(), publicHost])].map((host) => `http://${host}:${port}`)
+    const values = access.origin ? [access.origin] : [...new Set([...localAddresses(), publicHost])].map((host) => `http://${host}:${port}`)
     trustedUploadOrigins.splice(0, trustedUploadOrigins.length, ...values)
     return values
   }
@@ -85,7 +87,7 @@ export function createCampusServer(options = {}) {
     return { ...(token ? service.accounts.authenticate(token) : null), token }
   }
   const limited = (request, method) => {
-    const key = `${request.socket.remoteAddress}:${method}`
+    const key = `${access.clientAddress(request)}:${method}`
     const now = Date.now()
     for (const [id, row] of attempts) if (now - row.start > 60_000) attempts.delete(id)
     const row = attempts.get(key) || { start: now, count: 0 }
@@ -102,14 +104,19 @@ export function createCampusServer(options = {}) {
     try {
       const url = new URL(request.url, 'http://localhost')
       if (!url.pathname.startsWith('/api/')) {
-        if (['GET', 'HEAD'].includes(request.method) && !url.pathname.startsWith('/game/') && `http://${request.headers.host}` !== publicOrigin()) {
+        const correctHost = access.origin ? access.acceptsHost(request.headers.host) : `http://${request.headers.host}` === publicOrigin()
+        if (['GET', 'HEAD'].includes(request.method) && !url.pathname.startsWith('/game/') && !correctHost) {
           response.writeHead(302, { Location: `${publicOrigin()}${url.pathname}${url.search}`, 'Cache-Control': 'no-store' })
           return response.end()
         }
         return await fallback(request, response)
       }
       const allowed = origins()
-      const origin = `http://${request.headers.host}`
+      // Local process/container health checks need no public Host override.
+      if (request.method === 'GET' && url.pathname === '/api/health' && !request.headers.origin &&
+        ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.socket.remoteAddress))
+        return reply('OK', '', { mode: 'local-persistent', database: 'sqlite', wechatConfigured: false })
+      const origin = access.origin && access.acceptsHost(request.headers.host) ? access.origin : `http://${request.headers.host}`
       if (!allowed.includes(origin) || (request.headers.origin && !allowed.includes(request.headers.origin)))
         return reply('FORBIDDEN', '请使用服务打印的本机或同 Wi-Fi 地址', null, 403)
       if (request.headers.origin) {
@@ -124,16 +131,17 @@ export function createCampusServer(options = {}) {
         return reply('OK', '', { mode: 'local-persistent', database: 'sqlite', wechatConfigured: false })
       if (request.method === 'POST' && url.pathname === '/api/rpc') {
         if (!/^application\/json(?:\s*;|$)/i.test(request.headers['content-type'] || '')) throw fail('INVALID_ARGUMENT', '请提交 JSON 请求')
-        let input
-        try { input = JSON.parse((await readBody(request, 64 * 1024)).toString('utf8')) }
+        let input, raw
+        try { raw = await readBody(request, 1024 * 1024); input = JSON.parse(raw.toString('utf8')) }
         catch (error) { if (error.code) throw error; throw fail('INVALID_ARGUMENT', 'JSON 格式不正确') }
         if (!input || typeof input.method !== 'string' || Object.keys(input).some((key) => !['method', 'params'].includes(key)))
           throw fail('INVALID_ARGUMENT', '请求格式不正确')
+        if (raw.length > 64 * 1024 && input.method !== 'pet.save') throw fail('INVALID_ARGUMENT', '请求内容过大')
         if (['auth.login', 'auth.register'].includes(input.method)) limited(request, input.method)
         const data = service.invoke(input.method, input.params ?? {}, principal(request))
         if (['auth.login', 'auth.register'].includes(input.method) && data.token)
-          response.setHeader('Set-Cookie', `campus_session=${data.token}; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=604800`)
-        if (input.method === 'auth.logout') response.setHeader('Set-Cookie', 'campus_session=; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=0')
+          response.setHeader('Set-Cookie', `campus_session=${data.token}; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=604800${access.secureCookie ? '; Secure' : ''}`)
+        if (input.method === 'auth.logout') response.setHeader('Set-Cookie', `campus_session=; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=0${access.secureCookie ? '; Secure' : ''}`)
         return reply('OK', '', data)
       }
       if (request.method === 'POST' && url.pathname === '/api/upload') {
@@ -168,10 +176,13 @@ export async function startCampusServer(options = {}) {
   const port = Number(options.port ?? process.env.CAMPUS_PORT ?? 8788)
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('CAMPUS_PORT 必须为 0～65535')
   const server = createCampusServer(options)
-  await new Promise((done, reject) => { server.once('error', reject); server.listen(port, options.host || '0.0.0.0', done) })
+  await new Promise((done, reject) => { server.once('error', reject); server.listen(port, options.host || process.env.CAMPUS_BIND_HOST || '0.0.0.0', done) })
   const activePort = server.address().port
-  for (const address of localAddresses()) process.stdout.write(`${address === '127.0.0.1' ? '本机' : '访问'}：http://${address}:${activePort}/#/\n`)
-  process.stdout.write('校园账号、图片与业务保存在本机 SQLite；保持本机运行。账号未核验学籍，微信/公网部署未配置。\n')
+  const bindHost = options.host || process.env.CAMPUS_BIND_HOST || '0.0.0.0'
+  const printedAddresses = ['127.0.0.1', '::1'].includes(bindHost) ? [bindHost === '::1' ? '[::1]' : bindHost] : localAddresses()
+  for (const address of printedAddresses) process.stdout.write(`${address === '127.0.0.1' ? '本机' : '访问'}：http://${address}:${activePort}/#/\n`)
+  if (options.publicOrigin || process.env.CAMPUS_PUBLIC_ORIGIN) process.stdout.write(`公共入口：${options.publicOrigin || process.env.CAMPUS_PUBLIC_ORIGIN}/#/\n`)
+  process.stdout.write('账号、图片、业务与玩法进度保存在SQLite；保持服务运行。独立账号未核验学籍；微信审核需另行完成。\n')
   return server
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

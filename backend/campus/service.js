@@ -2,13 +2,13 @@ import { C_METHODS, CServiceError, createCService } from '../c/service.js'
 import { createAccounts } from './accounts.js'
 import { createMarketService } from './market.js'
 import { createPlanService } from './plans.js'
+import { createLeisureService } from './leisure.js'
 import { defaultPet, validateAppearance } from '../../src/utils/pet-appearance.js'
-import { WARDROBE_ITEMS, WARDROBE_SLOTS } from '../../src/utils/wardrobe-catalog.js'
 
 const collections = { market: 'campus.market', plan: 'campus.plan', help: 'campus.help', lost_found: 'lost' }
 const requireThat = (ok, code, message) => { if (!ok) throw new CServiceError(code, message) }
 
-export function createCampusService({ store, uploadsDir, uploadOrigin, trustedUploadOrigins = [] }) {
+export function createCampusService({ store, uploadsDir, uploadOrigin, trustedUploadOrigins = [], leisureOptions = {} }) {
   const accounts = createAccounts({ store, uploadsDir, uploadOrigin })
   const content = {
     get(type, id) { return collections[type] ? store.get(collections[type], id) : null },
@@ -32,6 +32,7 @@ export function createCampusService({ store, uploadsDir, uploadOrigin, trustedUp
   const options = { store, accounts, content, notify: c.notifyInTransaction }
   const market = createMarketService(options)
   const plans = createPlanService(options)
+  const leisure = createLeisureService({ ...leisureOptions, store, accounts })
   function invoke(method, params = {}, principal = {}) {
     requireThat(typeof method === 'string' && method.length < 100, 'INVALID_ARGUMENT', '接口名称无效')
     requireThat(params && typeof params === 'object' && !Array.isArray(params), 'INVALID_ARGUMENT', '参数须为对象')
@@ -55,12 +56,12 @@ export function createCampusService({ store, uploadsDir, uploadOrigin, trustedUp
       return market.invoke(method, params, principal)
     }
     if (/^(plan|invitation|help)\./.test(method)) return plans.invoke(method, params, principal)
+    if (/^(wardrobe|fishing|dive)\./.test(method)) return leisure.invoke(method, params, principal)
     if (method === 'pet.get') {
       requireThat(!Object.keys(params).length, 'INVALID_ARGUMENT', '只能读取当前账号的宠物')
       return store.get('campus.pets', me.id)?.appearance || defaultPet()
     }
     if (method === 'pet.save') {
-      requireThat(params.species !== 'custom', 'NOT_IMPLEMENTED', '原创宠物暂不支持校园服务保存，当前修改尚未保存')
       const appearance = validateAppearance(params)
       return store.transaction(() => {
         const record = { id: me.id, appearance }
@@ -70,10 +71,6 @@ export function createCampusService({ store, uploadsDir, uploadOrigin, trustedUp
     }
     // No invented activities or simulated reward successes in the real service.
     if (method === 'bulletin.list' || method === 'event.list') return { items: [], nextCursor: null }
-    if (method === 'wardrobe.getState') return {
-      pearls: 0, owned: [], equipped: Object.fromEntries(WARDROBE_SLOTS.map(({ id }) => [id, null])),
-      catalog: WARDROBE_ITEMS, clearedLevels: []
-    }
     throw new CServiceError('NOT_IMPLEMENTED', '此功能尚未接入真实校园服务；可在演示版体验')
   }
   function canReadUpload(image, principal) {

@@ -1,14 +1,14 @@
 <template>
   <view class="page village-page feed-page" :class="[roomClass, { 'feed-page-filtered': showFilters }]">
     <VillageHeader :kind="type" :title="title" :subtitle="subtitle" compact>
-      <button class="primary" @tap="publish">发布</button>
+      <button class="primary wx-b" @tap="publish">发布</button>
     </VillageHeader>
     <DemoNotice />
     <view v-if="marketTypeOptions.length" class="content-switcher">
       <button
         v-for="opt in marketTypeOptions"
         :key="opt.value"
-        class="content-tab"
+        class="content-tab wx-b"
         :class="{ selected: marketType === opt.value }"
         @tap="setMarketType(opt.value)"
       >
@@ -17,7 +17,7 @@
     </view>
     <view v-if="showFilters" class="content-switcher">
       <button
-        class="content-tab"
+        class="content-tab wx-b"
         :class="{ selected: type === 'plan' }"
         :disabled="type === 'plan'"
         @tap="switchContent('plan')"
@@ -25,7 +25,7 @@
         找搭子
       </button>
       <button
-        class="content-tab"
+        class="content-tab wx-b"
         :class="{ selected: type === 'help' }"
         :disabled="type === 'help'"
         @tap="switchContent('help')"
@@ -42,9 +42,9 @@
         confirm-type="search"
         @confirm="load(true)"
       />
-      <button class="secondary search-submit" @tap="load(true)">搜索</button>
+      <button class="secondary search-submit wx-b" @tap="load(true)">搜索</button>
       <button
-        class="secondary filter-toggle"
+        class="secondary filter-toggle wx-b"
         :class="{ selected: filtersExpanded || extraFilterCount }"
         :aria-expanded="filtersExpanded"
         aria-controls="feed-extra-filters"
@@ -58,7 +58,7 @@
         <button
           v-for="option in quickCategories"
           :key="option.value"
-          class="filter-chip"
+          class="filter-chip wx-b"
           :class="{ selected: category === option.value }"
           :aria-pressed="category === option.value"
           @tap="chooseCategory(option.value)"
@@ -74,7 +74,7 @@
           <button
             v-for="option in lostKindOptions"
             :key="option.value"
-            class="filter-chip"
+            class="filter-chip wx-b"
             :class="{ selected: lostKind === option.value }"
             :aria-pressed="lostKind === option.value"
             @tap="chooseLostKind(option.value)"
@@ -133,13 +133,13 @@
         输入标题或说明中的关键词，找到想看的内容。
       </view>
       <view class="actions">
-        <button class="primary" @tap="applyAndCollapse">应用筛选</button>
-        <button class="secondary" @tap="clear">
+        <button class="primary wx-b" @tap="applyAndCollapse">应用筛选</button>
+        <button class="secondary wx-b" @tap="clear">
           重置筛选
         </button>
         <button
           v-if="type === 'plan' && !showFilters"
-          class="secondary"
+          class="secondary wx-b"
           @tap="openHelp"
         >
           技能互助 →
@@ -149,11 +149,11 @@
     <view v-if="appliedSummary" class="applied-summary">当前筛选：{{ appliedSummary }}</view>
     <view v-if="!loading && !error" class="filter-result">
       <text>已加载 {{ items.length }} 条{{ contentLabel }}</text>
-      <button v-if="hasFilters" class="reset-link" @tap="clear">清除筛选</button>
+      <button v-if="hasFilters" class="reset-link wx-b" @tap="clear">清除筛选</button>
     </view>
     <view v-if="error" class="error">
       <text>{{ error }}</text>
-      <button class="secondary" :disabled="loading" @tap="load(true)">重新读取</button>
+      <button class="secondary wx-b" :disabled="loading" @tap="load(true)">重新读取</button>
     </view>
     <view v-if="loading" class="muted">正在读取…</view>
     <ContentCard v-for="item in items" :key="item.id" :item="item" />
@@ -167,7 +167,7 @@
     />
     <button
       v-if="cursor"
-      class="secondary"
+      class="secondary wx-b"
       :disabled="loading"
       @tap="load(false)"
     >
@@ -378,14 +378,14 @@ onUnmounted(() => {
 .feed-page .extra-filters { margin: 10px 0; padding: 12px; }
 .extra-filters .filter-fields { margin-top: 0; }
 .extra-filters .filter-label { padding-top: 0; }
-.extra-filters .actions button { flex: 1; }
+.extra-filters .actions .wx-b { flex: 1; }
 .applied-summary {
   margin-top: 8px;
   font-size: 12px;
   color: #626a56;
   overflow-wrap: anywhere;
 }
-.content-switcher button {
+.content-switcher .wx-b {
   flex: 1;
   display: flex;
   justify-content: center;
@@ -396,7 +396,7 @@ onUnmounted(() => {
   font-size: 14px;
   line-height: 1.4;
 }
-.content-switcher button.selected {
+.content-switcher .wx-b.selected {
   background: #fffbec;
   color: #354d3e;
   font-weight: 650;
@@ -407,7 +407,7 @@ onUnmounted(() => {
   gap: 6px;
   margin-top: 10px;
 }
-.filter-shortcuts button {
+.filter-shortcuts .wx-b {
   display: flex;
   align-items: center;
   min-height: 44px;
@@ -432,7 +432,7 @@ onUnmounted(() => {
 .feed-page-filtered .secondary::after {
   border: 0;
 }
-.filter-shortcuts button.selected {
+.filter-shortcuts .wx-b.selected {
   background: var(--room-tint);
   border-color: var(--room-accent);
   color: #354d3e;
@@ -466,7 +466,7 @@ onUnmounted(() => {
   gap: 4px;
   font-size: 14px;
 }
-.feed-page-filtered .actions button {
+.feed-page-filtered .actions .wx-b {
   flex: 1;
   min-height: 44px;
 }
@@ -488,7 +488,7 @@ onUnmounted(() => {
   font-size: 12px;
 }
 .feed-page .error { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.feed-page .error button { flex: none; }
+.feed-page .error .wx-b { flex: none; }
 @media (max-width: 360px) {
   .feed-search .secondary { padding: 8px; }
 }

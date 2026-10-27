@@ -1,14 +1,14 @@
 <template>
   <view class="plaza-guide">
     <view class="guide-welcome">
-      <image src="/static/village/guide-puppy.webp" mode="aspectFit" />
+      <image class="wx-i" src="/static/village/guide-puppy.webp" mode="aspectFit" />
       <view>
         <view class="guide-title">我是麦麦，欢迎做邻居</view>
         <view class="guide-subtitle">想做什么？我来给你指路。</view>
       </view>
     </view>
     <view class="guide-topics">
-      <button v-for="item in topics" :key="item.id" :class="['guide-topic', { selected: current.id === item.id }]" :aria-pressed="current.id === item.id" @tap="selected = item.id">
+      <button class="wx-b" v-for="item in topics" :key="item.id" :class="['guide-topic', { selected: current.id === item.id }]" :aria-pressed="current.id === item.id" @tap="selected = item.id">
         <view class="topic-dot" :style="{ background: item.color }" />
         <text>{{ item.title }}</text>
       </button>
@@ -16,7 +16,7 @@
     <view class="guide-paper" role="status">
       <view class="paper-title">{{ current.title }}</view>
       <view class="paper-body">{{ current.body }}</view>
-      <button v-if="current.id !== 'walk'" class="guide-go" @tap="$emit('go', current.id)">让伙伴带路 ›</button>
+      <button v-if="current.id !== 'walk'" class="guide-go wx-b" @tap="$emit('go', current.id)">让伙伴带路 ›</button>
       <view v-else class="walk-note">点小动物可以聊天；点公告栏，随时都能找到我。</view>
     </view>
     <view class="guide-footnote">麦麦和散步的小动物是广场向导，不代表在线同学。</view>
@@ -41,7 +41,7 @@ const current = computed(() => topics.find((item) => item.id === selected.value)
 <style scoped>
 .plaza-guide { padding: 12px 16px 18px; color: #435b43; }
 .guide-welcome { display: flex; align-items: center; gap: 15px; padding: 8px 0 18px; }
-.guide-welcome image { flex: none; width: 85px; height: 100px; }
+.guide-welcome .wx-i { flex: none; width: 85px; height: 100px; }
 .guide-title { font-family: 'STKaiti', 'KaiTi', serif; font-size: 22px; font-weight: 700; line-height: 1.5; }
 .guide-subtitle { margin-top: 6px; color: #7b8068; font-size: 13px; }
 .guide-topics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; padding-bottom: 18px; }
@@ -54,6 +54,6 @@ const current = computed(() => topics.find((item) => item.id === selected.value)
 .paper-body { margin-top: 9px; font-size: 14px; line-height: 1.9; }
 .guide-go { min-height: 44px; margin: 12px 0 0; padding: 10px 14px; color: #fff8e7; background: #496c54; font-size: 14px; line-height: 1.5; border-radius: 6px; }
 .walk-note, .guide-footnote { font-size: 12px; line-height: 1.7; color: #86856e; margin-top: 14px; }
-button:focus-visible { outline: 2px solid #496c54; outline-offset: 2px; }
-@media (max-width: 390px) { .guide-title { font-size: 19px; } .guide-welcome { gap: 10px; } .guide-welcome image { width: 67px; height: 82px; } .guide-paper { padding: 15px; } }
+.wx-b:focus-visible { outline: 2px solid #496c54; outline-offset: 2px; }
+@media (max-width: 390px) { .guide-title { font-size: 19px; } .guide-welcome { gap: 10px; } .guide-welcome .wx-i { width: 67px; height: 82px; } .guide-paper { padding: 15px; } }
 </style>

@@ -20,3 +20,7 @@ jobs:
       - run: npm run check:mp-styles
       - run: npm run check:mp-quality
       - run: node scripts/check-weixin-package.mjs
+      - run: node scripts/build-release.mjs
+      - run: node scripts/check-weixin-styles.mjs dist/release/mp-weixin
+      - run: node scripts/check-weixin-quality.mjs dist/release/mp-weixin
+      - run: node scripts/check-weixin-package.mjs dist/release/mp-weixin

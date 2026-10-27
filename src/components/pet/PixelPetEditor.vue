@@ -40,8 +40,8 @@
       <button
         v-for="(color, index) in ART_COLORS"
         :key="color"
-        class="color-swatch"
-        :class="{ 'is-selected': chosenColor === color && tool === 'paint' }"
+        class="color-swatch wx-b"
+        :class="[{ 'is-selected': chosenColor === color &amp;&amp; tool === 'paint' },{'wx-disabled':Boolean(disabled || imported || drawing)}]"
         :style="{ backgroundColor: color }"
         :disabled="disabled || imported || drawing"
         :aria-label="colorNames[index]"
@@ -58,8 +58,8 @@
     <view class="editor-tools">
       <view class="tool-pair">
         <button
-          class="tool-button"
-          :class="{ 'is-active': tool === 'paint' }"
+          class="tool-button wx-b"
+          :class="[{ 'is-active': tool === 'paint' },{'wx-disabled':Boolean(disabled || imported || drawing)}]"
           :disabled="disabled || imported || drawing"
           :aria-pressed="tool === 'paint'"
           @click="tool = 'paint'"
@@ -67,8 +67,8 @@
           画笔
         </button>
         <button
-          class="tool-button"
-          :class="{ 'is-active': tool === 'erase' }"
+          class="tool-button wx-b"
+          :class="[{ 'is-active': tool === 'erase' },{'wx-disabled':Boolean(disabled || imported || drawing)}]"
           :disabled="disabled || imported || drawing"
           :aria-pressed="tool === 'erase'"
           @click="tool = 'erase'"
@@ -80,8 +80,8 @@
         <button
           v-for="size in [1, 2, 3]"
           :key="size"
-          class="brush-button"
-          :class="{ 'is-active': brushSize === size }"
+          class="brush-button wx-b"
+          :class="[{ 'is-active': brushSize === size },{'wx-disabled':Boolean(disabled || imported || drawing)}]"
           :disabled="disabled || imported || drawing"
           :aria-label="size + '格笔刷'"
           :aria-pressed="brushSize === size"
@@ -95,15 +95,15 @@
       </view>
     </view>
     <view class="editor-actions">
-      <button
-        class="editor-action secondary"
+      <button :class="{'wx-disabled':Boolean(disabled || imported || drawing || !undoStack.length)}"
+        class="editor-action secondary wx-b"
         :disabled="disabled || imported || drawing || !undoStack.length"
         @click="undo"
       >
         撤销
       </button>
-      <button
-        class="editor-action secondary"
+      <button :class="{'wx-disabled':Boolean(disabled || drawing || (!imported &amp;&amp; isBlank))}"
+        class="editor-action secondary wx-b"
         :disabled="disabled || drawing || (!imported && isBlank)"
         @click="confirmClear"
       >
@@ -687,13 +687,13 @@ onBeforeUnmount(() => {
   padding: 16rpx 10rpx;
   font-size: 25rpx;
 }
-button[disabled] {
+.wx-b.wx-disabled {
   opacity: 0.45;
 }
-.color-swatch[disabled] {
+.color-swatch.wx-disabled {
   color: inherit;
 }
-button:focus-visible {
+.wx-b:focus-visible {
   outline: 3px solid #456957;
   outline-offset: 3px;
 }
