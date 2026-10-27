@@ -2,8 +2,17 @@ import { config } from '../config/index.js'
 import { mockRequest } from '../mock/index.js'
 import { session, getToken, setToken, setSession, openLogin } from '../utils/session.js'
 import { ServiceError } from '../utils/errors.js'
+import { ensurePhonePreview } from '../platform/phone-preview.js'
 let restoringIdentity
 let restoringToken
+function networkFailure(error = {}) {
+  const detail = String(error?.errMsg || '').toLowerCase()
+  let message = '网络连接失败，请检查网络或服务地址'
+  if (/domain|域名/.test(detail)) message = '微信未允许访问这个服务域名，开发预览请开启调试；普通体验可使用H5入口'
+  else if (/timeout|timed out|超时/.test(detail)) message = '服务器响应超时，请稍后重试'
+  else if (/ssl|tls|certificate|cert_|handshake/.test(detail)) message = 'HTTPS连接校验失败，请联系维护者检查服务证书'
+  return new ServiceError('SERVICE_UNAVAILABLE', message)
+}
 export async function restoreIdentity() {
   const token = getToken()
   if (config.apiMode !== 'http' || !token || session.user) return session.user
@@ -24,6 +33,7 @@ export async function call(method, params = {}) {
   else if (config.apiMode === 'http') {
     if (!config.apiBaseUrl)
       throw new ServiceError('SERVICE_UNAVAILABLE', '请先配置后端地址')
+    if (config.phonePreviewDebug) await ensurePhonePreview()
     if (method !== 'user.getProfile' && !method.startsWith('auth.')) await restoreIdentity()
     if (getToken() !== requestToken) throw new ServiceError('CONFLICT', '账号已切换，请重新操作')
     result = await new Promise((resolve, reject) =>
@@ -48,13 +58,7 @@ export async function call(method, params = {}) {
           }
           resolve(response.data)
         },
-        fail: () =>
-          reject(
-            new ServiceError(
-              'SERVICE_UNAVAILABLE',
-              '网络连接失败，请检查网络或服务地址'
-            )
-          )
+        fail: (error) => reject(networkFailure(error))
       })
     )
   } else
