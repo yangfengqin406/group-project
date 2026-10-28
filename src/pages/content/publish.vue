@@ -6,6 +6,9 @@
     <view v-if="error" class="error" role="alert">{{ error }}</view>
     <button v-if="editId && !loading && !sourcePlan" class="secondary" @tap="loadPlan">重新读取计划</button>
     <view v-if="ready" class="panel">
+      <view v-if="!editId" class="publish-contribution-note">
+        把需求说清楚，让同学更容易回应。每天前三篇公开新帖各得5颗珍珠，重复内容不重复奖励。
+      </view>
       <view v-if="editId" class="edit-note">
         当前已有 {{ sourcePlan.memberIds.length }} 位成员，容量不能少于现有人数。
         改变类别、时间或人数后，不再符合条件的待处理邀请会失效。
@@ -60,6 +63,20 @@
       </template>
       <text class="label">地点</text>
       <input class="input" v-model="form.location" placeholder="具体地点" />
+      <template v-if="type === 'help'">
+        <text class="label">期望时间（选填）</text>
+        <input class="input" v-model="helpBrief.preferredTime" maxlength="80" placeholder="如周六下午、时间可商量" />
+        <text class="label">预计用时（分钟，选填）</text>
+        <input class="input" v-model="helpBrief.estimatedMinutes" type="number" placeholder="1～480，可留空" />
+        <text class="label">沟通方式（选填）</text>
+        <view class="choice-grid three-columns">
+          <button v-for="option in meetingOptions" :key="option.value" class="choice-button"
+            :class="{ selected: helpBrief.meetingMode === option.value }"
+            :aria-pressed="helpBrief.meetingMode === option.value" @tap="helpBrief.meetingMode = option.value">
+            {{ option.label }}
+          </button>
+        </view>
+      </template>
       <template v-if="type === 'plan'">
         <text class="label">开始 / 结束日期（北京时间）</text>
         <view class="row time-fields">
@@ -181,7 +198,7 @@
         }}
       </text>
       <view class="actions">
-        <image
+        <ServiceImage
           v-for="(image, index) in type === 'market' ? previews : form.images"
           :key="index"
           :src="image"
@@ -203,6 +220,7 @@
   </view>
 </template>
 <script setup>
+import ServiceImage from '../../components/ServiceImage.vue'
 import { computed, reactive, ref, watch } from 'vue'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
 import DemoNotice from '../../components/DemoNotice.vue'
@@ -218,6 +236,13 @@ import { errorText } from '../../utils/errors.js'
 import { config } from '../../config/index.js'
 import { session } from '../../utils/session.js'
 import { useUnsavedChanges } from '../../utils/use-unsaved-changes.js'
+import { normalizeHelpBrief } from '../../domain/help/brief.js'
+const helpBrief = reactive({ preferredTime: '', estimatedMinutes: '', meetingMode: 'flexible' })
+const meetingOptions = [
+  { value: 'flexible', label: '可商量' },
+  { value: 'online', label: '线上沟通' },
+  { value: 'offline', label: '线下见面' }
+]
 const type = ref('plan'),
   editId = ref(''),
   sourcePlan = ref(null),
@@ -255,7 +280,7 @@ const snapshot = () => JSON.stringify({
   ...form, date: date.value, endDate: endDate.value, startTime: startTime.value,
   endTime: endTime.value, capacity: capacity.value, price: price.value,
   budget: budget.value, marketType: marketType.value, imageIds: imageIds.value
-  , appraisal: appraisal.value
+  , appraisal: appraisal.value, ...(type.value === 'help' ? { helpBrief: { ...helpBrief } } : {})
 })
 const dirty = computed(() => !!baseline.value && snapshot() !== baseline.value)
 useUnsavedChanges(dirty)
@@ -264,6 +289,7 @@ let loadVersion = 0
 let editorUserId = null
 let appraisalVersion = 0
 let appraisalKey = ''
+let publishAttempt = null
 const estimateKey = () => JSON.stringify([marketType.value, imageIds.value[0], form.category.trim(), form.condition.trim()])
 function invalidateAppraisal() {
   ++appraisalVersion
@@ -287,6 +313,7 @@ const lostCategoryOptions = [
 ]
 onLoad(async (options) => {
   if (contentTypes.includes(options.type)) type.value = options.type
+  if (type.value === 'market' && options.marketType === 'buy') marketType.value = 'buy'
   date.value = new Date(Date.now() + 86400000 + 8 * 3600000)
     .toISOString()
     .slice(0, 10)
@@ -458,6 +485,11 @@ async function save() {
       throw new Error('请至少添加一张物品照片')
     if (['plan', 'help'].includes(type.value))
       params.category = form.category.trim()
+    if (type.value === 'help') {
+      const minutes = String(helpBrief.estimatedMinutes).trim()
+      if (minutes && !/^\d+$/.test(minutes)) throw new Error('预计用时请填写1～480的整数分钟，或留空')
+      Object.assign(params, normalizeHelpBrief({ ...helpBrief, estimatedMinutes: minutes ? Number(minutes) : null }))
+    }
     if (type.value === 'plan') {
       if (!params.location) throw new Error('请填写活动地点，方便同伴赴约')
       const original = sourcePlan.value
@@ -497,12 +529,20 @@ async function save() {
       }
     }
     const service = api[type.value === 'lost_found' ? 'lostFound' : type.value]
+    if (!editId.value) {
+      const fingerprint = JSON.stringify(params)
+      if (!publishAttempt || publishAttempt.fingerprint !== fingerprint) {
+        publishAttempt = { fingerprint, key: `${Date.now()}-${Math.random().toString(36).slice(2)}` }
+      }
+      params.idempotencyKey = publishAttempt.key
+    }
     const item = editId.value
       ? await api.plan.update({ ...params, id: editId.value })
       : await service.create(params)
     if (!alive || userId !== session.user?.id) return
     baseline.value = snapshot()
-    uni.showToast({ title: editId.value ? '计划已更新' : '已发布', icon: 'success' })
+    const delta = item.reward?.delta
+    uni.showToast({ title: editId.value ? '计划已更新' : delta > 0 ? `发布成功，获得${delta}颗珍珠` : '已发布', icon: 'success', duration: 2600 })
     uni.redirectTo({ url: contentUrl(item.type, item.id) })
   } catch (e) {
     if (alive && userId === session.user?.id) error.value = errorText(e)
@@ -513,6 +553,7 @@ async function save() {
 </script>
 
 <style scoped>
+.publish-contribution-note { padding: 12px; margin-bottom: 16px; border-radius: 10px; background: #edf1df; color: #5a714b; font-size: 13px; line-height: 1.8; }
 .choice-grid {
   display: grid;
   gap: 8px;

@@ -223,7 +223,9 @@ const entries = [
 ]
 
 export const WARDROBE_ITEMS = Object.freeze(
-  entries.map(([id, name, slot, cost, unlockLevel, source, description]) =>
-    Object.freeze({ id, name, slot, cost, unlockLevel, source, description })
+  entries.map(([id, name, slot, cost, , source, description]) =>
+    Object.freeze({ id, name, slot, cost, unlockLevel: 0,
+      source: source.includes('首通') || source.includes('钓鱼')
+        ? source.replace('珍珠兑换', '校园贡献珍珠兑换') : '校园贡献珍珠兑换', description })
   )
 )

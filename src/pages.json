@@ -88,6 +88,10 @@
       "root": "rooms",
       "pages": [
         {
+          "path": "settings/index",
+          "style": { "navigationBarTitleText": "账号与隐私" }
+        },
+        {
           "path": "account/index",
           "style": { "navigationBarTitleText": "来到小镇" }
         },

@@ -1,4 +1,6 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
+import { createHelpCooperation, HELP_APPLICATIONS_COLLECTION, HELP_COOPERATION_METHODS } from './help-cooperation.js'
+import { buildHelpMineItems, compareHelpMineEntries, normalizeHelpBrief } from '../../src/domain/help/brief.js'
 
 export class PlanServiceError extends Error {
   constructor(code, message) { super(message); this.code = code }
@@ -19,7 +21,8 @@ const clone = (value) => JSON.parse(JSON.stringify(value))
 export const PLAN_METHODS = new Set([
   'plan.create', 'plan.update', 'plan.get', 'plan.list', 'plan.close', 'plan.complete', 'plan.getCandidates',
   'invitation.create', 'invitation.list', 'invitation.respond', 'invitation.cancel',
-  'help.create', 'help.get', 'help.list', 'help.update', 'help.complete', 'help.getCandidates'
+  'help.create', 'help.get', 'help.list', 'help.listMine', 'help.update', 'help.complete', 'help.getCandidates',
+  ...HELP_COOPERATION_METHODS
 ])
 
 // Rules are evaluated against authoritative records inside BEGIN IMMEDIATE.
@@ -35,7 +38,8 @@ function candidates(target, plans, now) {
     Math.max(Date.parse(other.startAt), Date.parse(target.startAt)) < Math.min(Date.parse(other.endAt), Date.parse(target.endAt)))
 }
 
-export function createPlanService({ store, accounts, content, notify }) {
+export function createPlanService({ store, accounts, content, notify,
+  awardContribution = () => undefined, assertCanContact = () => {}, now: clock = () => Date.now() }) {
   const rows = (collection) => store.query(collection, '1', [], 'seq DESC', 1000000)
   const plans = () => rows('campus.plan').map((row) => row.value)
   const summarize = (value) => content.summarize(clone(value))
@@ -96,6 +100,40 @@ export function createPlanService({ store, accounts, content, notify }) {
     }
     return { items: page.map((row) => map(row.value)), nextCursor }
   }
+  const minePage = (items, p, userId, filter) => {
+    const size = p.pageSize === undefined ? 20 : p.pageSize
+    check(Number.isInteger(size) && size >= 1 && size <= 50, 'INVALID_ARGUMENT', '分页数量须为1～50')
+    const scope = canonical([userId, 'help.listMine', filter])
+    const sign = (body) => createHmac('sha256', store.cursorSecret).update(body).digest()
+    let selected = items
+    if (p.cursor !== undefined && p.cursor !== null && p.cursor !== '') {
+      check(typeof p.cursor === 'string' && p.cursor.length <= 4096, 'INVALID_ARGUMENT', '分页游标无效')
+      try {
+        const [body, signature, extra] = p.cursor.split('.')
+        const actual = Buffer.from(signature || '', 'base64url'), expected = sign(body)
+        check(!extra && actual.length === expected.length && timingSafeEqual(actual, expected), 'INVALID_ARGUMENT', '分页游标无效')
+        const cursor = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'))
+        check(cursor.scope === scope && typeof cursor.helpId === 'string' && cursor.helpId.length >= 1 && cursor.helpId.length <= 200 &&
+          typeof cursor.updatedAt === 'string' && cursor.updatedAt.length <= 80, 'INVALID_ARGUMENT', '分页条件已变化，请刷新')
+        selected = items.filter((item) => compareHelpMineEntries(item, cursor) > 0)
+      } catch (error) {
+        if (error instanceof PlanServiceError) throw error
+        throw new PlanServiceError('INVALID_ARGUMENT', '分页游标无效')
+      }
+    }
+    const page = selected.slice(0, size)
+    let nextCursor = null
+    if (selected.length > size) {
+      const last = page.at(-1)
+      const body = Buffer.from(JSON.stringify({ scope, helpId: last.helpId, updatedAt: last.updatedAt })).toString('base64url')
+      nextCursor = `${body}.${sign(body).toString('base64url')}`
+    }
+    return { items: page.map((item) => {
+      if (item.availability === 'unavailable') return item
+      return { ...item, help: summarize(item.help), application: item.application ? { ...item.application,
+        owner: accounts.publicUser(item.application.ownerId), helper: accounts.publicUser(item.application.helperId) } : null }
+    }), nextCursor }
+  }
   const images = (value, userId) => {
     check(Array.isArray(value) && value.length <= 3 && new Set(value).size === value.length, 'INVALID_ARGUMENT', '最多上传 3 张不同的图片')
     return value.map((url) => {
@@ -114,6 +152,7 @@ export function createPlanService({ store, accounts, content, notify }) {
       images: images(p.images ?? old?.images ?? [], me.id), visibility: p.visibility ?? old?.visibility ?? 'public'
     }
     check(['public', 'private'].includes(value.visibility), 'INVALID_ARGUMENT', '公开范围不正确')
+    if (type === 'help') Object.assign(value, normalizeHelpBrief(p, old || {}))
     if (type === 'plan') {
       const start = Date.parse(p.startAt), end = Date.parse(p.endAt)
       check(typeof p.startAt === 'string' && typeof p.endAt === 'string' && Number.isFinite(start) && Number.isFinite(end) && start < end,
@@ -138,10 +177,23 @@ export function createPlanService({ store, accounts, content, notify }) {
     store.saveReceipt(me.id, method, key, fingerprint, response)
     return response
   }
+  const cooperation = createHelpCooperation({ store, accounts, summarize, find, paginate, idempotent,
+    notification, awardContribution, assertCanContact })
 
   function execute(method, p, me, now) {
     const [type, action] = method.split('.')
     const scope = (filters = {}) => [me.id, method, filters]
+    if (method === 'help.listMine') {
+      check(Reflect.ownKeys(p).every((key) => ['scope', 'cursor', 'pageSize'].includes(key)), 'INVALID_ARGUMENT', '我的互助仅接受范围与分页参数')
+      const filter = p.scope === undefined ? 'todo' : p.scope
+      const items = buildHelpMineItems({ userId: me.id, scope: filter,
+        helps: rows('campus.help').map(({ value }) => value).filter(value => {
+          const owner = accounts.getUser(value.ownerId)
+          return owner && !owner.disabled
+        }),
+        applications: rows(HELP_APPLICATIONS_COLLECTION).reverse().map(({ value }) => value) })
+      return minePage(items, p, me.id, filter)
+    }
     if (['plan', 'help'].includes(type) && ['create', 'update', 'get', 'list', 'complete', 'close'].includes(action)) {
       const collection = `campus.${type}`
       if (action === 'list') {
@@ -164,6 +216,7 @@ export function createPlanService({ store, accounts, content, notify }) {
         if (old) {
           owned(old, me.id)
           check((type === 'plan' ? ['open', 'full'] : ['open']).includes(old.status), 'CONFLICT', '该内容不能再编辑')
+          check(type !== 'help' || !old.selectedApplicationId, 'CONFLICT', '已选定帮助者，请先取消协作再修改求助')
         }
         const value = {
           ...(old || {}), ...fields(type, p, me, old, now), id: old?.id || randomUUID(), type,
@@ -174,17 +227,32 @@ export function createPlanService({ store, accounts, content, notify }) {
         if (old) store.update(collection, value)
         else store.insert(collection, value)
         if (type === 'plan') reconcile(now)
-        return summarize(store.get(collection, value.id))
+        const result = summarize(store.get(collection, value.id))
+        if (!old) {
+          const reward = awardContribution({ userId: me.id, kind: 'publish', sourceType: type,
+            sourceId: value.id, title: value.title, body: value.body, visibility: value.visibility, now })
+          check(!reward?.then, 'SERVICE_UNAVAILABLE', '奖励必须在业务同步事务中提交')
+          if (reward) result.reward = reward
+        }
+        return result
       }
       const value = find(collection, p.id)
       owned(value, me.id)
       check((type === 'plan' ? ['open', 'full'] : ['open']).includes(value.status), 'CONFLICT', '内容状态已变化')
+      check(type !== 'help' || !value.selectedApplicationId, 'CONFLICT', '已选定帮助者，须由双方确认解决或取消协作')
       value.status = action === 'close' ? 'closed' : 'completed'
       value.updatedAt = new Date(now).toISOString()
       store.update(collection, value)
+      if (type === 'help') for (const { value: application } of rows(HELP_APPLICATIONS_COLLECTION)) {
+        if (application.helpId === value.id && application.status === 'pending') {
+          application.status = 'cancelled'; application.cancelledAt = value.updatedAt; application.updatedAt = value.updatedAt
+          store.update(HELP_APPLICATIONS_COLLECTION, application)
+        }
+      }
       if (type === 'plan') reconcile(now)
       return summarize(value)
     }
+    if (HELP_COOPERATION_METHODS.has(method)) return cooperation.execute(method, p, me, now)
     if (method === 'plan.getCandidates') {
       const target = find('campus.plan', p.planId)
       owned(target, me.id)
@@ -258,11 +326,13 @@ export function createPlanService({ store, accounts, content, notify }) {
       return store.transaction(() => {
         const me = accounts.getUser(context.userId)
         check(me && !me.disabled, 'UNAUTHENTICATED', '请先登录')
-        const now = Date.now()
+        const now = clock()
         reconcile(now)
+        if (['plan.create', 'help.create'].includes(method) && p.idempotencyKey !== undefined)
+          return idempotent(method, p, me, () => execute(method, p, me, now))
         return execute(method, p, me, now)
       })
     },
-    reconcile() { return store.transaction(() => reconcile(Date.now())) }
+    reconcile() { return store.transaction(() => reconcile(clock())) }
   }
 }

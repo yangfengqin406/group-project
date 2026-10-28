@@ -4,7 +4,7 @@
     <DemoNotice />
     <view v-if="error" class="error">{{ error }}</view>
     <view v-if="profile" class="panel">
-      <image v-if="profile.avatarUrl" :src="profile.avatarUrl" class="profile-avatar" mode="aspectFill" />
+      <ServiceImage v-if="profile.avatarUrl" :src="profile.avatarUrl" class="profile-avatar" mode="aspectFill" />
       <view class="muted">{{ profile.campusName }}</view>
       <view class="body profile-bio">{{ profile.bio }}</view>
       <view class="actions">
@@ -21,6 +21,7 @@
   </view>
 </template>
 <script setup>
+import ServiceImage from '../../components/ServiceImage.vue'
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { user } from '../../services/index.js'

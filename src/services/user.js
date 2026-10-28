@@ -14,3 +14,6 @@ export async function updateProfile(params = {}) {
 }
 export const listPublicContent = (params = {}) =>
   call('user.listPublicContent', params)
+export const block = (params = {}) => call('user.block', params)
+export const unblock = (params = {}) => call('user.unblock', params)
+export const listBlocked = (params = {}) => call('user.listBlocked', params)

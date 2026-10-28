@@ -1,11 +1,11 @@
 {
   "auth": {
     "owner": "B",
-    "methods": ["login", "register", "logout"]
+    "methods": ["login", "register", "logout", "deleteAccount"]
   },
   "user": {
     "owner": "B",
-    "methods": ["getProfile", "updateProfile", "listPublicContent"]
+    "methods": ["getProfile", "updateProfile", "listPublicContent", "block", "unblock", "listBlocked"]
   },
   "pet": {
     "owner": "A",
@@ -22,6 +22,10 @@
   "wardrobe": {
     "owner": "A",
     "methods": ["getState", "equip", "redeem"]
+  },
+  "rewards": {
+    "owner": "A",
+    "methods": ["getState"]
   },
   "dive": {
     "owner": "A",
@@ -77,7 +81,7 @@
   },
   "help": {
     "owner": "A",
-    "methods": ["create", "get", "list", "update", "complete", "getCandidates"]
+    "methods": ["create", "get", "list", "listMine", "update", "complete", "getCandidates", "apply", "listApplications", "selectHelper", "confirmCompletion", "cancelCooperation"]
   },
   "market": {
     "owner": "B",

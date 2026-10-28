@@ -163,5 +163,12 @@ export function createAccounts({ store, uploadsDir, uploadOrigin }) {
     throw new AccountError('NOT_IMPLEMENTED', '此账号接口尚未实现')
   }
 
-  return { invoke, authenticate, getUser, publicUser, getUpload, getUploadByUrl, receiveUpload }
+  const verifyPassword = (context, password) => {
+    const me = currentUser(context)
+    const actual = derivePassword(passwordValue(password), me.passwordSalt)
+    const expected = Buffer.from(me.passwordHash, 'hex')
+    need(actual.length === expected.length && timingSafeEqual(actual, expected), 'UNAUTHENTICATED', '密码不正确，账号未注销')
+    return me
+  }
+  return { invoke, authenticate, getUser, publicUser, getUpload, getUploadByUrl, receiveUpload, verifyPassword }
 }

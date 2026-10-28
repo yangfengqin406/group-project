@@ -22,3 +22,9 @@ export async function logout() {
   await call('auth.logout')
   if (getToken() === token) { setToken(''); setSession(null) }
 }
+export async function deleteAccount(params = {}) {
+  const token = getToken()
+  const result = await call('auth.deleteAccount', params)
+  if (getToken() === token) { setToken(''); setSession(null) }
+  return result
+}

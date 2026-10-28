@@ -36,7 +36,8 @@ export const C_METHODS = new Set([
   'report.create', 'report.adminResolve', 'subscription.send'
 ])
 
-export function createCService({ store, getUser, getExternalContent, getUploadByUrl, trustedUploadOrigins = [], now = () => new Date().toISOString() }) {
+export function createCService({ store, getUser, getExternalContent, getUploadByUrl, trustedUploadOrigins = [], assertCanContact = () => {},
+  canContactHelpApplicant = () => false, now = () => new Date().toISOString(), awardContribution = () => undefined }) {
   requireThat(store && typeof getUser === 'function', 'SERVICE_UNAVAILABLE', '必须接入服务端存储和账号适配')
   const user = (id) => sync(getUser(id))
   const publicUser = (id) => ({ ...profile(user(id)), id })
@@ -144,10 +145,28 @@ export function createCService({ store, getUser, getExternalContent, getUploadBy
     const userId = me.id
     const scope = (...filters) => [userId, method, ...filters]
     if (method === 'subscription.send') throw new CServiceError('NOT_IMPLEMENTED', '微信订阅发送尚未接入；站内通知仍可读取')
-    if (method === 'lostFound.create') return summarize(store.insert('lost', {
-      ...lostFields(p, me), id: randomUUID(), type: 'lost_found', ownerId: userId,
-      campusId: me.campusId || '', campusName: me.campusName || '', status: 'active', createdAt: now()
-    }))
+    if (method === 'lostFound.create') {
+      const create = () => {
+        const createdAt = now()
+        const item = store.insert('lost', {
+          ...lostFields(p, me), id: randomUUID(), type: 'lost_found', ownerId: userId,
+          campusId: me.campusId || '', campusName: me.campusName || '', status: 'active', createdAt
+        })
+        const reward = sync(awardContribution({ userId, kind: 'publish', sourceType: 'lost_found', sourceId: item.id,
+          title: item.title, body: item.body, visibility: item.visibility, now: Date.parse(createdAt) }))
+        return { ...summarize(item), ...(reward ? { reward } : {}) }
+      }
+      if (p.idempotencyKey === undefined) return create()
+      const key = text(p.idempotencyKey, 1, 200, '操作编号'), fingerprint = canonical(p)
+      const previous = store.receipt(userId, method, key)
+      if (previous) {
+        requireThat(previous.fingerprint === fingerprint, 'CONFLICT', '重复编号不能用于不同操作')
+        return JSON.parse(previous.response)
+      }
+      const result = create()
+      store.saveReceipt(userId, method, key, fingerprint, result)
+      return result
+    }
     if (['lostFound.get', 'lostFound.update', 'lostFound.markReturned'].includes(method)) {
       const item = findContent('lost_found', p.id)
       visible(item, userId)
@@ -185,9 +204,16 @@ export function createCService({ store, getUser, getExternalContent, getUploadBy
     if (method === 'conversation.open') {
       const item = findContent(p.contentType, p.contentId)
       requireThat(item.visibility === 'public', 'FORBIDDEN', '只能联系公开内容的发布者')
-      requireThat(item.ownerId === p.peerUserId && item.ownerId !== userId, 'INVALID_ARGUMENT', '请选择内容发布者联系')
-      requireThat(user(p.peerUserId), 'NOT_FOUND', '发布者账号不存在')
-      const participantIds = [userId, item.ownerId].sort()
+      const peerId = identifier(p.peerUserId)
+      requireThat(peerId !== userId, 'INVALID_ARGUMENT', '不能与自己建立联系会话')
+      if (p.contentType === 'help' && item.ownerId === userId) {
+        requireThat(sync(canContactHelpApplicant({ help: item, ownerId: userId, helperId: peerId })) === true,
+          'FORBIDDEN', '只能联系本条求助的有效申请人')
+      } else requireThat(item.ownerId === peerId && item.ownerId !== userId, 'INVALID_ARGUMENT', '请选择内容发布者联系')
+      const peer = user(peerId)
+      requireThat(peer && !peer.disabled, 'NOT_FOUND', '对方账号已不可用')
+      sync(assertCanContact(userId, peerId))
+      const participantIds = [userId, peerId].sort()
       const uniqueKey = canonical([p.contentType, p.contentId, participantIds])
       let c = store.query('conversations', "json_extract(data, '$.uniqueKey') = ?", [uniqueKey], 'seq DESC', 1)[0]?.value
       if (!c) c = store.insert('conversations', {
@@ -208,6 +234,7 @@ export function createCService({ store, getUser, getExternalContent, getUploadBy
     if (method === 'message.list' || method === 'message.send') {
       const c = member(p.conversationId, userId)
       if (method === 'message.list') return page('messages', p, scope(c.id), "json_extract(data, '$.conversationId') = ?", [c.id], (m) => ({ ...m, sender: publicUser(m.senderId) }))
+      assertCanContact(userId, c.participantIds.find((id) => id !== userId))
       const body = text(p.body, 1, 1000, '留言')
       const key = text(p.idempotencyKey, 1, 200, '操作编号')
       const fingerprint = canonical([c.id, body])

@@ -1,5 +1,6 @@
 import { ServiceError, requireThat } from '../utils/errors.js'
 import { pngDataFromBytes, validateArtFrame } from '../utils/pet-art.js'
+import { readNativePng } from './native-file.js'
 
 export async function choosePetPng() {
   if (typeof uni === 'undefined' || typeof uni.chooseImage !== 'function')
@@ -71,6 +72,9 @@ export async function choosePetPng() {
         { required: true }
       )
     }
+    // #endif
+    // #ifdef APP-PLUS
+    if (!frame && path && globalThis.plus?.io) frame = await readNativePng(path)
     // #endif
     if (!frame)
       throw new ServiceError('NOT_SUPPORTED', '当前平台无法读取这张本地图片')

@@ -20,7 +20,10 @@ test('展示初始化是真实独立账号、图片及玩法进度，重启不�
     const service=createCampusService({store,uploadsDir:path.join(dataDir,'uploads'),uploadOrigin:origin,trustedUploadOrigins:[origin]})
     const a=service.invoke('auth.login',{...credentials[0],type:'h5'}),b=service.invoke('auth.login',{...credentials[1],type:'h5'})
     const wardrobe=service.invoke('wardrobe.getState',{}, {userId:a.user.id})
-    assert.equal(wardrobe.equipped.outfit,'sailor-shirt');assert.equal(wardrobe.pearls,33)
+    assert.equal(wardrobe.equipped.outfit,'sailor-shirt');assert.equal(wardrobe.pearls,33+15)
+    const contributions=service.invoke('rewards.getState',{}, {userId:a.user.id})
+    assert.equal(contributions.daily.publish.awarded,3)
+    assert.equal(contributions.recent.reduce((sum,event)=>sum+event.delta,0),15)
     assert.deepEqual(service.invoke('wardrobe.getState',{}, {userId:b.user.id}).owned,[])
     service.invoke('wardrobe.equip',{slot:'outfit',itemId:null},{userId:a.user.id})
   }finally{store.close()}

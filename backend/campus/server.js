@@ -137,11 +137,11 @@ export function createCampusServer(options = {}) {
         if (!input || typeof input.method !== 'string' || Object.keys(input).some((key) => !['method', 'params'].includes(key)))
           throw fail('INVALID_ARGUMENT', '请求格式不正确')
         if (raw.length > 64 * 1024 && input.method !== 'pet.save') throw fail('INVALID_ARGUMENT', '请求内容过大')
-        if (['auth.login', 'auth.register'].includes(input.method)) limited(request, input.method)
+        if (['auth.login', 'auth.register', 'auth.deleteAccount'].includes(input.method)) limited(request, input.method)
         const data = service.invoke(input.method, input.params ?? {}, principal(request))
         if (['auth.login', 'auth.register'].includes(input.method) && data.token)
           response.setHeader('Set-Cookie', `campus_session=${data.token}; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=604800${access.secureCookie ? '; Secure' : ''}`)
-        if (input.method === 'auth.logout') response.setHeader('Set-Cookie', `campus_session=; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=0${access.secureCookie ? '; Secure' : ''}`)
+        if (['auth.logout', 'auth.deleteAccount'].includes(input.method)) response.setHeader('Set-Cookie', `campus_session=; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=0${access.secureCookie ? '; Secure' : ''}`)
         return reply('OK', '', data)
       }
       if (request.method === 'POST' && url.pathname === '/api/upload') {

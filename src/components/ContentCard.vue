@@ -10,13 +10,13 @@
     @keydown.space.self.prevent="openContent(item.type, item.id)"
   >
     <view class="row">
-      <text class="tag">
+      <text class="card-kind">
         {{ contentNames[item.type] }} · {{ categoryLabel(item) }}
       </text>
-      <text class="muted">{{ labels[item.status] || item.status }}</text>
+      <text class="card-state" :class="{ 'needs-confirmation': item.helpProgress === 'awaiting_confirmation' }">{{ item.type === 'help' ? helpProgressLabel(item) : labels[item.status] || item.status }}</text>
     </view>
     <view class="card-content">
-      <image
+      <ServiceImage
         v-if="imageSource && !imageFailed"
         class="card-photo"
         :src="imageSource"
@@ -39,6 +39,7 @@
           </view>
         </template>
         <view v-else class="muted">{{ item.location || item.campusName }}</view>
+        <view v-if="helpBrief" class="muted">{{ helpBrief }}</view>
       </view>
     </view>
     <view class="row card-footer">
@@ -55,7 +56,9 @@
   </view>
 </template>
 <script setup>
+import ServiceImage from './ServiceImage.vue'
 import { computed, ref, watch } from 'vue'
+import { formatHelpBrief, helpProgressLabel } from '../domain/help/brief.js'
 import {
   contentNames,
   openContent,
@@ -63,6 +66,7 @@ import {
   formatTime
 } from '../utils/routes.js'
 const props = defineProps({ item: { type: Object, required: true } })
+const helpBrief = computed(() => props.item.type === 'help' ? formatHelpBrief(props.item) : '')
 const imageSource = computed(() => props.item.images?.[0] || '')
 const imageFailed = ref(false)
 watch(imageSource, () => { imageFailed.value = false })
@@ -120,8 +124,8 @@ function categoryLabel(item) {
   overflow-wrap: anywhere;
 }
 .card .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.card .muted { font-size: 13px; line-height: 1.7; color: #727760; }
-.card .tag { padding: 3px 8px; font-size: 12px; line-height: 1.5; border-radius: 4px; background: var(--room-tint, #e3ebdd); }
+.card .muted, .card .card-state { font-size: 13px; line-height: 1.7; color: #727760; }
+.card .tag, .card .card-kind { padding: 3px 8px; font-size: 12px; line-height: 1.5; border-radius: 4px; background: var(--room-tint, #e3ebdd); }
 .card .link { color: #3e654f; font-size: 14px; }
 .card-footer {
   margin-top: 16px;

@@ -1,5 +1,17 @@
 # 数据模型与状态
 
+## 2026-10-28 求助说明与本人互助投影
+
+help内容兼容新增preferredTime:string默认空、estimatedMinutes:null|整数1～480、meetingMode:flexible|online|offline。未提供字段保留旧值；旧记录读取附默认值，不补奖或改余额。helpProgress由原帖终态和当前selectedApplicationId记录推导，作为公开摘要，不存客户端指定进度。
+
+help.listMine是鉴权查询投影，不新增重复状态集合：作者读本人发帖，帮助者按同帖最新申请去重；todo仅待选人或accepted且本人尚未确认，确认等待对方/终态不列。分页按updatedAt/helpId排序，真实游标HMAC绑定账号与scope，mock使用独立绑定receipt。原帖私有/删除/作者失效，对申请人只返回help:null及本人状态的不可访问占位，移除作者资料和双人确认时间。公开摘要不包含此私有投影。
+
+## 2026-10-27 贡献账与帮助申请
+
+`campus.rewardEvents` 保存每个受益账号与业务事件唯一的贡献决定：id/eventId/userId/kind/sourceType/sourceId/dayKey/createdAt/delta/reason，内部规范文本键和双方键不返回页面。发布、帮助者完成、作者完成分别为 publish/help_helper/help_author；零奖励也保存，不能跨日重领。余额仍只在 `campus.leisure.state.wardrobes[userId].pearls`，业务、事件与余额在原 SQLite 事务一起写入。服务端北京时间日限额跨模块/角色共享，详情见 interfaces。
+
+`campus.helpApplications` 保存 id/helpId/ownerId/helperId/status、ownerConfirmedAt/helperConfirmedAt 及创建/选择/完成/取消时间。pending→accepted→completed，未完成可 cancelled；SQLite部分唯一索引限制同一人同帖一份有效申请和每帖一位被选定帮助者。help.selectedApplicationId 仅引用当前协作；只有作者及申请本人可读私有详情。注销撤销未完成关系、去除本人的奖励与钱包，保留另一方已发生的奖励历史。演示只在 src/mock 中保存对应结构，不导入真实数据库。
+
 ## 2026-10-27 真实玩法持久化
 
 `campus.leisure` 以当前账号ID为行主键，保存 `{id,version:1,state}`，state包含该账号的鱼册/有效抛竿、七槽衣柜/余额/通关、有效潜水局和最近结算回执。读取/修改在SQLite事务中完成，不接收客户端userId、余额或结算结果。服务端局号使用UUID；回放消费与奖励一次提交，失败回滚。原有 `campus.pets` 同样保存校验后的原创像素/PNG外观；独立展示数据不混入正式目录。下文mock迁移字段仍只描述演示存档。

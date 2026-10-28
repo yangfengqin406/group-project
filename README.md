@@ -1,5 +1,13 @@
 # 校园生活广场 · uni-app 团队项目
 
+**原画风融入新功能（2026-10-28，本机）**：按用户原版截图保留完整房间插画、楷体木牌、奶油卡片和模块侧线；“我的互助”收进资料卡一行，珍珠收进“我的宠物”，规则和记录点开再看，原统计、收藏和资料操作保留。[手机效果](docs/assets/original-style-integration-2026-10-28/home-original-collapsed.png) · [桌面效果](docs/assets/original-style-integration-2026-10-28/home-original-desktop.png) · [求助列表](docs/assets/original-style-integration-2026-10-28/help-card-waiting.png) · [详情](docs/assets/original-style-integration-2026-10-28/help-brief-detail.png)。520项测试、双端构建及隔离真实H5流程通过，范围见[实际验证](docs/verification.md)；仍暂停打包，未更新现有公网、安装包或main。
+
+**我的互助与求助说明（2026-10-28，本机改动）**：自己的家集中展示待我处理、我发出的和我申请的互助；求助可选填写期望时间、用时及线上/线下，列表显示实际协作进度。[规则与设计](docs/superpowers/specs/2026-10-28-help-continuity-design.md) · [验收记录](docs/verification.md)。暂不打包，现有公网/安装包及main不会自动更新。
+
+**校园互助与珍珠（2026-10-27，本机改动）**：公开发布求助、求购、闲置、失物或搭子均可获得珍珠；求助支持申请帮忙、作者选人和双方确认，帮助者与发布者分别获得奖励。衣柜改为直接珍珠兑换，不强制玩游戏。[完整规则](docs/superpowers/specs/2026-10-27-campus-contribution-design.md) · [实际验证](docs/verification.md)。用户已暂停打包；源码改动不会自动更新已安装 APK 或现有公网预览，未合入 main 的部分按周报状态阅读。
+
+**Android / iOS App 适配（2026-10-27）**：用户确认保留完整功能，先交付双端适配和 Android 安装包，Apple 会员稍后准备。[App 构建与打包步骤](docs/app-release-2026-10-27.md)记录实际产物及待完成项；编译资源、已签名安装包、真机验收和商店上线分别记录。
+
 **10～11分钟作品展示**：[完整逐字稿、分段操作与问答](docs/showcase-10min-2026-10-27.md)，按约2100字正文加约2分钟操作安排，目标10分40秒，实际以排练计时为准。手机预览续修在首个HTTP请求前等待开发调试准备；默认/正式构建不自动开启，不再依赖每次扫码手动开关。
 
 **手机扫码与跨网络展示**：流量/不同Wi-Fi手机需连接公网HTTPS，不能扫127.0.0.1模拟器包。[手机预览步骤](docs/phone-preview.md)说明真实H5、微信构建、图片与调试权限；已获用户华为流量H5及微信开启调试后场景/伙伴验证，临时入口不是正式微信上线。

@@ -1,7 +1,7 @@
 <template>
   <view class="page village-page feed-page" :class="[roomClass, { 'feed-page-filtered': showFilters }]">
     <VillageHeader :kind="type" :title="title" :subtitle="subtitle" compact>
-      <button class="primary wx-b" @tap="publish">发布</button>
+      <button class="primary wx-b" @tap="publish">{{ publishLabel }}</button>
     </VillageHeader>
     <DemoNotice />
     <view v-if="marketTypeOptions.length" class="content-switcher">
@@ -229,6 +229,9 @@ const quickCategories = computed(() =>
 const contentLabel = computed(() => ({
   plan: '搭子计划', help: '技能求助', market: '二手信息', lost_found: '失物信息'
 })[props.type] || '内容')
+const publishLabel = computed(() => props.type === 'market'
+  ? marketType.value === 'buy' ? '发布求购' : '发布闲置'
+  : ({ help: '发布求助', plan: '发布计划', lost_found: '发布失物' })[props.type] || '发布')
 const extraFilterCount = computed(() =>
   Number(Boolean(status.value)) + Number(Boolean(campusId.value)) + Number(Boolean(lostKind.value)) +
   Number(Boolean(category.value && !props.categoryOptions.includes(category.value) && !props.showLostFilters))
@@ -300,7 +303,7 @@ async function load(reset) {
   }
 }
 function publish() {
-  uni.navigateTo({ url: `/pages/content/publish?type=${props.type}` })
+  uni.navigateTo({ url: `/pages/content/publish?type=${props.type}${props.type === 'market' && marketType.value === 'buy' ? '&marketType=buy' : ''}` })
 }
 function clear() {
   keyword.value = ''

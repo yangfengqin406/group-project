@@ -11,6 +11,9 @@ function networkFailure(error = {}) {
   if (/domain|域名/.test(detail)) message = '微信未允许访问这个服务域名，开发预览请开启调试；普通体验可使用H5入口'
   else if (/timeout|timed out|超时/.test(detail)) message = '服务器响应超时，请稍后重试'
   else if (/ssl|tls|certificate|cert_|handshake/.test(detail)) message = 'HTTPS连接校验失败，请联系维护者检查服务证书'
+  // #ifdef APP-PLUS
+  if (typeof plus !== 'undefined' && /domain|域名/.test(detail)) message = '服务域名无法访问，请检查网络或联系维护者'
+  // #endif
   return new ServiceError('SERVICE_UNAVAILABLE', message)
 }
 export async function restoreIdentity() {
