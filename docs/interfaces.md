@@ -39,7 +39,8 @@
 ## 第一阶段列表与广场交互补充
 
 - 搭子和技能互助列表组合使用既有 `keyword`、`category`、`status`、`cursor`、`pageSize`。`category` 为与发布内容一致的完整类别/技能字符串，`status` 为既有状态值；空字符串表示不限制。后端先完成筛选再分页，后续页保留同一组已生效条件；只编辑输入框而未提交搜索时，不影响加载更多。
-- `FeedList` 的可选属性为 `showFilters: Boolean`（默认关闭）、`categoryOptions: Array<String>`、`statusOptions: Array<{label,value}>`。预设类别用于快捷选择，允许手动填写已有分类；不得把它们当成新的公共枚举或限制发布。
+- 搭子发布页的类别自 10-28 起改为固定选择：选项来自公共常量 `src/constants/plan.js`（电影、散步、运动、学习、游戏），发帖页与找搭子检索页共用同一份，发布时必选；技能求助仍为自由输入。历史自定义类别内容仍可经关键词/类别筛选查到，列表筛选后端不限定取值。
+- `FeedList` 的可选属性为 `showFilters: Boolean`（默认关闭）、`categoryOptions: Array<String>`、`statusOptions: Array<{label,value}>`。找搭子检索页快捷类别直接传入 `planCategories`；技能求助检索仍允许手动填写已有分类。
 - 广场坐标按背景宽高归一化到 `[0,1]`。移动工具的 `createPlazaWalker` 对外提供 `getState()`、`moveTo(point)`、`advance(seconds)`、`stop()`：目的地投影到闭合步道，沿较短方向行走，不穿越中心树岛；这是本地场景状态，不持久化业务数据，也不表示多人位置同步。
 
 ## 宠物外观（本地版本）
