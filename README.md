@@ -1,5 +1,7 @@
 # 校园生活广场 · uni-app 团队项目
 
+**本次提交（2026-10-28）**：[PR #42](https://github.com/yangfengqin406/group-project/pull/42) 已提交，来源为 `codex/a-mutual-help-original-style-20261028`，目标为 A（杨凤琴）的 `codex/a-plaza-partner-pets`，尚未合入 A 或 main。以最新 main 为基础保留团队成果，完整提交互助/珍珠、原画风融合及 App 适配；排除真实微信 AppID、本机配置与数据。下方“本机改动/无PR”按各阶段当时状态阅读；现有公网和安装包未更新，继续暂停打包。
+
 **原画风融入新功能（2026-10-28，本机）**：按用户原版截图保留完整房间插画、楷体木牌、奶油卡片和模块侧线；“我的互助”收进资料卡一行，珍珠收进“我的宠物”，规则和记录点开再看，原统计、收藏和资料操作保留。[手机效果](docs/assets/original-style-integration-2026-10-28/home-original-collapsed.png) · [桌面效果](docs/assets/original-style-integration-2026-10-28/home-original-desktop.png) · [求助列表](docs/assets/original-style-integration-2026-10-28/help-card-waiting.png) · [详情](docs/assets/original-style-integration-2026-10-28/help-brief-detail.png)。520项测试、双端构建及隔离真实H5流程通过，范围见[实际验证](docs/verification.md)；仍暂停打包，未更新现有公网、安装包或main。
 
 **我的互助与求助说明（2026-10-28，本机改动）**：自己的家集中展示待我处理、我发出的和我申请的互助；求助可选填写期望时间、用时及线上/线下，列表显示实际协作进度。[规则与设计](docs/superpowers/specs/2026-10-28-help-continuity-design.md) · [验收记录](docs/verification.md)。暂不打包，现有公网/安装包及main不会自动更新。
