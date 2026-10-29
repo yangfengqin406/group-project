@@ -50,12 +50,26 @@
           </button>
         </view>
       </template>
+      <template v-else-if="type === 'plan'">
+        <text class="label">活动类别</text>
+        <view class="choice-grid three-columns">
+          <button
+            v-for="option in planCategories"
+            :key="option"
+            class="choice-button"
+            :class="{ selected: form.category === option }"
+            @tap="form.category = option"
+          >
+            {{ option }}
+          </button>
+        </view>
+      </template>
       <template v-else-if="type !== 'market'">
         <text class="label">类别 / 技能</text>
         <input
           class="input"
           v-model="form.category"
-          placeholder="如电影、摄影、生活用品"
+          placeholder="如摄影、Python、高数辅导"
         />
       </template>
       <text class="label">地点</text>
@@ -215,6 +229,7 @@ import {
   localToIso
 } from '../../utils/routes.js'
 import { errorText } from '../../utils/errors.js'
+import { planCategories } from '../../constants/plan.js'
 import { config } from '../../config/index.js'
 import { session } from '../../utils/session.js'
 import { useUnsavedChanges } from '../../utils/use-unsaved-changes.js'
@@ -453,7 +468,8 @@ async function save() {
     params.title = form.title.trim()
     params.location = form.location.trim()
     if (params.title.length < 2) throw new Error('标题请写 2～60 个字')
-    if (!form.category.trim()) throw new Error('请填写类别或技能')
+    if (!form.category.trim())
+      throw new Error(type.value === 'plan' ? '请选择活动类别' : '请填写类别或技能')
     if (type.value === 'lost_found' && !form.images.length)
       throw new Error('请至少添加一张物品照片')
     if (['plan', 'help'].includes(type.value))
