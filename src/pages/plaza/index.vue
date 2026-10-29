@@ -1,5 +1,6 @@
 <template>
   <view class="plaza-page">
+    <MessageNotice />
     <PlazaScene
       ref="scene"
       :active="active && !boardOpen && !pondOpen && !pavilionOpen && !diveOpen"
@@ -112,7 +113,7 @@
         </button>
         <button class="hud-button" @tap="goMessages">
           <text class="hud-icon">✉</text>
-          <text>私信</text>
+          <text>私信{{ messageAlerts.state.total ? ` · ${messageAlerts.state.total > 99 ? '99+' : messageAlerts.state.total}` : '' }}</text>
         </button>
         <button class="hud-button" @tap="goHome">
           <image class="home-icon" src="/static/tabs/home-active.png" />
@@ -262,6 +263,8 @@
 import { nextTick, ref, onMounted, onUnmounted } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { pet, bulletin, wardrobe } from '../../services/index.js'
+import { messageAlerts } from '../../services/message-alerts.js'
+import MessageNotice from '../../components/MessageNotice.vue'
 import { soundscape } from '../../services/soundscape.js'
 import { formatTime } from '../../utils/routes.js'
 import { config } from '../../config/index.js'

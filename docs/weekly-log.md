@@ -1,6 +1,6 @@
 # 团队周报（监督查看）
 
-更新至：2026-10-27（北京时间） · 汇总负责人：A（杨凤琴）
+更新至：2026-10-29（北京时间） · 汇总负责人：A（杨凤琴）
 
 团队成员：**A（杨凤琴）、B（孙瑞）、C（姜澜）**。以下分别记录本人负责的业务、协作整合和待完成工作。
 
@@ -12,6 +12,7 @@
 
 | 日期 | 执行成员 | 实际更新与成果证据 | 实际验证、剩余工作与合并状态 |
 | --- | --- | --- | --- |
+| 10月29日 | C（姜澜），私信提醒 | 增加真实SQLite/mock未读计数与快照标读，共用底栏/广场角标、可点击且可收起的新私信提示；聊天自动更新，保留草稿与历史。同步接口、协作、需求、数据、设计与验收文档；见[验证记录](verification.md)与[双账号证据](assets/message-alerts-2026-10-29/result.json) | 428测试、check16页/76调用、两端真实构建、33WXSS/定向质量/每包预算通过；真实HTTP双账号390px/1280px验收通过，无运行异常。标准脚本受本机目录权限限制，替代构建方法见验证记录。仅前台约5秒检查，无离线推送，本轮未测微信原生/真机。仅本地`codex/c-lost-found-messages`，尚未提交PR或合入main；A/B业务归属与人员分支保留 |
 | 10月27日 | A（杨凤琴），重复扫码续修与十分钟展示 | 用户复现伙伴网络/域名读取失败，后端健康正常；仅手机预览先等待开发调试准备，正式环境不自动开启，失败提示区分类别，补进程复用后的状态重查。提供约2100字正文、含操作目标10分40秒的[演讲稿](showcase-10min-2026-10-27.md)与打印/备用材料；核对个人主体未开放社交，正式主体/资质仍待解决；B/C原创归属不变 | 419测试、check、独立H5/手机微信构建及32WXSS原生/定向门禁与包体通过，用户确认新版无需手动切调试即可显示伙伴；额外进程复用场景以自动回归验证。朗读排练、全功能/多机型、正式主体/域名及审核未完成。源码、演讲稿与正式发布限制已通过[PR #40](https://github.com/yangfengqin406/group-project/pull/40)合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40443258555)通过；main及A/B/C人员分支保留 |
 | 10月27日 | A（杨凤琴），手机跨网络预览续修 | 原127回环预览不供手机使用；按用户跨流量/Wi-Fi要求建立隔离虚构库的临时真实HTTPS入口，配置原生预览API/静态资源，补可复现构建脚本。[步骤](phone-preview.md)、[实际验证](verification.md)；B/C业务归属不变，域名/二维码/密码只留本机 | 用户确认华为流量H5登录/场景/伙伴正常，原生微信打开调试后场景/伙伴正常；公网多账号读取、双向留言与第三方拒绝通过。正式固定域名/合法域名及审核、全功能/多机型验收待做；手机预览脚本与文档已通过[PR #38](https://github.com/yangfengqin406/group-project/pull/38)合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40432340647)通过；413测试、check、独立H5/手机微信构建和32WXSS原生/定向门禁及包体通过。main与A/B/C人员分支保留 |
 | 10月27日 | A（杨凤琴），完整真实玩法与展示交付 | 按用户确认补齐真实钓鱼、三关潜水、衣柜/珍珠及原创画稿SQLite持久化；补HTTPS公共源、可信代理与Secure Cookie；减少静止角色/镜头无效更新，改组件选择器并扩展门禁。提供隔离虚构样例的便携展示/空数据部署包及流程、逐字稿、答辩。[展示手册](showcase-2026-10-27.md)、[发布说明](release-2026-10-27.md)、[浏览器结果](assets/release-2026-10-27/browser-result.json)；B（孙瑞）二手/个人空间和C（姜澜）失物/消息原创归属不变 | 411测试、check16页/74调用、真实双端构建、32WXSS原生编译与门禁、定向质量/包体通过；独立真实H5两账号登录、衣柜穿脱/正背面、实时钓鱼、双向留言通过，HTTP失败/运行异常0。无服务器域名，实际Linux/TLS、微信完整重扫/真机、物理设备与团队排练尚未执行；已通过[PR #36](https://github.com/yangfengqin406/group-project/pull/36)合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40424883403)通过。独立终端已用包内Node22启动8791，健康OK；压缩包无真实数据/密码/AppID，697文件SHA256复核0差异，解压后运行时v22.22.0。main与A/B/C人员分支保留 |
@@ -20,7 +21,7 @@
 | 10月26日 | A（杨凤琴），微信本机网络恢复 | 确认旧WLAN地址失效且服务停止，保留数据恢复后端；补微信本机启动命令、回环接口与未配置网卡过滤。见[验证记录](verification.md)和[脱敏摘要](assets/weixin-network-2026-10-26/summary.json) | 388项测试、check、两端构建及包体通过；本机/LAN健康200，匿名业务真实拒绝，启动与复用流程均实测。[PR #29](https://github.com/yangfengqin406/group-project/pull/29)已合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40267393461)通过；CLI安全端口未开启，模拟器与真机实际请求仍待确认，黄色兼容警告及外部资源问题未冒充已清理 |
 | 10月26日 | A（杨凤琴），微信兼容修复 | 根据白屏截图复现并修复潜水通配选择器导致的WXSS编译失败，补产物检查与CI步骤，无业务或接口变化。见[验证记录](verification.md)和[原生编译证据](assets/weixin-wxss-2026-10-26/summary.json) | 本地379测试、check、两端构建及包体通过；32份WXSS经微信编译器验证通过。[PR #27](https://github.com/yangfengqin406/group-project/pull/27)已合入main，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40263327938)通过；模拟器画面和真机待确认 |
 | 10月26日 | A（杨凤琴），跨夜整合复验 | 续10月25日用户确认的本机真实后端，修复冷启动与账号切换竞态；代码、头像与文档同整合PR交付，原B/C业务归属不变。见[验证记录](verification.md)和[最终浏览器证据](assets/local-campus-2026-10-25/browser-result.json) | 最终374项测试、check、H5/微信构建和原始包体通过；00:00完成最终双隔离会话复验，97次RPC、1次实际上传、异常0。[PR #25](https://github.com/yangfengqin406/group-project/pull/25)已于10月26日合入main，[GitHub CI](https://github.com/yangfengqin406/group-project/actions/runs/40210356090)通过；物理设备/微信/公网、试用排练和头像后台设置仍待完成 |
-| 10月26日 | B（孙瑞） / C（姜澜） | 本周尚未提供新的本人交付依据；既有成果见上周条目 | 不据集成复验推定本人新增工作 |
+| 10月26日 | B（孙瑞） | 本周尚未提供新的本人交付依据；既有成果见上周条目 | 不据集成复验推定本人新增工作 |
 
 ## 上周：2026-10-19—2026-10-25
 

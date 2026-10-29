@@ -17,7 +17,7 @@
       </view>
     </view>
     <view class="row">
-      <text class="muted">当前为留言模式，点击刷新读取新消息</text>
+      <text class="muted">{{ messageAlerts.state.error || '新留言会自动更新，也可以手动刷新' }}</text>
       <button class="secondary" :disabled="loading" @tap="load(true)">
         刷新
       </button>
@@ -62,6 +62,7 @@ import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
 import { session } from '../../utils/session.js'
+import { messageAlerts } from '../../services/message-alerts.js'
 const id = ref(''),
   current = ref(null),
   items = ref([]),
@@ -97,7 +98,7 @@ async function initialize() {
 onLoad((options) => {
   id.value = options.id
 })
-async function load(reset) {
+async function load(reset, { background = false } = {}) {
   // 刷新必须使旧读取失效，发送成功后不能被较早的列表覆盖。
   if (!reset && (loading.value || !cursor.value)) return
   const version = reset ? ++loadVersion : loadVersion
@@ -111,9 +112,25 @@ async function load(reset) {
       cursor: reset ? null : cursor.value
     })
     if (!currentRequest()) return
-    const known = new Set(reset ? [] : items.value.map((item) => item.id))
-    items.value = [...(reset ? [] : items.value), ...r.items.filter((item) => !known.has(item.id))]
-    cursor.value = r.nextCursor
+    if (background) {
+      const existing = new Set(items.value.map((item) => item.id))
+      let next = r.nextCursor
+      while (next && !r.items.some((item) => existing.has(item.id))) {
+        const older = await message.list({ conversationId: id.value, cursor: next })
+        if (!currentRequest()) return
+        r.items.push(...older.items)
+        next = older.nextCursor
+      }
+    }
+    const preserve = background || !reset
+    const known = new Set(preserve ? items.value.map((item) => item.id) : [])
+    items.value = [...(preserve ? items.value : []), ...r.items.filter((item) => !known.has(item.id))]
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+    if (!background) cursor.value = r.nextCursor
+    if (reset && r.items.length && visible && messageAlerts.state.foreground) {
+      const result = await conversation.markRead({ conversationId: id.value, throughMessageId: r.items[0].id })
+      if (currentRequest() && visible) messageAlerts.acknowledged(id.value, result.unreadCount)
+    }
   } catch (e) {
     if (currentRequest()) error.value = errorText(e)
   } finally {
@@ -154,13 +171,17 @@ watch(() => session.user?.id, () => {
   items.value = []
   current.value = null
   pendingSend = null
-  if (visible) initialize()
+  if (visible) { messageAlerts.setActive(id.value); initialize() }
+})
+watch(() => messageAlerts.state.tick, () => {
+  if (visible && current.value && !loading.value && !sending.value) load(true, { background: true })
 })
 onShow(() => {
   visible = true
+  messageAlerts.setActive(id.value)
   if (!initialized || !current.value) { initialized = true; initialize() }
   else load(true)
 })
-onHide(() => { visible = false; ++loadVersion; loading.value = false })
-onUnload(() => { visible = false; ++loadVersion; pendingSend = null })
+onHide(() => { visible = false; messageAlerts.setActive(''); ++loadVersion; loading.value = false })
+onUnload(() => { visible = false; messageAlerts.setActive(''); ++loadVersion; pendingSend = null })
 </script>

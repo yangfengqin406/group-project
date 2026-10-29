@@ -99,6 +99,7 @@ function inbox() {
     onShow: (fn) => { hooks.show = fn }, onHide: (fn) => { hooks.hide = fn },
     onUnload: (fn) => { hooks.unload = fn }, session, uni: {},
     invitation: { list: empty }, notification: { list: empty }, plan: {},
+    messageAlerts: { state: { items: [] } },
     conversation: { list: (params) => new Promise((resolve, reject) => requests.push({ params, resolve, reject })) },
     errorText: (error) => error.message
   })

@@ -1,5 +1,12 @@
 # 接口契约 v0.2
 
+## 私信未读与前台提醒（2026-10-29）
+
+- 新增 `conversation.unread({})` → `{total,items:[{id,unreadCount,peer,contentType,contentId,contentTitle,lastMessage}]}`，按最新未读留言排序，仅返回本账号有未读的会话，统计不受列表分页影响。`conversation.get/list` 另附 `unreadCount`。
+- 新增 `conversation.markRead({conversationId,throughMessageId})`，只允许参与者确认同一会话中已展示的消息及其之前记录，返回 `{unreadCount}`。读位置只前进，不误读请求期间新到的消息；已读状态按账号持久保存，不向对方暴露阅读回执。
+- App前台每5秒查询一次未读；底部消息角标、广场消息入口及各业务页面可点击提示共用统计。隐藏/退出/切账号停止并隔离旧响应。提示可收起，未读角标保留；同一消息不重复弹出，正在看的会话不弹提示。
+- 聊天页前台每5秒刷新最新留言，保留已加载历史和输入草稿；读取成功后才提交已读位置。后台/关闭应用不承诺推送，本轮不接微信订阅发送或系统通知权限。
+
 ## 手机跨网络开发预览（2026-10-27）
 
 同日续修：仅 `build-phone-preview.mjs` 显式设置公开构建标记 `VITE_PHONE_PREVIEW_DEBUG=true`。服务层在首个HTTP请求前等待微信开发/体验环境的调试准备，共享一次在途准备；release环境及默认H5/发布构建不自动开启。调试失败不回退mock、不伪造登录；真实网络失败分别提示域名拒绝、超时、TLS/普通连接失败。不增加RPC、账号字段或业务存储，也不替代微信后台合法域名与成员权限。
