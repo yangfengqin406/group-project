@@ -1,5 +1,17 @@
 # 交付验证记录
 
+## 2026-10-29 合并核对与App方向文档更新
+
+本轮文档分支为codex/docs-team-app-direction-20261029，通过[PR #46](https://github.com/yangfengqin406/group-project/pull/46)同步main固定入口；合并与CI状态以该PR为准。
+
+通过GitHub实际读取main e2627d5、PR目标分支/合并时间/头提交和CI：PR #43（B孙瑞）与PR #44（C姜澜）已合main；PR #42（A杨凤琴）于10月29日仅合A人员分支，PR #45为A→main的开放PR，当前mergeable_state=dirty，尚无整合通过结论。本轮不操作其业务合并。
+
+- PR #43的[CI](https://github.com/yangfengqin406/group-project/actions/runs/40709888074)实际check16页/74调用、419测试、H5/微信及发布资源构建、32WXSS和包体通过；H5操作为作者自述，未新增测试文件/真机证据。
+- PR #44的[CI](https://github.com/yangfengqin406/group-project/actions/runs/40816387653)实际check16页/76调用、428测试、H5/微信及发布资源构建、33WXSS和包体通过；新增9测试，隔离双账号证据在本文件下节。本机标准脚本权限受限的历史不等于CI标准构建失败。
+- PR #42的[CI](https://github.com/yangfengqin406/group-project/actions/runs/40698932730)实际check17页/85调用、520测试、H5/微信/App编译预检和发布资源构建通过；只代表该A代码，不是已包含新B/C代码的main整合结果。0.1.0签名APK、华为基础验收和0.1.1音频未回包等边界见[A交付说明](https://github.com/yangfengqin406/group-project/blob/4ca2a416985a075c53a2c0a0a58bda5600f3cd89/docs/app-release-2026-10-27.md)。
+
+README改为App主线/H5备用/微信兼容，周报同步三人实际成果与合入状态，并同步requirements/status/collaboration/AGENTS。此为文档变更，未修改业务源码或任务完成度；未重复人工业务/真机流程，不以旧版本520测试代替当前main。文档相对链接、脚本存在性、差异和仅文档提交范围按实际校验登记；本次CI结果以文档PR为准，不提前写成通过。
+
 ## 2026-10-29 C 私信未读与前台提醒
 
 C（姜澜）在`codex/c-lost-found-messages`补齐SQLite与mock的未读统计、按实际获取消息快照标读，以及共用角标、可点击提示和聊天自动更新。账号切换/后台迟到响应丢弃，读取某条消息不会顺带标读其后到达的新消息；既有原内容链接保留。
@@ -8,7 +20,7 @@ C（姜澜）在`codex/c-lost-found-messages`补齐SQLite与mock的未读统计�
 - H5及微信真实HTTP构建成功。标准发布脚本首次被本机受限文件系统阻止：esbuild加载配置时扫描祖先目录报Access denied；随后使用临时验证入口由Node加载原有vite.config.js并以`configFile:false`交给同一Vite/uni构建，未修改项目配置、依赖或请求权限。该替代构建不计为标准脚本本次运行成功。
 - 微信33份WXSS兼容检查0问题，组件注入/牌桌私有JS定向检查通过。原始主包2,077,005字节、pages/content39,550、rooms38,238，均在团队每包2MiB预算内。本轮未执行微信开发者工具原生编译或真机验收。
 - 两个独立Edge会话通过真实HTTP+隔离SQLite验收：界面登录；广场提示发送者/预览/未读数；点击进入对应会话并清零、原商品链接保留；聊天自动显示对方回复并保留未发送草稿；小屋提示可点击收起、6.5秒后不重复弹出、消息中心与底栏仍留未读数。最初验收发现提示放在隔离层内被内容遮挡，已移到公共头图外层并复验通过。390px/1280px截图目视核验，无运行异常。[双账号结果](assets/message-alerts-2026-10-29/result.json)、[广场提示](assets/message-alerts-2026-10-29/plaza-new-message-390.png)、[消息中心](assets/message-alerts-2026-10-29/inbox-unread-390.png)。虚构验收账号数据/密码不入库。
-- 只提供应用前台约5秒检查；不是离线、系统推送或微信订阅送达。关闭应用后不主动提醒，重新进入后读取服务端未读。当前仅本地C分支改动，未提交PR或发布线上；原运行中后端与用户数据库未重启或迁移。
+- 只提供应用前台约5秒检查；不是离线、系统推送或微信订阅送达。关闭应用后不主动提醒，重新进入后读取服务端未读。该段最初为本地C分支验收；截至10月29日已通过[PR #44](https://github.com/yangfengqin406/group-project/pull/44)合入main，CI标准构建通过；未重新打包App，原运行中后端与用户数据库未据此重启或迁移。
 
 ## 2026-10-27 重复扫码错误与10～11分钟展示续修
 
