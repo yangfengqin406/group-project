@@ -2,10 +2,58 @@
   "name": "校园像素生活广场",
   "appid": "",
   "description": "三人团队 uni-app 双端骨架",
-  "versionName": "0.1.0",
-  "versionCode": "100",
+  "versionName": "0.1.1",
+  "versionCode": "101",
   "transformPx": false,
-  "uniStatistics": { "enable": false },
+  "vueVersion": "3",
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "compilerVersion": 3,
+    "modules": {
+      "Camera": {},
+      "Audio": {}
+    },
+    "splashscreen": {
+      "alwaysShowBeforeRender": true,
+      "waiting": true,
+      "autoclose": true,
+      "delay": 0
+    },
+    "safearea": {
+      "background": "#f5f5eb",
+      "bottom": {
+        "offset": "auto"
+      }
+    },
+    "distribute": {
+      "android": {
+        "minSdkVersion": 23,
+        "targetSdkVersion": 35,
+        "abiFilters": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
+        "enableOAID": false,
+        "permissionPhoneState": {
+          "request": "none"
+        },
+        "permissionExternalStorage": {
+          "request": "none"
+        }
+      },
+      "ios": {
+        "dSYMs": false,
+        "privacyDescription": {
+          "NSCameraUsageDescription": "拍摄你主动发布的闲置、失物照片或个人头像。",
+          "NSPhotoLibraryUsageDescription": "选择你主动上传的物品、头像或原创宠物 PNG 图片。"
+        }
+      }
+    }
+  },
+  "uniStatistics": {
+    "enable": false
+  },
   "h5": {
     "router": {
       "mode": "hash"
@@ -17,6 +65,7 @@
     "setting": {
       "urlCheck": true
     },
-    "usingComponents": true
+    "usingComponents": true,
+    "lazyCodeLoading": "requiredComponents"
   }
 }

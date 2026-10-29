@@ -6,7 +6,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { createSeed } from '../src/mock/seed.js'
 import { dispatchDive } from '../src/mock/dive.js'
 import { getWardrobeState } from '../src/mock/wardrobe.js'
-import { createDiveGame, DIVE_LEVELS, DIVE_STEP_MS } from '../src/utils/dive-game.js'
+import { createDiveGame, DIVE_LEVELS, DIVE_STEP_MS, DIVE_RULES_VERSION } from '../src/utils/dive-game.js'
 import { WARDROBE_ITEMS } from '../src/utils/wardrobe-catalog.js'
 
 const owner = 'user_demo_a'
@@ -22,6 +22,12 @@ const deferred = () => {
 }
 const touch = (identifier, x, y) => ({ identifier, clientX: x, clientY: y })
 const event = (touches, changedTouches) => ({ touches, changedTouches })
+const audioSpy = () => {
+  const events = []
+  return { events, state: {}, unlock: () => events.push('unlock'),
+    setScene: (value) => events.push(value), setPaused: (value) => events.push(value ? 'paused' : 'resumed'),
+    effect: (value) => events.push(value) }
+}
 const route = [[22, 54], [22, 60], [49, 60], [49, 42], [76, 42], [76, 21], [91, 12]]
 
 function proofFor(run) {
@@ -60,7 +66,7 @@ function adventure(options = {}) {
   const session = reactive({ user: { id: owner } })
   const db = createSeed()
   const rewards = []
-  let now = startedAt, sequence = 0, finishes = 0, lastIssued
+  let now = startedAt, sequence = 0, finishes = 0, lastIssued, modal
   const invoke = (action, params = {}) => dispatchDive(db, session.user?.id, action, params, {
     now, random: () => 0.1
   })
@@ -70,11 +76,12 @@ function adventure(options = {}) {
     exec() {}
   }
   const context = vm.createContext({
+    soundscape: options.soundscape || { state: {}, unlock() {}, setScene() {}, setPaused() {}, effect() {} },
     computed, nextTick, reactive, ref, watch, session,
     ...Object.fromEntries(Object.entries(hooks).map(([name, callbacks]) => [
       `on${name}`, (callback) => callbacks.push(callback)
     ])),
-    createDiveGame, DIVE_LEVELS, DIVE_STEP_MS, WARDROBE_ITEMS,
+    createDiveGame, DIVE_LEVELS, DIVE_STEP_MS, DIVE_RULES_VERSION, WARDROBE_ITEMS,
     config: { apiMode: 'mock' }, errorText: (failure) => failure.message,
     defineProps: () => ({}), defineEmits: () => (name, value) => { if (name === 'reward') rewards.push(value) },
     getCurrentInstance: () => ({ proxy: {} }),
@@ -82,6 +89,7 @@ function adventure(options = {}) {
     clearInterval: (id) => clocks.delete(id),
     Date: class extends Date { static now() { return now } },
     uni: {
+      showModal: (value) => { modal = value },
       onWindowResize() {}, offWindowResize() {},
       getWindowInfo: () => ({ windowWidth: 390, windowHeight: 844 }),
       createSelectorQuery: () => query
@@ -94,14 +102,14 @@ function adventure(options = {}) {
     } },
     dive: {
       getState: async () => invoke('getState'),
-      start: async (params) => { lastIssued = invoke('start', params); return lastIssued },
+      start: async (params) => { lastIssued = invoke('start', params); return options.wrongVersion ? { ...lastIssued, rulesVersion: 1 } : lastIssued },
       finish: (params) => {
         finishes++
         return options.finish ? options.finish(() => invoke('finish', params)) : Promise.resolve(invoke('finish', params))
       }
     }
   })
-  vm.runInContext(`${source}\nglobalThis.api = { active, paused, busy, error, progress, settled, gameState, selectedLevel, canPlay, startLevel, finishRun, retryRequest, loadProgress, resume, pressFire, releaseFire, pressDirection, releaseDirection, beginDrag, dragSwim, endDrag, beginMouseDrag, mouseDrag, currentInput }`, context)
+  vm.runInContext(`${source}\nglobalThis.api = { active, paused, busy, error, progress, settled, gameState, selectedLevel, canPlay, startLevel, finishRun, retryRequest, loadProgress, resume, pressFire, releaseFire, pressDirection, releaseDirection, beginDrag, dragSwim, endDrag, beginMouseDrag, mouseDrag, currentInput, pressReturn, releaseReturn, backToLevels, askClose }`, context)
   const api = context.api
   return {
     ...api, db, rewards, session, clocks,
@@ -109,6 +117,8 @@ function adventure(options = {}) {
     state: () => invoke('getState'),
     starts: () => db.diveSequence,
     finishes: () => finishes,
+    modal: () => modal,
+    advance(count) { for (let i=0;i<count;i++) { now += DIVE_STEP_MS; for(const tick of [...clocks.values()]) tick() } },
     expire: () => { now = lastIssued.expiresAt + 1 },
     async ready() { this.lifecycle('Mounted'); await flush(); await api.startLevel(1); await flush() },
     complete() {
@@ -139,12 +149,12 @@ test('潜水结算回执按身份保存、深拷贝返回，读取不重复发�
   const now = startedAt + proof.ticks * DIVE_STEP_MS
   const result = dispatchDive(db, owner, 'finish', proof, { now })
   const receipt = result.state.lastSettlement
-  assert.deepEqual(receipt, { runId: run.id, levelId: 1, status: 'cleared', reward: result.reward })
+  assert.deepEqual(receipt, { runId: run.id, levelId: 1, rulesVersion: 2, collectedPearls: 3, status: 'cleared', reward: result.reward })
   receipt.reward.items.push('forged')
   assert.equal(dispatchDive(db, owner, 'getState', {}, { now }).lastSettlement.reward.items.length, 2)
   assert.equal(dispatchDive(db, 'user_demo_b', 'getState', {}, { now }).lastSettlement, null)
   assert.throws(() => dispatchDive(db, owner, 'finish', proof, { now }), { code: 'CONFLICT' })
-  assert.equal(dispatchDive(db, owner, 'getState', {}, { now }).pearls, 30)
+  assert.equal(dispatchDive(db, owner, 'getState', {}, { now }).pearls, 33)
 })
 
 for (const returnBeforeResponse of [false, true]) {
@@ -161,13 +171,13 @@ for (const returnBeforeResponse of [false, true]) {
     if (!returnBeforeResponse) page.lifecycle('Show')
     await flush()
     assert.equal(page.settled.value?.status, 'cleared')
-    assert.equal(page.settled.value.reward.pearls, 30)
+    assert.equal(page.settled.value.reward.pearls, 33)
     assert.equal(page.progress.value.unlockedLevel, 2)
     assert.equal(page.finishes(), 1)
     assert.equal(page.rewards.length, 1)
     await page.loadProgress()
     assert.equal(page.finishes(), 1)
-    assert.equal(page.state().pearls, 30)
+    assert.equal(page.state().pearls, 33)
     page.lifecycle('Unmounted')
   })
 }
@@ -179,9 +189,9 @@ test('结算已保存但网络结果不明，重试先读同局回执，不重�
   await flush()
   assert.equal(page.settled.value, null)
   await page.retryRequest()
-  assert.equal(page.settled.value?.reward?.pearls, 30)
+  assert.equal(page.settled.value?.reward?.pearls, 33)
   assert.equal(page.finishes(), 1)
-  assert.equal(page.state().pearls, 30)
+  assert.equal(page.state().pearls, 33)
   page.lifecycle('Unmounted')
 })
 
@@ -197,9 +207,9 @@ test('结算请求未到达服务，重试读取仍是同一有效局后才重�
   assert.equal(page.state().pearls, 0)
   assert.equal(page.state().lastSettlement, null)
   await page.retryRequest()
-  assert.equal(page.settled.value?.reward?.pearls, 30)
+  assert.equal(page.settled.value?.reward?.pearls, 33)
   assert.equal(page.finishes(), 2)
-  assert.equal(page.state().pearls, 30)
+  assert.equal(page.state().pearls, 33)
   page.lifecycle('Unmounted')
 })
 
@@ -220,11 +230,11 @@ test('回执已确认但衣柜读取失败，仍展示保存结果，重试只�
   await flush()
   page.lifecycle('Show')
   await flush()
-  assert.equal(page.settled.value?.reward?.pearls, 30)
+  assert.equal(page.settled.value?.reward?.pearls, 33)
   assert.match(page.error.value, /收获已保存/)
   assert.equal(page.rewards.length, 0)
   await page.retryRequest()
-  assert.equal(page.settled.value.wardrobe.pearls, 30)
+  assert.equal(page.settled.value.wardrobe.pearls, 33)
   assert.equal(page.rewards.length, 1)
   assert.equal(page.finishes(), 1)
   assert.equal(page.error.value, '')
@@ -234,8 +244,8 @@ test('回执已确认但衣柜读取失败，仍展示保存结果，重试只�
 test('失败结算同样留下失败回执，读取不推断通关、不发奖', () => {
   const db = createSeed()
   const run = dispatchDive(db, owner, 'start', { levelId: 1 }, { now: startedAt, random: () => 0.1 })
-  const result = dispatchDive(db, owner, 'finish', { runId: run.id, ticks: 800, trace: [] }, { now: startedAt + 40000 })
-  assert.deepEqual(result.state.lastSettlement, { runId: run.id, levelId: 1, status: 'failed', reward: null })
+  const result = dispatchDive(db, owner, 'finish', { runId: run.id, ticks: 1000, trace: [] }, { now: startedAt + 50000 })
+  assert.deepEqual(result.state.lastSettlement, { runId: run.id, levelId: 1, rulesVersion: 2, collectedPearls: 0, status: 'failed', reward: null })
   assert.equal(result.state.pearls, 0)
   assert.equal(result.state.unlockedLevel, 1)
   assert.equal(result.state.activeRun, null)
@@ -295,6 +305,122 @@ test('发射手指先按、游动手指后按时，坐标跟随游动identifier�
   assert.deepEqual({ ...page.currentInput() }, { dx: -1, dy: 1, fire: false })
   page.endDrag(event([], [touch(2, 5, 60)]))
   assert.deepEqual({ ...page.currentInput() }, { dx: 0, dy: 0, fire: false })
+  page.lifecycle('Unmounted')
+})
+
+test('真实组件捡取后长按返航入袋，其他手指松开不打断且不授首通', async () => {
+  const page = adventure()
+  await page.ready()
+  page.beginMouseDrag({ button: 0, clientX: 22, clientY: 54 })
+  page.advance(24)
+  page.endDrag()
+  assert.equal(page.gameState.value.pearlsCollected, 1)
+  const finger = touch(12, 110, 90)
+  page.pressReturn(event([finger], [finger]))
+  page.advance(39)
+  assert.equal(page.gameState.value.status, 'playing')
+  page.releaseReturn(event([finger], [touch(99, 20, 20)]))
+  assert.equal(page.currentInput().returning, true)
+  page.advance(1)
+  await flush()
+  assert.equal(page.gameState.value.status, 'returned')
+  assert.equal(page.settled.value.status, 'returned')
+  assert.equal(page.state().pearls, 1)
+  assert.equal(page.state().clearedLevels.length, 0)
+  assert.equal(page.finishes(), 1)
+  await page.loadProgress()
+  assert.equal(page.state().pearls, 1)
+  await page.startLevel(1)
+  await flush()
+  assert.equal(page.gameState.value.player.hearts, 3)
+  assert.equal(page.gameState.value.oxygenTicks, 800)
+  page.lifecycle('Unmounted')
+})
+
+test('潜水音效由实际气泡和拾取触发，成功音等结算确认且回执重读不重复播放', async () => {
+  const audio = audioSpy(), pending = deferred()
+  const page = adventure({ soundscape: audio, finish: (perform) => pending.promise.then(perform) })
+  await page.ready()
+  page.pressFire()
+  page.advance(1)
+  page.releaseFire()
+  assert.ok(audio.events.includes('bubble'))
+  page.beginMouseDrag({ button: 0, clientX: 22, clientY: 54 })
+  page.advance(24)
+  page.endDrag()
+  assert.ok(audio.events.includes('pearl'))
+  page.pressReturn()
+  page.advance(40)
+  assert.equal(page.gameState.value.status, 'returned')
+  assert.equal(audio.events.includes('return'), false)
+  pending.resolve()
+  await flush()
+  assert.equal(audio.events.filter((value) => value === 'return').length, 1)
+  await page.loadProgress()
+  assert.equal(audio.events.filter((value) => value === 'return').length, 1)
+  page.backToLevels()
+  assert.equal(audio.events.at(-1), 'dive-menu')
+  page.lifecycle('Unmounted')
+})
+
+test('返航按键松开或切后台停止引导，暂停不回血不发奖', async () => {
+  const page = adventure()
+  await page.ready()
+  page.pressReturn()
+  page.advance(20)
+  assert.equal(page.gameState.value.returningTicks, 20)
+  page.releaseReturn()
+  page.advance(1)
+  assert.equal(page.gameState.value.returningTicks, 0)
+  page.pressReturn()
+  page.advance(10)
+  const tick = page.gameState.value.tick
+  page.lifecycle('Hide')
+  page.advance(100)
+  assert.equal(page.gameState.value.tick, tick)
+  assert.equal(page.currentInput().returning, undefined)
+  assert.equal(page.state().pearls, 0)
+  assert.equal(page.finishes(), 0)
+  page.lifecycle('Show')
+  await flush()
+  page.resume()
+  page.pressReturn()
+  page.advance(1)
+  assert.equal(page.gameState.value.returningTicks, 0, '暂停期间放开按钮，不能在恢复前重新按住而续上旧引导')
+  page.advance(39)
+  assert.equal(page.gameState.value.status, 'playing')
+  page.advance(1)
+  await flush()
+  assert.equal(page.gameState.value.status, 'returned')
+  page.lifecycle('Unmounted')
+})
+
+test('选关放弃需确认，取消保留本局，确认不保存未返航收获', async () => {
+  const page = adventure()
+  await page.ready()
+  page.beginMouseDrag({ button: 0, clientX: 22, clientY: 54 })
+  page.advance(24)
+  page.endDrag()
+  page.backToLevels()
+  assert.equal(page.gameState.value.pearlsCollected, 1)
+  assert.match(page.modal().content, /不保存本局收获/)
+  page.modal().success({ confirm: false })
+  assert.equal(page.clocks.size, 1)
+  page.backToLevels()
+  page.modal().success({ confirm: true })
+  await flush()
+  assert.equal(page.gameState.value, null)
+  assert.equal(page.state().pearls, 0)
+  assert.equal(page.finishes(), 0)
+  page.lifecycle('Unmounted')
+})
+
+test('服务尚未更新返航规则版本时明确拒绝开局，不按新规则伪装旧局', async () => {
+  const page = adventure({ wrongVersion: true })
+  await page.ready()
+  assert.equal(page.gameState.value, null)
+  assert.match(page.error.value, /版本尚未更新/)
+  assert.equal(page.clocks.size, 0)
   page.lifecycle('Unmounted')
 })
 

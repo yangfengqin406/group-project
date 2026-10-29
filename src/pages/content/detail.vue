@@ -3,9 +3,9 @@
     <VillageHeader :kind="type" :title="contentNames[type]" subtitle="读一读这张小纸条，和发布的同学聊聊。" compact />
     <DemoNotice />
     <view v-if="error" class="error">{{ error }}</view>
-    <view v-if="item" class="panel">
-      <view class="row">
-        <text class="tag">{{ contentNames[type] }} · {{ statusLabel(item.status) }}</text>
+    <view v-if="item" class="panel detail-main">
+      <view class="row detail-heading">
+        <text class="tag">{{ contentNames[type] }} · {{ type === 'help' ? helpProgressLabel(item) : statusLabel(item.status) }}</text>
         <text v-if="type === 'lost_found'" class="tag">
           {{ lostKindLabel(item.lostKind) }} · {{ lostCategoryLabel(item.category) }}
         </text>
@@ -18,6 +18,7 @@
         {{ item.owner?.nickname }} 的主页 ↗
       </view>
       <view class="muted">{{ item.location }} · {{ item.campusName }}</view>
+      <view v-if="type === 'help' && helpBrief" class="muted">{{ helpBrief }}</view>
       <view v-if="type === 'plan'" class="muted">
         {{ formatTime(item.startAt) }} ～ {{ formatTime(item.endAt) }} ·
         {{ item.memberIds.length }}/{{ item.capacity }} 人
@@ -48,9 +49,9 @@
       <view v-else-if="type === 'market' && item.marketType === 'sell'" class="muted">
         发布者未附参考估价
       </view>
-      <view class="body detail-body">{{ item.body }}</view>
-      <view class="actions">
-        <image
+      <view v-if="item.body" class="body detail-body">{{ item.body }}</view>
+      <view v-if="item.images?.length" class="actions">
+        <ServiceImage
           v-for="(image, index) in item.images"
           :key="index"
           :src="image"
@@ -59,6 +60,7 @@
           @tap="preview(image)"
         />
       </view>
+      <HelpCooperation v-if="type === 'help'" :help="item" :refresh-key="helpRevision" :active="detailActive" @change="updateHelp" />
       <view v-if="isOwn && type === 'market' && item.marketType === 'buy'" class="panel">
         <view class="section-title">为你匹配的闲置</view>
         <view v-if="matchesLoading" class="muted">正在匹配…</view>
@@ -80,8 +82,32 @@
           </view>
         </view>
       </view>
-      <view class="actions">
-        <button v-if="!isOwn" class="primary" :disabled="busy" @tap="contact">
+      <view v-if="config.apiMode === 'http' && type === 'market' && item.marketType === 'sell'" class="panel">
+        <view class="row">
+          <view class="section-title">交接预约</view>
+          <button class="secondary small" :disabled="reservationsLoading || busy" @tap="loadReservations()">刷新</button>
+        </view>
+        <view v-if="reservationsError" class="error">{{ reservationsError }}</view>
+        <view v-if="reservationsLoading" class="muted">正在读取预约…</view>
+        <view v-else-if="!reservations.length && !reservationsError" class="muted">{{ isOwn ? '还没有同学预约交接。' : '预约后可在这里查看发布者的回应。' }}</view>
+        <view v-for="r in reservations" :key="r.id" class="match-item">
+          <view class="row">
+            <text>{{ isOwn ? r.buyer?.nickname || '同学' : r.seller?.nickname || '发布者' }}</text>
+            <text class="tag">{{ reservationLabel(r.status) }}</text>
+          </view>
+          <view class="muted">{{ formatTime(r.createdAt) }}</view>
+          <view class="actions">
+            <template v-if="isOwn && r.status === 'pending'">
+              <button class="primary" :disabled="busy" @tap="respondReservation(r, true)">接受预约</button>
+              <button class="secondary" :disabled="busy" @tap="respondReservation(r, false)">拒绝预约</button>
+            </template>
+            <button v-if="r.status === 'accepted'" class="primary" :disabled="busy" @tap="completeReservation(r)">确认交接完成</button>
+          </view>
+        </view>
+        <button v-if="reservationsCursor" class="secondary" :disabled="reservationsLoading || busy" @tap="loadReservations({ reset: false })">更多预约</button>
+      </view>
+      <view class="actions detail-actions">
+        <button v-if="!isOwn" :class="type === 'help' || (type === 'market' && item.marketType === 'sell' && item.status === 'active') ? 'secondary' : 'primary'" :disabled="busy" @tap="contact">
           联系发布者
         </button>
         <button
@@ -101,7 +127,7 @@
           编辑计划 / 调整人数
         </button>
         <button
-          v-if="!isOwn && type === 'market' && item.status === 'active'"
+          v-if="!isOwn && type === 'market' && item.marketType === 'sell' && item.status === 'active'"
           class="primary"
           :disabled="busy"
           @tap="reserve"
@@ -121,7 +147,7 @@
           标记交易完成
         </button>
         <button
-          v-if="isOwn && (type === 'plan' ? canManagePlan : ['open', 'active', 'full'].includes(item.status))"
+          v-if="isOwn && (type === 'plan' ? canManagePlan : ['open', 'active', 'full'].includes(item.status)) && !(type === 'help' && item.selectedApplicationId)"
           class="secondary"
           :disabled="busy"
           @tap="finish"
@@ -131,7 +157,7 @@
               ? '确认已归还'
               : type === 'market'
                 ? '下架'
-                : '标记完成'
+                : type === 'help' ? '已自行解决' : '标记完成'
           }}
         </button>
         <button
@@ -189,6 +215,8 @@
   </view>
 </template>
 <script setup>
+import ServiceImage from '../../components/ServiceImage.vue'
+import HelpCooperation from './components/HelpCooperation.vue'
 import { ref, computed, watch } from 'vue'
 import { onLoad, onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import DemoNotice from '../../components/DemoNotice.vue'
@@ -203,6 +231,8 @@ import {
   formatTime
 } from '../../utils/routes.js'
 import { errorText } from '../../utils/errors.js'
+import { config } from '../../config/index.js'
+import { formatHelpBrief, helpProgressLabel } from '../../domain/help/brief.js'
 const type = ref('plan'),
   id = ref(''),
   item = ref(null),
@@ -218,8 +248,13 @@ const type = ref('plan'),
   matchesLoading = ref(false),
   matchesCursor = ref(null),
   matchesError = ref(''),
-  planRefreshing = ref(false)
+  planRefreshing = ref(false),
+  reservations = ref([]),
+  reservationsCursor = ref(null),
+  reservationsLoading = ref(false),
+  reservationsError = ref('')
 const isOwn = computed(() => item.value?.ownerId === session.user?.id)
+const helpBrief = computed(() => type.value === 'help' && item.value ? formatHelpBrief(item.value) : '')
 const canManagePlan = computed(
   () => isOwn.value && type.value === 'plan' &&
     !planRefreshing.value && ['open', 'full'].includes(item.value?.status)
@@ -227,7 +262,10 @@ const canManagePlan = computed(
 let loadVersion = 0
 let commentsVersion = 0
 let matchesVersion = 0
+let reservationsVersion = 0
 let visible = false
+const helpRevision = ref(0), detailActive = ref(false)
+function updateHelp(next) { if (type.value === 'help' && next?.id === id.value) item.value = next }
 const service = () =>
   api[type.value === 'lost_found' ? 'lostFound' : type.value]
 onLoad((options) => {
@@ -247,11 +285,13 @@ async function load({ preserveError = false } = {}) {
   matchesCursor.value = null
   matchesError.value = ''
   matchesLoading.value = false
+  resetReservations()
   if (contentType === 'plan') planRefreshing.value = true
   try {
     const result = await service().get({ id: contentId })
     if (!current()) return
     item.value = result
+    if (contentType === 'help') helpRevision.value++
     selected.value = false
     let cursor = null
     do {
@@ -265,12 +305,44 @@ async function load({ preserveError = false } = {}) {
     if (type.value === 'lost_found') await loadComments()
     if (isOwn.value && type.value === 'market' && item.value.marketType === 'buy')
       await loadMatches()
+    if (config.apiMode === 'http' && type.value === 'market' && item.value.marketType === 'sell')
+      await loadReservations()
   } catch (e) {
     if (!current()) return
     if (contentType === 'plan') item.value = null
     if (!preserveError || !error.value) error.value = errorText(e)
   } finally {
     if (current()) planRefreshing.value = false
+  }
+}
+function resetReservations() {
+  ++reservationsVersion
+  reservations.value = []
+  reservationsCursor.value = null
+  reservationsLoading.value = false
+  reservationsError.value = ''
+}
+async function loadReservations({ reset = true } = {}) {
+  if (config.apiMode !== 'http' || type.value !== 'market' || item.value?.marketType !== 'sell' ||
+    (!reset && (reservationsLoading.value || !reservationsCursor.value))) return
+  const version = ++reservationsVersion, pageVersion = loadVersion
+  const userId = session.user?.id, contentId = id.value
+  const current = () => visible && version === reservationsVersion && pageVersion === loadVersion &&
+    userId === session.user?.id && contentId === id.value && type.value === 'market'
+  const cursor = reset ? null : reservationsCursor.value
+  reservationsLoading.value = true
+  reservationsError.value = ''
+  if (reset) { reservations.value = []; reservationsCursor.value = null }
+  try {
+    const result = await api.market.getCandidates({ id: contentId, cursor, pageSize: 20 })
+    if (!current()) return
+    const next = reset ? result.items : [...reservations.value, ...result.items]
+    reservations.value = next.filter((r, index) => next.findIndex((other) => other.id === r.id) === index)
+    reservationsCursor.value = result.nextCursor
+  } catch (e) {
+    if (current()) reservationsError.value = errorText(e)
+  } finally {
+    if (current()) reservationsLoading.value = false
   }
 }
 async function loadMatches({ reset = true } = {}) {
@@ -361,6 +433,7 @@ watch(() => session.user?.id, () => {
   matchesCursor.value = null
   matchesError.value = ''
   matchesLoading.value = false
+  resetReservations()
   item.value = null
   comments.value = []
   commentsCursor.value = null
@@ -373,22 +446,27 @@ watch(() => session.user?.id, () => {
 })
 onShow(() => {
   visible = true
+  detailActive.value = true
   load()
 })
 onHide(() => {
   visible = false
+  detailActive.value = false
   ++loadVersion
   ++commentsVersion
   ++matchesVersion
+  resetReservations()
   matchesLoading.value = false
   commentsLoading.value = false
   planRefreshing.value = false
 })
 onUnload(() => {
   visible = false
+  detailActive.value = false
   ++loadVersion
   ++commentsVersion
   ++matchesVersion
+  resetReservations()
 })
 async function run(fn) {
   if (busy.value) return
@@ -405,7 +483,7 @@ async function run(fn) {
   } catch (e) {
     if (!current()) return
     error.value = errorText(e)
-    if (type.value === 'plan' && ['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
+    if ((type.value === 'plan' || (config.apiMode === 'http' && type.value === 'market')) && ['CONFLICT', 'FORBIDDEN', 'NOT_FOUND'].includes(e?.code))
       await load({ preserveError: true })
   } finally {
     busy.value = false
@@ -441,6 +519,26 @@ function reserve() {
     if (!current()) return
     uni.showToast({ title: '已提交预约', icon: 'success' })
     await load()
+  })
+}
+function respondReservation(reservation, accept) {
+  if (!visible || config.apiMode !== 'http' || !isOwn.value || reservation.status !== 'pending') return
+  return run(async (current) => {
+    await api.reservation.respond({ reservationId: reservation.id, accept })
+    if (current()) await load()
+  })
+}
+function completeReservation(reservation) {
+  if (!visible || config.apiMode !== 'http' || reservation.status !== 'accepted' || busy.value) return
+  const same = confirmationCurrent()
+  uni.showModal({
+    title: '确认交接完成', content: '请确认已完成物品与款项交接。确认后商品将标记已完成，不能再次预约。',
+    success: (result) => {
+      if (result.confirm && same()) run(async (current) => {
+        await api.reservation.complete({ reservationId: reservation.id })
+        if (current()) await load()
+      })
+    }
   })
 }
 function confirmationCurrent() {
@@ -502,8 +600,10 @@ function finish() {
   }
   const same = confirmationCurrent()
   uni.showModal({
-    title: '确认操作',
-    content: '确认更新这条内容的状态吗？',
+    title: type.value === 'lost_found' ? '确认失物已归还？' : '确认操作',
+    content: type.value === 'lost_found'
+      ? '请确认已找到物品或交还失主。完成后会显示“已完成”，不能重新改为处理中。'
+      : type.value === 'help' ? '确认问题已经自行解决？这会结束求助；双方互助完成奖励需通过选定帮助者并共同确认获得。' : '确认更新这条内容的状态吗？',
     success: (r) => {
       if (r.confirm && same())
         run(async (current) => {
@@ -514,7 +614,7 @@ function finish() {
                 ? 'close'
                 : 'complete'
           const updated = await service()[action]({ id: id.value })
-          if (current()) item.value = updated
+          if (current()) { item.value = updated; if (type.value === 'help') helpRevision.value++ }
         })
     }
   })
@@ -581,6 +681,7 @@ const statusLabels = {
 const lostCategories = { card: '卡片', key: '钥匙', misc: '杂物' }
 const lostKinds = { lost: '丢失', found: '拾获' }
 const statusLabel = (status) => statusLabels[status] || status
+const reservationLabel = (status) => ({ pending: '待回应', accepted: '已接受，待交接', rejected: '已拒绝', completed: '交接完成', cancelled: '已取消' })[status] || status
 const lostCategoryLabel = (category) => lostCategories[category] || category
 const lostKindLabel = (kind) => lostKinds[kind] || '失物'
 </script>
@@ -589,6 +690,8 @@ const lostKindLabel = (kind) => lostKinds[kind] || '失物'
 .detail-title { margin-top: 14px; }
 .detail-owner { margin-top: 12px; }
 .detail-body { margin-top: 20px; }
+.detail-actions { padding-top: 16px; margin-top: 16px; border-top: 1px dashed #ddd1b3; }
+.detail-actions .secondary { background: transparent; border-color: transparent; padding-left: 8px; padding-right: 8px; }
 .comment-title {
   margin-top: 0;
 }

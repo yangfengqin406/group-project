@@ -1,6 +1,24 @@
 # 数据模型与状态
 
-这是后端实现建议，尚未创建任何真实数据库集合。演示的单个本机对象不能直接用作生产数据库架构。
+## 2026-10-28 求助说明与本人互助投影
+
+help内容兼容新增preferredTime:string默认空、estimatedMinutes:null|整数1～480、meetingMode:flexible|online|offline。未提供字段保留旧值；旧记录读取附默认值，不补奖或改余额。helpProgress由原帖终态和当前selectedApplicationId记录推导，作为公开摘要，不存客户端指定进度。
+
+help.listMine是鉴权查询投影，不新增重复状态集合：作者读本人发帖，帮助者按同帖最新申请去重；todo仅待选人或accepted且本人尚未确认，确认等待对方/终态不列。分页按updatedAt/helpId排序，真实游标HMAC绑定账号与scope，mock使用独立绑定receipt。原帖私有/删除/作者失效，对申请人只返回help:null及本人状态的不可访问占位，移除作者资料和双人确认时间。公开摘要不包含此私有投影。
+
+## 2026-10-27 贡献账与帮助申请
+
+`campus.rewardEvents` 保存每个受益账号与业务事件唯一的贡献决定：id/eventId/userId/kind/sourceType/sourceId/dayKey/createdAt/delta/reason，内部规范文本键和双方键不返回页面。发布、帮助者完成、作者完成分别为 publish/help_helper/help_author；零奖励也保存，不能跨日重领。余额仍只在 `campus.leisure.state.wardrobes[userId].pearls`，业务、事件与余额在原 SQLite 事务一起写入。服务端北京时间日限额跨模块/角色共享，详情见 interfaces。
+
+`campus.helpApplications` 保存 id/helpId/ownerId/helperId/status、ownerConfirmedAt/helperConfirmedAt 及创建/选择/完成/取消时间。pending→accepted→completed，未完成可 cancelled；SQLite部分唯一索引限制同一人同帖一份有效申请和每帖一位被选定帮助者。help.selectedApplicationId 仅引用当前协作；只有作者及申请本人可读私有详情。注销撤销未完成关系、去除本人的奖励与钱包，保留另一方已发生的奖励历史。演示只在 src/mock 中保存对应结构，不导入真实数据库。
+
+## 2026-10-27 真实玩法持久化
+
+`campus.leisure` 以当前账号ID为行主键，保存 `{id,version:1,state}`，state包含该账号的鱼册/有效抛竿、七槽衣柜/余额/通关、有效潜水局和最近结算回执。读取/修改在SQLite事务中完成，不接收客户端userId、余额或结算结果。服务端局号使用UUID；回放消费与奖励一次提交，失败回滚。原有 `campus.pets` 同样保存校验后的原创像素/PNG外观；独立展示数据不混入正式目录。下文mock迁移字段仍只描述演示存档。
+
+2026-10-25 本机真实服务新增：`campus.users` 保存本地账号名、加盐 scrypt 摘要和仅服务端可信角色；`campus.sessions` 仅保存随机令牌的 SHA-256 摘要、到期和撤销状态；RPC 资料白名单不返回摘要、角色或密码。`campus.uploads` 记录真实文件路径、MIME、字节数、所属账号、用途与确认状态，文件放忽略目录。A/B 内容和 C 消息共用 `c_records` 与同一事务；唯一索引保证账号、令牌、事件唯一及预约防超卖。独立账号未核验学籍。见[本机接入](local-campus-backend.md)。
+
+校园业务部分是后端实现建议，尚未创建真实数据库集合；演示的单个本机对象不能直接用作生产数据库架构。文末另记独立斗地主服务的当前内存模型，它不替代校园用户或业务数据库。
 
 | 实体 | 核心字段 | 关系 / 权限 |
 | --- | --- | --- |
@@ -10,13 +28,13 @@
 | FishingState | userId、catchCount、fishBook、collection、equipped、activeCast | 当前身份钓获与抛竿；collection/equipped 保留旧三种装饰的兼容视图，拥有物与多槽穿戴以 WardrobeState 为准 |
 | FishingCast | id、status、biteAt、escapeAt、meterStartAt?、meterPeriodMs?、meterZone?、landDeadlineAt? | 每身份只有一个有效抛竿，服务侧时钟判定；新抛竿作废旧编号，结果消费编号 |
 | WardrobeState | userId、owned、equipped、pearls、clearedLevels | 当前身份独立衣柜与奖励进度；catalog 为公共只读目录，身份、余额和发奖由服务决定，不加入 PetAppearance |
-| DiveRun | id、userId、levelId、seed、startedAt、expiresAt | 每身份一个有效关卡编号，按种子回放输入核验后一次性结算；新开局作废旧编号 |
-| DiveSettlement | userId、runId、levelId、status、reward | 每身份最近一局服务核验后的只读回执；getState仅返回当前身份lastSettlement。只按本局编号恢复结果，不依赖余额推断；重复finish仍冲突，不再次发奖 |
+| DiveRun | id、userId、levelId、rulesVersion、seed、startedAt、expiresAt | 当前rulesVersion=2，每身份一个有效编号；旧版本失效，新局作废旧编号，最多60秒模拟、360秒活动有效期 |
+| DiveSettlement | userId、runId、levelId、rulesVersion、status、collectedPearls、reward | status为cleared/returned/failed，回执按账号/编号/关卡/版本恢复；只读、一次结算，余额不用于推断本局结果 |
 | Plan | id、ownerId、category、startAt、endAt、capacity、status | 关联作者、成员、邀请；检查校区、日期、时间和容量 |
 | Membership | planId、userId、status | 正式数据库建议独立记录，planId+userId 唯一 |
 | Invitation | id、senderId、recipientId、sourcePlanId、targetPlanId、status | 来源为被邀请人的单人计划，目标为邀请人的计划 |
 | MarketPost | id、ownerId、marketType(sell/buy)、title、body、category、imageIds、priceCents(闲置)、condition、handoverCampus、budgetCents(求购)、keywords、appraisal?、status | 闲置/求购两类；图片存 imageIds，读时由 upload 服务解析为 images；appraisal仅闲置参考快照，区间/依据/固定参考声明校验见interfaces.md，不是鉴定凭证；改成求购删除旧快照。仅active可预约，已完成不可改/约 |
-| Reservation | id、contentId、buyerId、sellerId、status、createdAt | 本机二手交接预约；同一商品只允许一条pending，状态冲突返回CONFLICT；后续respond/complete仍待实现 |
+| Reservation | id、contentId、buyerId、sellerId、status、createdAt | 本机真实二手交接预约；同一商品仅一条pending/accepted，卖家接受/拒绝后双方可完成；重复操作幂等，状态冲突CONFLICT |
 | LostFoundPost | id、ownerId、lostKind、category、images、location、status | lostKind 为丢失/拾获；category 为卡片/钥匙/杂物；1～3 张图片；作者确认完成 |
 | HelpPost | id、ownerId、category、body、status | category 首版为所需技能；后续匹配 User.skillTags |
 | Conversation | id、participantIds、contentType、contentId、createdAt | 同一内容与参与者组合去重；仅参与者访问；按来源筛选后，以最新Message.createdAt（无消息取会话createdAt）倒序分页，同时间稳定排序 |
@@ -32,7 +50,7 @@
 
 每个 ArtFrame 为 32×32 的像素数组（1024 项，透明 null 或 `pet-art.js` 允许的 16 色）或 PNG data URI。正面须非空，背面允许 null；PNG 每张不超过 256 KiB、宽高各不超过 512 像素，并校验真实格式和可解码性。保存、读取与编辑草稿之间深度复制，避免像素数组或正背面对象互相污染。
 
-这些原创数据只用于本机演示保存，文件导入不代表公共上传。真实预设同步需要后端实现 `pet.get/save`；真实原创保存当前明确返回 NOT_IMPLEMENTED，公共上传和后端存储接入后再开放。
+预设与原创外观均已接入真实 `pet.get/save`，按当前账号保存在SQLite并沿用同一校验；PNG画稿内嵌导入不等于公开图片上传。默认演示存档仍由mock管理。
 
 钓鱼演示状态由 `src/mock/` 管理的 `fishingStates[userId]` 保存；旧存档没有该字段时读取空鱼册、无有效抛竿。旧接口的 `collection` 与单件 `equipped` 保留兼容，分别投影衣柜中 lily-pad（小荷叶）、reed-bow（芦苇结）、bubble-star（水泡星）的拥有数量与实际佩戴；不能把兼容投影再次写回旧计数而重复迁移。新钓获仍进入同一衣柜。
 
@@ -42,17 +60,19 @@
 
 Cast 仅持有 waiting/hooked 状态：抛竿后约 1.4～2.5 秒咬钩，咬钩窗口持续 2.4 秒；有效提竿后 150ms 开始标尺，1600ms 完成左右往返，绿色区域为 [0.28,0.78]，提竿后 10 秒内收线。服务以自身时钟判定，成功计入鱼册、首次赠小荷叶，后续成功按 35% 概率掉落随机装饰并累加。caught/escaped 是操作结果，都会清空 activeCast；重复、过期或他人编号不能再次发奖，客户端不得传入成功、鱼种、奖励或身份。
 
-潜水活动编号由 `diveRuns[userId]` 保存；`dive.getState` 的通关列表和珍珠来自衣柜，解锁关卡由连续通关进度推导。`start` 只接受已解锁的 1～3 关，新编号替换旧编号；`finish` 只接受 `{runId,ticks,trace}`，输入改变事件为 `{tick,dx,dy,fire}`。工具按 seed 和 50ms 固定步长重放方向及泡泡操作；限定输入范围、记录长度和实际经过时间，拒绝旧编号、他人编号及客户端奖励声明，结果为 cleared 或 failed，完成后消费编号。本地数据和回放可供演示校验，不能作为生产防作弊方案。
+潜水活动编号由`diveRuns[userId]`保存；`dive.getState`的通关及余额来自衣柜，解锁由连续通关进度推导。当前Run带`rulesVersion:2`，旧版本失效重开；`start`只接受已解锁的1～3关，新编号替换旧编号，expiresAt为startedAt后360秒。`finish`仅收`{runId,ticks,trace}`，输入事件为`{tick,dx,dy,fire,returning?}`；省略returning按false兼容。按seed与50ms固定步长回放，最多1200步/1200条输入，检查经过时间、严格递增事件、身份与编号，不接受客户端结果或金额。终局为cleared/returned/failed，消费编号、入袋与回执一次完成；本机回放不等同生产防作弊。
 
-三关均为三颗爱心，氧气分别为 40/42/45 秒，目标为收齐 3/4/5 颗关卡珍珠并到达出口。场内收集数是通关条件，不直接写入衣柜余额；只有服务确认通关后按固定规则发奖，失败不发奖、不扣现有装扮。
+三关均为3爱心、40/42/45秒氧气、3/4/5颗目标珍珠。缺氧归零先扣1心，之后每100步扣1心；同一步碰撞与缺氧最多扣1心。引擎快照的returningTicks为0～40，持续静止返航40步且未受伤才returned，移动、松开、受伤打断；oxygenDamageTicks为0～100，缺氧后表示距下一次扣心的步数。暂停不推进模拟、不恢复血氧，新开局恢复满状态。
 
-| 关卡 | 首通装扮 | 首通珍珠 | 重玩通关珍珠 |
+场内每颗珍珠形成1枚未入袋收获；returned只把已拾数量加到衣柜，不记通关、不发套装。cleared带回收获并发下表奖金，reward.pearls为本次实际新增总额；首通合计33/49/65，重游11/16/23。failed的reward为null，只丢本局收获，不扣已有余额、装扮或通关；collectedPearls仍记录实际拾取数，以解释丢失或带回数量。返航0收获的reward为`{firstClear:false,items:[],pearls:0}`。未结算的采集计数不能即时当成钱包余额。
+
+| 关卡 | 首通装扮 | 首通额外奖金 | 重游额外奖金 |
 | --- | --- | --- | --- |
 | 1 浅湾拾光 | 水手衫、贝壳鞋 | 30 | 8 |
 | 2 珊瑚小径 | 云朵发髻、贝壳挎包 | 45 | 12 |
 | 3 星光海沟 | 贝壳皇冠、星星魔杖、珍珠徽章 | 60 | 18 |
 
-首通把关卡写入 `clearedLevels` 并发固定装扮；后续有效通关只发重玩珍珠，不能重复领套装。同一 run 不能重复结算，所有衣柜、鱼册和潜水编号均按身份隔离且返回独立副本；不涉及交易、付费或真实货币。真实服务仍需独立后端存储、认证和事务。
+真正首通把关卡写入`clearedLevels`并发固定装扮；返航不消耗首通机会，后续通关不能重复领套装。`diveSettlements[userId]`保存最近一次只读回执的runId/levelId/rulesVersion/status/collectedPearls/reward，重读不重复入袋，重复finish仍冲突。衣柜、鱼册及潜水按身份隔离并深拷贝；不涉及交易、付费或真实货币，真实业务仍需后端存储、认证与事务。
 
 公告通过 `bulletin.list` 只读分页。演示校园活动使用 `kind: 'campus-activity'`，相对当前北京时间生成未来 1/2/3 天的三条活动，过滤已结束项后分页；包含起止时间、地点、组织方和参与方式，明确为虚构内容，不写入报名、event 或私信状态。
 
@@ -61,3 +81,17 @@ Cast 仅持有 waiting/hooked 状态：抛竿后约 1.4～2.5 秒咬钩，咬钩
 2026-10-22 A状态规则补齐：计划 `open/full` 由容量和成员数计算，到结束时间转 `expired`；`closed/completed/expired` 不因编辑容量恢复。待处理邀请不再满足公开性、来源单人、时间重叠、容量等推荐条件时永久转 `expired`。沿用既有状态，无新增字段；真实存储的事务校验仍待接入，详见interfaces.md。
 
 真实后端的索引建议：校区+类别+状态、作者+时间、会话参与者、conversationId+消息时间、recipientId+通知时间。把容量校验、来源计划关闭和成员写入放在一次事务中；不要让客户端控制状态流转。
+
+## 三人斗地主：独立服务内存模型
+
+`server/landlord/service.mjs`使用独立访客令牌、players、sessions、queue及rooms，不写入校园User、mock存档或衣柜钱包。客户端凭证按服务地址隔离保存；服务从Bearer令牌确定playerId，昵称不是校园账号认证。
+
+| 对象 | 核心字段与约束 |
+| --- | --- |
+| Guest | id、nickname、lastSeen、roomId、operations；45秒内有有效请求才算在线，无牌桌闲置6小时清理 |
+| Session | 随机token→playerId映射；只返回本人，不返回其他访客令牌 |
+| Queue | 去重的在线playerId队列，三人原子匹配；离线、已进桌或主动取消移出，不用机器人补位 |
+| Room | id、playerIds、hands、bottomCards、phase、turn、revision、deadline、landlordId、bids、lastPlay、auto、winnerTeam、winnerIds及时间；服务持有所有未出手牌，客户端只收到本人hand和对手公开张数/动作 |
+| Operation receipt | 每访客最近256次成功写操作的operationId、规范化参数指纹和深拷贝结果；同编号不同参数冲突，超出窗口不承诺长期重放 |
+
+phase为bidding/playing/finished，正常回合20秒，超时/离线明确切为托管，可回来接手。结束桌10分钟后清理，活动旧局最长30分钟后清理且不编造胜负；服务重启即丢失全部会话、排队、牌桌及操作回执。该内存模型不提供数据库持久化、多实例事务或生产校园权限，不与珍珠/装扮结算关联。

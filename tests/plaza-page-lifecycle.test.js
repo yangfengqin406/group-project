@@ -24,6 +24,7 @@ function component(path, names, extra = {}) {
     exec() {}
   }
   const context = vm.createContext({
+    soundscape: { state: {}, unlock() {}, setVisible() {}, setScene() {}, setPaused() {}, effect() {} },
     ref,
     computed,
     nextTick: (callback) => Promise.resolve().then(() => callback?.()),
@@ -100,6 +101,7 @@ test('潜水切后台停止时钟，返回保持暂停，明确继续后沿本�
     createDiveGame,
     DIVE_LEVELS,
     DIVE_STEP_MS,
+    DIVE_RULES_VERSION: 2,
     WARDROBE_ITEMS,
     setInterval(callback) {
       clocks.set(++clockId, callback)
@@ -110,7 +112,7 @@ test('潜水切后台停止时钟，返回保持暂停，明确继续后沿本�
       getState: async () => ({ unlockedLevel: 1, clearedLevels: [], activeRun: retainedRun }),
       start: async () => {
         starts++
-        retainedRun = { id: 'retained-run', levelId: 1, seed: 23, expiresAt: Date.now() + 600000 }
+        retainedRun = { id: 'retained-run', levelId: 1, rulesVersion: 2, seed: 23, expiresAt: Date.now() + 600000 }
         return retainedRun
       },
       finish: async () => { finishes++ }

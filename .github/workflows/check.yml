@@ -17,4 +17,13 @@ jobs:
       - run: npm test
       - run: npm run build:h5
       - run: npm run build:mp-weixin
+      - run: npm run build:app
+        env:
+          CAMPUS_APP_ORIGIN: https://example.invalid
+      - run: npm run check:mp-styles
+      - run: npm run check:mp-quality
       - run: node scripts/check-weixin-package.mjs
+      - run: node scripts/build-release.mjs
+      - run: node scripts/check-weixin-styles.mjs dist/release/mp-weixin
+      - run: node scripts/check-weixin-quality.mjs dist/release/mp-weixin
+      - run: node scripts/check-weixin-package.mjs dist/release/mp-weixin

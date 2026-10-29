@@ -1,23 +1,23 @@
 <template>
   <view
-    class="plaza-bean"
+    class="plaza-bean wx-v"
     :class="['skin-' + skin, { 'is-walking': walking }]"
     :style="{ transform: 'scaleX(' + facing + ')' }"
     aria-hidden="true"
   >
-    <view class="bean-shadow"></view>
-    <view class="bean-foot foot-left"></view>
-    <view class="bean-foot foot-right"></view>
-    <view class="bean-body">
-      <view class="bean-eye eye-left"></view>
-      <view class="bean-eye eye-right"></view>
-      <view class="bean-blush blush-left"></view>
-      <view class="bean-blush blush-right"></view>
-      <view class="bean-mouth"></view>
+    <view class="bean-shadow wx-v"></view>
+    <view class="bean-foot foot-left wx-v"></view>
+    <view class="bean-foot foot-right wx-v"></view>
+    <view class="bean-body wx-v">
+      <view class="bean-eye eye-left wx-v"></view>
+      <view class="bean-eye eye-right wx-v"></view>
+      <view class="bean-blush blush-left wx-v"></view>
+      <view class="bean-blush blush-right wx-v"></view>
+      <view class="bean-mouth wx-v"></view>
     </view>
-    <view class="bean-arm arm-left"></view>
-    <view class="bean-arm arm-right"></view>
-    <view class="bean-accessory"></view>
+    <view class="bean-arm arm-left wx-v"></view>
+    <view class="bean-arm arm-right wx-v"></view>
+    <view class="bean-accessory wx-v"></view>
   </view>
 </template>
 <script setup>
@@ -234,7 +234,7 @@ defineProps({
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .plaza-bean view {
+  .plaza-bean .wx-v {
     animation: none !important;
   }
 }

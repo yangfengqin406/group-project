@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-26",
+  "baselineMain": "0f4215233d196e168e1c3e882e7f14555b158dd3",
+  "productCodeChanged": false,
+  "sourceSha256": {
+    "src/components/plaza/PlazaScene.vue": "c925be263266aec21cd1fa42702d5d19bfb12a52979b5e166f7a94631e8a0edf",
+    "src/utils/plaza-navigation.js": "83f4bf6be4c6882faa1c5fb899caa88c094d404dfab5b77d9bda7950b677eee3",
+    "src/pages/content/publish.vue": "bfd68f5e6ed9888941b281f2376eb453bad019980781f2f2f3ed4277855e82ae"
+  },
+  "navigationModel": {
+    "scope": "Node22调用现有逻辑，不是微信逐点击trace",
+    "logicWalkSeconds": { "market": 1.551, "partner": 2.145, "lost": 2.376, "home": 2.706 },
+    "planning1000Calls": { "medianMs": 0.0839, "p95Ms": 0.1981, "maxMs": 1.7764 }
+  },
+  "isolatedH5": {
+    "environment": "Edge headless, mock, 390x844, own profile",
+    "normal": { "plazaVisibleMs": 161.72, "marketHouseToListMs": 1663.23, "publishToFormMs": 45.33, "inputEchoMsRange": [2.27, 3.70], "idle3sLongTasks": 0, "idle3sFramesOver50ms": 0, "runtimeErrors": 0 },
+    "cpuThrottle4": { "plazaVisibleMs": 849.40, "marketHouseToListMs": 1887.33, "publishToFormMs": 230.74, "inputEchoMsRange": [7.98, 17.36], "idle3sLongTasks": 0, "idle3sFramesOver50ms": 0, "runtimeErrors": 0 },
+    "limitations": ["计时含CDP往返", "建筑计时含既有走路", "不能替代微信或真机性能"]
+  },
+  "weixin": {
+    "toolVersion": "2.01.2510290", "baseLibrary": "3.17.5",
+    "bufferedStartupEntries": { "appLaunchMs": 29993, "evaluateScriptMs": 252, "firstRenderMs": 2161, "initialDataTransportMs": 15, "initialViewRenderMs": 191 },
+    "perClickTraceAvailable": false, "realDeviceFpsMeasured": false,
+    "setDataCountersAvailable": false,
+    "samplingLimitation": "SDK代理未提供可靠逐次setData统计；Performance/Profiler域不支持",
+    "cleanup": "官方CLI正常关闭并重开当前项目，命令成功；未清存储/退出账号/提交发布",
+    "notBeforeAfterOptimization": true
+  },
+  "publicH5": {
+    "url": "https://yangfengqin406.github.io/group-project/#/",
+    "pagesDeployment": "https://github.com/yangfengqin406/group-project/actions/runs/40334772937",
+    "httpStatus": 200, "resourceResponses": 30, "allResponses2xx": true,
+    "networkFailures": 0, "httpFailures": 0, "runtimeErrors": 0,
+    "finalVisual": "map, actors, four houses, HUD and bottom navigation visible",
+    "domVisibleMs": 2520,
+    "coldImageReadiness": "4.7秒截图尚不完整，继续等待后完整；未测全部图像就绪的精确时点",
+    "scope": "单页公开演示走查，不是完整业务或生产多用户验收"
+  },
+  "networkProbe": {
+    "desktopLoopbackHealth": { "samples": 12, "medianMs": 19.15, "maxMs": 40.18 },
+    "isolatedHttpsProxyHeaders": { "actualTlsDeployed": false, "rootStatus": 302, "redirectProtocol": "http:", "redirectIncludesInternalPort": true, "httpsOriginApiStatus": 403 }
+  },
+  "validation": { "checkPages": 16, "checkCalls": 74, "testsPassed": 397, "testsFailed": 0, "h5Build": "passed", "weixinBuild": "passed", "targetedQuality": "passed", "wxssWildcardFiles": 32, "wxssWildcardIssues": 0, "rawMainBytes": 2060378, "contentBytes": 39550, "roomsBytes": 38195 },
+  "remaining": ["可靠原生逐点击性能录制与真机", "组件标签/属性样式兼容", "公网真实服务HTTPS源与反代适配", "平台后台类目/隐私/审核核验", "明确首发未实现功能范围"],
+  "privateCredentialsExported": false,
+  "realAccountDataModified": false,
+  "proxyOrFirewallChanged": false,
+  "productionDeployed": false
+}

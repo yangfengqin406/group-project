@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-28",
+  "scope": "pixel village with focused business UI",
+  "check": {
+    "pages": 17,
+    "serviceCallSites": 85
+  },
+  "tests": {
+    "total": 517,
+    "passed": 517,
+    "failed": 0,
+    "skipped": 0
+  },
+  "builds": {
+    "h5": true,
+    "mpWeixin": true
+  },
+  "weixin": {
+    "styleFiles": 36,
+    "styleIssues": 0,
+    "targetedQuality": "passed",
+    "rawBudget": {
+      "passed": true,
+      "mainBytes": 2081403,
+      "budgetBytes": 2097152,
+      "subpackages": [
+        {
+          "root": "pages/content",
+          "bytes": 56523
+        },
+        {
+          "root": "rooms",
+          "bytes": 44633
+        }
+      ]
+    },
+    "nativeScan": "not-run"
+  },
+  "browser": {
+    "passed": true,
+    "steps": 10,
+    "runtimeErrors": 0,
+    "visualChecks": [
+      {
+        "name": "help primary action visible in first fold",
+        "top": 542.171875,
+        "bottom": 586.5625,
+        "height": 44.390625,
+        "viewport": 844
+      },
+      {
+        "name": "home task reaches first fold",
+        "top": 259.59375,
+        "bottom": 589.59375,
+        "viewport": 844,
+        "overflow": false
+      },
+      {
+        "name": "home no horizontal overflow",
+        "width": 320,
+        "overflow": false
+      },
+      {
+        "name": "home no horizontal overflow",
+        "width": 430,
+        "overflow": false
+      }
+    ]
+  },
+  "mainMerged": false,
+  "publicRuntimeUpdated": false,
+  "apkUpdated": false,
+  "remaining": [
+    "physical device layout validation",
+    "public rollout",
+    "later APK when user resumes packaging"
+  ]
+}

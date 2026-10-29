@@ -1,0 +1,16 @@
+{
+  "auditDate": "2026-10-25",
+  "auditor": "A（杨凤琴）",
+  "mainCommit": "56ee567011fb957cfa425dc807b1ee83c74de4a1",
+  "baseCommit": "af759d2da67e50a5b0eb087dfe884e2de0019ee4",
+  "cPullRequest": "https://github.com/yangfengqin406/group-project/pull/23",
+  "snapshot": { "changedFiles": 24, "gitBlobHashesVerified": true, "source": "Git archive base plus GitHub connector file contents at the exact merged commit" },
+  "runtime": { "node": "22.22.0", "dependencies": "existing locked dependencies reused; npm ci not rerun locally" },
+  "mainChecks": { "structure": "passed", "pages": 14, "businessMethods": 72, "tests": 231, "passed": 231, "failed": 0, "skipped": 0, "h5Build": "passed; /group-project/ base", "weixinBuild": "passed", "weixinMainRawBytes": 2076651, "packageBudgetBytes": 2097152, "packageBudget": "passed" },
+  "github": { "mainVerify": "https://github.com/yangfengqin406/group-project/actions/runs/40184999860", "h5Deploy": "https://github.com/yangfengqin406/group-project/actions/runs/40184999814", "bothConclusions": "success", "publicHomeHttpStatus": 200, "publicApiMode": "mock" },
+  "localAWork": { "branch": "codex/a-plaza-partner-pets", "committed": false, "mergedIntoMain": false, "priorTests": 306, "testedTogetherWithNewC": false, "scopes": ["dive return", "LAN landlord game", "piranha and depth display", "licensed Carefree background music and water effects"] },
+  "requiredCoreWork": ["real authentication and public upload", "A/B real business persistence and transactions", "C authentication/upload/content adapters and shared RPC integration", "two real accounts on two devices", "target-platform manual acceptance, rehearsal and user trial"],
+  "extensionsStillPending": ["subscription.send", "real events and skill matching", "reservation respond/complete", "game production backend and physical-device acceptance"],
+  "allRequirementsComplete": false,
+  "limits": ["build budget is not WeChat upload or physical-device verification", "public H5 is an available teacher-entry option but remains a demo", "C SQLite module is implemented, not deployed as integrated production campus backend"]
+}

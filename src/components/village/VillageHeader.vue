@@ -1,8 +1,8 @@
 <template>
-  <view class="village-header" :class="[`room-${roomKind}`, { compact }]">
-    <view class="room-picture" aria-hidden="true">
-      <view class="room-window"><view /><view /><view /><view /></view>
-      <view class="room-shelf"><view /><view /></view>
+  <view class="village-header wx-v" :class="[`room-${roomKind}`, { compact }]">
+    <view class="room-picture wx-v" aria-hidden="true">
+      <view class="room-window wx-v"><view class="wx-v" /><view class="wx-v" /><view class="wx-v" /><view class="wx-v" /></view>
+      <view class="room-shelf wx-v"><view class="wx-v" /><view class="wx-v" /></view>
       <image
         class="room-atlas"
         :class="{ ready: illustrationReady }"
@@ -13,11 +13,11 @@
         @error="illustrationReady = false"
       />
     </view>
-    <view class="room-caption">
-      <view class="room-nameplate"><view class="room-mark" /><text>{{ title }}</text></view>
-      <view v-if="subtitle" class="room-description">{{ subtitle }}</view>
+    <view class="room-caption wx-v">
+      <view class="room-nameplate wx-v"><view class="room-mark wx-v" /><text>{{ title }}</text></view>
+      <view v-if="subtitle" class="room-description wx-v">{{ subtitle }}</view>
     </view>
-    <view v-if="$slots.default" class="room-action"><slot /></view>
+    <view v-if="$slots.default" class="room-action wx-v"><slot /></view>
   </view>
 </template>
 
@@ -91,9 +91,9 @@ const atlasPosition = computed(() => ({
   border-radius: 38px 38px 2px 2px;
   background: #976e45;
 }
-.room-window view { background: #cad5b0; }
-.room-window view:first-child { border-radius: 25px 0 0 0; }
-.room-window view:nth-child(2) { border-radius: 0 25px 0 0; }
+.room-window .wx-v { background: #cad5b0; }
+.room-window .wx-v:first-child { border-radius: 25px 0 0 0; }
+.room-window .wx-v:nth-child(2) { border-radius: 0 25px 0 0; }
 .room-shelf {
   position: absolute;
   right: 18px;
@@ -103,7 +103,7 @@ const atlasPosition = computed(() => ({
   border-radius: 2px;
   background: #976e45;
 }
-.room-shelf view:first-child {
+.room-shelf .wx-v:first-child {
   position: absolute;
   bottom: 8px;
   right: 12px;
@@ -113,7 +113,7 @@ const atlasPosition = computed(() => ({
   border: 3px solid #b9784e;
   background: #d0ac7a;
 }
-.room-shelf view:last-child {
+.room-shelf .wx-v:last-child {
   position: absolute;
   bottom: 32px;
   right: 4px;

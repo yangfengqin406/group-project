@@ -1,113 +1,113 @@
 <template>
-  <view class="fishing-overlay" @touchmove.stop>
+  <view class="fishing-overlay wx-v" @touchmove.stop>
     <view
-      class="pond-panel"
+      class="pond-panel wx-v"
       role="dialog"
       aria-modal="true"
       aria-label="池边垂钓"
     >
-      <view class="pond-heading">
-        <view>
-          <view class="pond-title">
+      <view class="pond-heading wx-v">
+        <view class="wx-v">
+          <view class="pond-title wx-v">
             {{ panel === 'bag' ? '伙伴衣柜' : '池边垂钓' }}
           </view>
           <text class="pond-subtitle">
             {{
               panel === 'bag'
-                ? '去水下冒险，收集喜欢的装扮。'
+                ? '校园互助攒珍珠，搭配喜欢的装扮。'
                 : '把脚步放慢一点，等一条小鱼。'
             }}
           </text>
         </view>
-        <button class="pond-close" aria-label="离开池边" @tap="close">
+        <button class="pond-close wx-b" aria-label="离开池边" @tap="close">
           收起
         </button>
       </view>
 
-      <view class="pond-tabs">
-        <button
+      <view class="pond-tabs wx-v">
+        <button class="wx-b"
           :class="{ selected: panel === 'pond' }"
           :aria-pressed="panel === 'pond'"
           @tap="panel = 'pond'"
         >
           钓一会儿
         </button>
-        <button
+        <button class="wx-b"
           :class="{ selected: panel === 'bag' }"
           :aria-pressed="panel === 'bag'"
           @tap="panel = 'bag'"
         >
           衣柜与鱼册
         </button>
-        <button class="dive-entry" @tap="emit('dive')">潜水闯关</button>
+        <button class="dive-entry wx-b" @tap="emit('dive')">潜水闯关</button>
       </view>
 
       <scroll-view class="pond-content" scroll-y>
-        <view v-if="error" class="pond-error" role="alert">{{ error }}</view>
-        <view v-if="panel === 'pond'" class="play-pane">
+        <view v-if="error" class="pond-error wx-v" role="alert">{{ error }}</view>
+        <view v-if="panel === 'pond'" class="play-pane wx-v">
           <view
-            class="pond-scene"
+            class="pond-scene wx-v"
             :class="['phase-' + phase, { 'less-motion': reducedMotion }]"
             aria-hidden="true"
           >
-            <view class="water-ring ring-one"></view>
-            <view class="water-ring ring-two"></view>
-            <view class="water-ring ring-three"></view>
-            <view class="lily lily-one"><view></view></view>
-            <view class="lily lily-two"><view></view></view>
-            <view class="pond-fish fish-one"><view></view></view>
-            <view class="pond-fish fish-two"><view></view></view>
-            <view v-if="activeCast || phase === 'caught'" class="fishing-rod">
-              <view class="fishing-line"></view>
+            <view class="water-ring ring-one wx-v"></view>
+            <view class="water-ring ring-two wx-v"></view>
+            <view class="water-ring ring-three wx-v"></view>
+            <view class="lily lily-one wx-v"><view class="wx-v"></view></view>
+            <view class="lily lily-two wx-v"><view class="wx-v"></view></view>
+            <view class="pond-fish fish-one wx-v"><view class="wx-v"></view></view>
+            <view class="pond-fish fish-two wx-v"><view class="wx-v"></view></view>
+            <view v-if="activeCast || phase === 'caught'" class="fishing-rod wx-v">
+              <view class="fishing-line wx-v"></view>
             </view>
-            <view v-if="activeCast" class="float-bobber"><view></view></view>
-            <view v-if="phase === 'bite'" class="bite-mark">!</view>
-            <view class="pond-bank"></view>
-            <view class="reed reed-one">
-              <view></view>
-              <view></view>
-              <view></view>
+            <view v-if="activeCast" class="float-bobber wx-v"><view class="wx-v"></view></view>
+            <view v-if="phase === 'bite'" class="bite-mark wx-v">!</view>
+            <view class="pond-bank wx-v"></view>
+            <view class="reed reed-one wx-v">
+              <view class="wx-v"></view>
+              <view class="wx-v"></view>
+              <view class="wx-v"></view>
             </view>
-            <view class="reed reed-two">
-              <view></view>
-              <view></view>
-              <view></view>
+            <view class="reed reed-two wx-v">
+              <view class="wx-v"></view>
+              <view class="wx-v"></view>
+              <view class="wx-v"></view>
             </view>
-            <view v-if="appearance" class="pond-pet">
+            <view v-if="appearance" class="pond-pet wx-v">
               <PetAvatar
                 :appearance="appearance"
                 :ornament="wornOrnament"
                 :wardrobe="wardrobe"
               />
             </view>
-            <view class="bank-stone stone-one"></view>
-            <view class="bank-stone stone-two"></view>
+            <view class="bank-stone stone-one wx-v"></view>
+            <view class="bank-stone stone-two wx-v"></view>
           </view>
 
-          <view class="fishing-message">
-            <view class="phase-heading" role="status" aria-live="polite">
+          <view class="fishing-message wx-v">
+            <view class="phase-heading wx-v" role="status" aria-live="polite">
               {{ statusTitle }}
             </view>
-            <view class="phase-description">{{ statusDescription }}</view>
-            <view v-if="phase === 'reeling'" class="line-game">
-              <view class="line-meter" aria-label="往返标尺，看准绿色区域收线">
-                <view class="meter-zone" :style="zoneStyle"></view>
-                <view class="meter-marker" :style="markerStyle">
-                  <view></view>
+            <view class="phase-description wx-v">{{ statusDescription }}</view>
+            <view v-if="phase === 'reeling'" class="line-game wx-v">
+              <view class="line-meter wx-v" aria-label="往返标尺，看准绿色区域收线">
+                <view class="meter-zone wx-v" :style="zoneStyle"></view>
+                <view class="meter-marker wx-v" :style="markerStyle">
+                  <view class="wx-v"></view>
                 </view>
               </view>
-              <view class="meter-labels">
+              <view class="meter-labels wx-v">
                 <text>轻轻放线</text>
                 <text>绿区收线</text>
                 <text>慢慢来</text>
               </view>
             </view>
-            <view v-if="phase === 'caught'" class="catch-card">
-              <view class="catch-fish">
-                <view class="fish-eye"></view>
-                <view class="fish-fin"></view>
+            <view v-if="phase === 'caught'" class="catch-card wx-v">
+              <view class="catch-fish wx-v">
+                <view class="fish-eye wx-v"></view>
+                <view class="fish-fin wx-v"></view>
               </view>
-              <view class="catch-copy">
+              <view class="catch-copy wx-v">
                 <text class="catch-name">{{ outcome.fish.name }}</text>
                 <text v-if="outcome.reward" class="reward-name">
                   还捎来了{{ outcome.reward.name }}
@@ -115,32 +115,32 @@
                 <text v-else class="catch-detail">已经收进你的鱼册啦</text>
               </view>
             </view>
-            <view v-if="state" class="catch-total">
+            <view v-if="state" class="catch-total wx-v">
               和池塘相遇了 {{ state.catchCount }} 次
             </view>
           </view>
         </view>
 
-        <view v-else class="bag-pane">
+        <view v-else class="bag-pane wx-v">
           <WardrobePanel
             :appearance="appearance"
             @change="wardrobeChanged"
             @adventure="emit('dive')"
           />
-          <view class="bag-rule">
+          <view class="bag-rule wx-v">
             第一次钓到鱼送小荷叶，之后每次成功钓获，有 35% 的机会捎来池塘装饰。
           </view>
-          <view class="collection-heading fishbook-heading">我的小鱼册</view>
-          <view v-if="state && !state.fishBook.length" class="empty-collection">
+          <view class="collection-heading fishbook-heading wx-v">我的小鱼册</view>
+          <view v-if="state && !state.fishBook.length" class="empty-collection wx-v">
             还没有遇见小鱼，去池边坐一会儿吧。
           </view>
-          <view class="fishbook-grid">
+          <view class="fishbook-grid wx-v">
             <view
               v-for="fish in state?.fishBook || []"
               :key="fish.id"
-              class="fishbook-entry"
+              class="fishbook-entry wx-v"
             >
-              <view class="book-fish" aria-hidden="true"><view></view></view>
+              <view class="book-fish wx-v" aria-hidden="true"><view class="wx-v"></view></view>
               <text class="book-fish-name">{{ fish.name }}</text>
               <text class="book-fish-count">{{ fish.count }} 条</text>
             </view>
@@ -148,33 +148,33 @@
         </view>
       </scroll-view>
 
-      <view class="pond-footer">
-        <view class="pond-buttons">
-          <button
+      <view class="pond-footer wx-v">
+        <view class="pond-buttons wx-v">
+          <button :class="{'wx-disabled':Boolean(busy || !active)}"
             v-if="error"
-            class="pond-primary"
+            class="pond-primary wx-b"
             :disabled="busy || !active"
             @tap="refresh"
           >
             重新读取
           </button>
           <template v-else-if="panel === 'bag'">
-            <button class="pond-primary" @tap="panel = 'pond'">
+            <button class="pond-primary wx-b" @tap="panel = 'pond'">
               回池边钓鱼
             </button>
           </template>
           <template v-else>
-            <button
+            <button :class="{'wx-disabled':Boolean(Boolean(busy) || !active || rewardEquipped)}"
               v-if="phase === 'caught' && outcome.reward"
-              class="pond-secondary"
+              class="pond-secondary wx-b"
               :disabled="Boolean(busy) || !active || rewardEquipped"
               @tap="equip(outcome.reward.id)"
             >
               {{ rewardEquipped ? '已经戴好啦' : '戴上' + outcome.reward.name }}
             </button>
             <button
-              class="pond-primary"
-              :class="{ 'bite-action': phase === 'bite' }"
+              class="pond-primary wx-b"
+              :class="[{ 'bite-action': phase === 'bite' },{'wx-disabled':Boolean(actionDisabled)}]"
               :disabled="actionDisabled"
               @tap="takeAction"
             >
@@ -182,7 +182,7 @@
             </button>
           </template>
         </view>
-        <view class="pond-footnote">
+        <view class="pond-footnote wx-v">
           {{
             config.apiMode === 'mock'
               ? '本机演示 · 收集按当前演示身份保存'
@@ -503,18 +503,18 @@ onUnmounted(() => {
   overflow: hidden;
   box-shadow: 0 14px 50px #153a3b50;
 }
-button {
+.wx-b {
   margin: 0;
   font-size: 14px;
   line-height: 1.4;
 }
-button::after {
+.wx-b::after {
   border: 0;
 }
-button[disabled] {
+.wx-b.wx-disabled {
   opacity: 0.55;
 }
-button:focus-visible {
+.wx-b:focus-visible {
   outline: 3px solid #336f74;
   outline-offset: 3px;
 }
@@ -553,7 +553,7 @@ button:focus-visible {
   padding: 0 20px 12px;
   flex-shrink: 0;
 }
-.pond-tabs button {
+.pond-tabs .wx-b {
   flex: 1;
   min-height: 44px;
   display: flex;
@@ -635,7 +635,7 @@ button:focus-visible {
   border-bottom: 5px solid transparent;
   border-right: 16px solid #79b8ae;
 }
-.lily view {
+.lily .wx-v {
   position: absolute;
   left: 10px;
   top: -6px;
@@ -736,7 +736,7 @@ button:focus-visible {
   box-shadow: 0 8px 0 -3px #3e8d8b77;
   animation: float-bob 2s ease-in-out infinite;
 }
-.float-bobber view {
+.float-bobber .wx-v {
   position: absolute;
   top: -8px;
   left: 4px;
@@ -765,7 +765,7 @@ button:focus-visible {
   height: 56px;
   bottom: 0;
 }
-.reed view {
+.reed .wx-v {
   position: absolute;
   bottom: 0;
   left: 16px;
@@ -775,13 +775,13 @@ button:focus-visible {
   background: #6e9364;
   transform: rotate(-10deg);
 }
-.reed view:nth-child(2) {
+.reed .wx-v:nth-child(2) {
   left: 26px;
   height: 56px;
   transform: rotate(12deg);
   background: #7e9e64;
 }
-.reed view:nth-child(3) {
+.reed .wx-v:nth-child(3) {
   left: 7px;
   height: 34px;
   transform: rotate(-28deg);
@@ -1073,7 +1073,7 @@ button:focus-visible {
   border-radius: 50%;
   background: #edf0de;
 }
-.ornament-lily-pad view {
+.ornament-lily-pad .wx-v {
   position: absolute;
   left: 7px;
   top: 12px;
@@ -1102,7 +1102,7 @@ button:focus-visible {
   right: 6px;
   transform: rotate(180deg);
 }
-.ornament-bubble-star view {
+.ornament-bubble-star .wx-v {
   position: absolute;
   left: 12px;
   top: 7px;
@@ -1146,7 +1146,7 @@ button:focus-visible {
   border-bottom: 7px solid transparent;
   border-right: 10px solid #c99e64;
 }
-.book-fish view {
+.book-fish .wx-v {
   position: absolute;
   top: 5px;
   left: 6px;
@@ -1213,7 +1213,7 @@ button:focus-visible {
     padding-left: 16px;
     padding-right: 16px;
   }
-  .pond-tabs button {
+  .pond-tabs .wx-b {
     font-size: 12px;
     padding-left: 3px;
     padding-right: 3px;
@@ -1262,7 +1262,7 @@ button:focus-visible {
   .pond-tabs {
     padding: 0 18px 8px;
   }
-  .pond-tabs button {
+  .pond-tabs .wx-b {
     min-height: 44px;
   }
   .pond-content {

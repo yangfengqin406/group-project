@@ -33,6 +33,8 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build:mp-weixin
+      - run: npm run check:mp-styles
+      - run: npm run check:mp-quality
       - run: node scripts/check-weixin-package.mjs
       - name: Build H5 for the project Pages path
         run: npm run build:h5

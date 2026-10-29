@@ -3,9 +3,9 @@
     <VillageHeader kind="home" title="自己的家" subtitle="在小屋里歇歇脚，整理你的校园生活。" />
     <DemoNotice />
     <view v-if="error" class="error">{{ error }}</view>
-    <view v-if="profile" class="panel">
+    <view v-if="profile" class="panel home-profile">
       <view class="row home-identity">
-        <image v-if="profile.avatarUrl" :src="profile.avatarUrl" class="profile-avatar" mode="aspectFill" />
+        <ServiceImage v-if="profile.avatarUrl" :src="profile.avatarUrl" class="profile-avatar" mode="aspectFill" />
         <view class="identity-copy">
           <view class="section-title" style="margin-top: 0">
             {{ profile.nickname }}
@@ -24,9 +24,12 @@
         <button class="secondary" @tap="editProfile">编辑资料</button>
         <button class="secondary" @tap="publicProfile">查看我的公开主页</button>
         <button class="secondary" @tap="askSubscription">接收匹配通知</button>
+        <button class="secondary" @tap="openSettings">账号与隐私</button>
+        <button v-if="!isMock" class="secondary" @tap="logout">退出账号</button>
       </view>
+      <MyHelp embedded :refresh-key="contributionRevision" :active="homeActive" />
     </view>
-    <view class="panel">
+    <view class="panel home-pet">
       <view class="row">
         <view>
           <view class="section-title" style="margin-top: 0">我的宠物</view>
@@ -34,6 +37,7 @@
         </view>
         <button class="secondary" @tap="openPet">去搭配</button>
       </view>
+      <ContributionRewards embedded :refresh-key="contributionRevision" :show-actions="false" />
     </view>
     <view class="panel">
       <view class="section-title" style="margin-top: 0">发布统计</view>
@@ -114,9 +118,12 @@
   </view>
 </template>
 <script setup>
+import ServiceImage from '../../components/ServiceImage.vue'
+import ContributionRewards from '../../components/ContributionRewards.vue'
+import MyHelp from '../../components/MyHelp.vue'
 import { ref, watch } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
-import { user, myContent, favorite } from '../../services/index.js'
+import { user, myContent, favorite, auth } from '../../services/index.js'
 import { demoUsers, switchDemoUser, resetDemo } from '../../mock/index.js'
 import { config } from '../../config/index.js'
 import { openProfile, contentNames, contentUrl, formatTime } from '../../utils/routes.js'
@@ -127,6 +134,10 @@ import ContentCard from '../../components/ContentCard.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
 import { session } from '../../utils/session.js'
+function openSettings() { uni.navigateTo({ url: '/rooms/settings/index' }) }
+async function logout() {
+  try { await auth.logout() } catch (e) { error.value = errorText(e) }
+}
 const profile = ref(null),
   items = ref([]),
   error = ref(''),
@@ -140,6 +151,8 @@ const profile = ref(null),
   favLoading = ref(false),
   activities = ref([])
 let loadVersion = 0
+const contributionRevision = ref(0)
+const homeActive = ref(false)
 let visible = false
 const filters = [
   { label: '全部', value: '' },
@@ -312,9 +325,9 @@ watch(() => session.user?.id, () => {
   clearPersonalSummary()
   if (visible) load()
 })
-onShow(() => { visible = true; load() })
-onHide(() => { visible = false; ++loadVersion; loading.value = false; favLoading.value = false })
-onUnload(() => { visible = false; ++loadVersion; favLoading.value = false })
+onShow(() => { visible = true; homeActive.value = true; contributionRevision.value++; load() })
+onHide(() => { visible = false; homeActive.value = false; ++loadVersion; loading.value = false; favLoading.value = false })
+onUnload(() => { visible = false; homeActive.value = false; ++loadVersion; favLoading.value = false })
 </script>
 <style scoped>
 .home-identity { justify-content: flex-start; }

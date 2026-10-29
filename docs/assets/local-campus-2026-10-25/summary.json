@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-25",
+  "scope": "local and same-network independent accounts, actual uploads, persistent campus backend",
+  "runtime": "Node.js 22.22.0",
+  "check": {
+    "status": "passed",
+    "pages": 16,
+    "methods": 74
+  },
+  "tests": {
+    "status": "passed",
+    "passed": 374,
+    "failed": 0,
+    "skipped": 0
+  },
+  "h5Build": {
+    "status": "passed",
+    "apiMode": "http",
+    "output": "dist/local/campus-h5"
+  },
+  "weixinBuild": {
+    "status": "passed",
+    "apiMode": "http",
+    "runtimeTested": false
+  },
+  "rawPackageBytes": {
+    "main": 2063464,
+    "pages/content": 39550,
+    "rooms": 34777,
+    "perPackageBudget": 2097152
+  },
+  "browserEvidence": "browser-result.json",
+  "browser": {
+    "status": "passed",
+    "isolatedAccounts": 2,
+    "rpcRequests": 97,
+    "actualUploadRequests": 1,
+    "failedResponses": 0,
+    "runtimeErrors": 0
+  },
+  "persistenceRestart": "passed by real HTTP and SQLite tests",
+  "concurrentLastSeat": "passed with two independent workers",
+  "avatar": {
+    "file": "../app-avatar-2026-10-25/app-avatar-v1.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1790579,
+    "tool": "built-in ImageGen",
+    "setInWeChat": false
+  },
+  "notVerified": [
+    "two physical devices",
+    "WeChat DevTools and physical WeChat devices",
+    "public real backend deployment",
+    "official WeChat login and subscription",
+    "team rehearsal and classmate trial"
+  ],
+  "releaseStatus": "merged to main via PR #25",
+  "finalVerifiedAt": "2026-10-26T00:00:21+08:00",
+  "mergeCommit": "a8d3a7a9053952028042e248b1e60ea8fa0a191a",
+  "ciRun": "https://github.com/yangfengqin406/group-project/actions/runs/40210356090"
+}

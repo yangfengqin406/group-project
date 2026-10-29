@@ -6,6 +6,10 @@ import { listDemoBulletins } from './bulletin.js'
 import { dispatchFishing } from './fishing.js'
 import { dispatchWardrobe } from './wardrobe.js'
 import { dispatchDive } from './dive.js'
+import { awardDemoContribution, getDemoContributionState } from './rewards.js'
+import { transitionHelpCooperation } from '../domain/help/cooperation.js'
+import { normalizeHelpBrief, getHelpProgress } from '../domain/help/brief.js'
+import { listDemoHelpMine } from './help-mine.js'
 const types = {
   plan: 'plan',
   help: 'help',
@@ -15,10 +19,50 @@ const types = {
 const clone = (value) => JSON.parse(JSON.stringify(value))
 const makeId = (prefix) =>
   `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
-export function dispatch(db, method, p = {}) {
+const canonical = value => JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item)
+  ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]])) : item)
+const publishMethods = new Set(['plan.create', 'help.create', 'market.create', 'lostFound.create'])
+const cooperationWrites = new Set(['help.apply', 'help.selectHelper', 'help.confirmCompletion', 'help.cancelCooperation'])
+
+export function dispatch(db, method, p = {}, options = {}) {
+  requireThat(p && typeof p === 'object' && !Array.isArray(p), 'INVALID_ARGUMENT', '参数须为对象')
+  const atomic = publishMethods.has(method) || cooperationWrites.has(method)
+  const previous = atomic ? clone(db) : null
+  const now = options.now ?? Date.now()
+  try {
+    if (publishMethods.has(method) && p.idempotencyKey !== undefined) {
+      const currentUser = db.users.find(user => user.id === db.currentUserId && !user.disabled)
+      requireThat(currentUser, 'UNAUTHENTICATED', '请先登录')
+      requireThat(typeof p.idempotencyKey === 'string' && p.idempotencyKey.trim().length > 0 &&
+        p.idempotencyKey.trim().length <= 200, 'INVALID_ARGUMENT', '操作唯一编号无效')
+      db.idempotency ||= {}
+      const key = `${currentUser.id}:${method}:${p.idempotencyKey.trim()}`
+      const fingerprint = canonical(p)
+      if (db.idempotency[key]) {
+        requireThat(db.idempotency[key].fingerprint === fingerprint, 'CONFLICT', '重复编号不能用于不同操作')
+        return clone(db.idempotency[key].data)
+      }
+      const result = dispatchInternal(db, method, p, now)
+      db.idempotency[key] = { fingerprint, data: clone(result) }
+      return result
+    }
+    return dispatchInternal(db, method, p, now)
+  } catch (error) {
+    if (previous) {
+      for (const key of Object.keys(db)) delete db[key]
+      Object.assign(db, previous)
+    }
+    if (error.code && !(error instanceof ServiceError)) throw new ServiceError(error.code, error.message)
+    throw error
+  }
+}
+
+function dispatchInternal(db, method, p, now) {
+  if (['auth.deleteAccount', 'user.block', 'user.unblock', 'user.listBlocked'].includes(method))
+    throw new ServiceError('NOT_SUPPORTED', '演示版不执行真实账号注销或屏蔽，请在真实服务中操作')
   db.comments ||= []
   const me = () => {
-    const user = db.users.find((u) => u.id === db.currentUserId)
+    const user = db.users.find((u) => u.id === db.currentUserId && !u.disabled)
     requireThat(user, 'UNAUTHENTICATED', '请先登录')
     return user
   }
@@ -62,28 +106,32 @@ export function dispatch(db, method, p = {}) {
   }
   const summarize = (item) => ({
     ...clone(item),
+    ...(item.type === 'help' ? { ...normalizeHelpBrief({}, item), helpProgress: getHelpProgress(item,
+      (db.helpApplications || []).find(application => application.helpId === item.id && application.id === item.selectedApplicationId)) } : {}),
     images: resolveImages(item),
     owner: user(item.ownerId)
   })
   const all = () => Object.values(db.contents).flat()
-  const note = (recipientId, title, type, id) =>
+  const note = (recipientId, title, type, id, conversationId) =>
     db.notifications.unshift({
       id: makeId('note'),
       recipientId,
       title,
       contentType: type,
       contentId: id,
+      ...(conversationId ? { conversationId } : {}),
       read: false,
       createdAt: new Date().toISOString()
     })
   const idem = (run) => {
     requireThat(
-      typeof p.idempotencyKey === 'string' && p.idempotencyKey.length > 0,
+      typeof p.idempotencyKey === 'string' && p.idempotencyKey.trim().length > 0 && p.idempotencyKey.trim().length <= 200,
       'INVALID_ARGUMENT',
       '缺少操作唯一编号'
     )
-    const key = `${me().id}:${method}:${p.idempotencyKey}`
-    const fingerprint = JSON.stringify(p)
+    db.idempotency ||= {}
+    const key = `${me().id}:${method}:${p.idempotencyKey.trim()}`
+    const fingerprint = canonical(p)
     if (db.idempotency[key]) {
       requireThat(
         db.idempotency[key].fingerprint === fingerprint,
@@ -119,6 +167,79 @@ export function dispatch(db, method, p = {}) {
   }
   me()
   reconcilePlanState(db)
+  if (method === 'rewards.getState') return getDemoContributionState(db, me().id, p, now)
+  if (method === 'help.listMine') return listDemoHelpMine(db, me().id, p, { summarize, publicUser: user, now })
+  if (method === 'help.listApplications' || cooperationWrites.has(method)) {
+    const currentUser = me()
+    requireThat(typeof p.helpId === 'string' && p.helpId.length > 0 && p.helpId.length <= 200,
+      'INVALID_ARGUMENT', '求助编号无效')
+    const help = content('help', p.helpId)
+    requireThat(!help.deletedAt, 'NOT_FOUND', '求助已不存在')
+    const applications = (db.helpApplications || []).filter(application => application.helpId === help.id)
+    const applicationSummary = application => ({ ...clone(application), owner: user(application.ownerId), helper: user(application.helperId) })
+    if (method === 'help.listApplications') {
+      const own = applications.filter(application => currentUser.id === help.ownerId || application.helperId === currentUser.id)
+      requireThat(help.visibility === 'public' || currentUser.id === help.ownerId || own.length > 0,
+        'FORBIDDEN', '无权查看求助申请')
+      const size = p.pageSize === undefined ? 20 : p.pageSize
+      requireThat(Number.isInteger(size) && size >= 1 && size <= 50, 'INVALID_ARGUMENT', '分页数量须为1～50')
+      const binding = canonical([currentUser.id, method, help.id])
+      let before = null
+      if (p.cursor !== undefined && p.cursor !== null && p.cursor !== '') {
+        let cursor
+        try { cursor = JSON.parse(p.cursor) } catch { /* Invalid cursor is checked below. */ }
+        requireThat(cursor && cursor.binding === binding && typeof cursor.before === 'string',
+          'INVALID_ARGUMENT', '分页条件已改变，请刷新')
+        before = cursor.before
+      }
+      const ordered = own.slice().reverse()
+      const offset = before === null ? 0 : ordered.findIndex(value => value.id === before) + 1
+      requireThat(before === null || offset > 0, 'INVALID_ARGUMENT', '分页游标无效')
+      const selected = ordered.slice(offset, offset + size)
+      return { items: selected.map(applicationSummary),
+        nextCursor: offset + size < ordered.length ? JSON.stringify({ binding, before: selected.at(-1).id }) : null }
+    }
+    return idem(() => {
+      const action = method.split('.')[1]
+      if (action !== 'apply') requireThat(typeof p.applicationId === 'string' && p.applicationId.length > 0 &&
+        p.applicationId.length <= 200, 'INVALID_ARGUMENT', '申请编号无效')
+      const application = applications.find(value => value.id === p.applicationId)
+      const active = userId => requireThat(db.users.some(value => value.id === userId && !value.disabled), 'NOT_FOUND', '对方账号已不可用')
+      if (action === 'apply') active(help.ownerId)
+      if (action === 'selectHelper') {
+        requireThat(currentUser.id === help.ownerId, 'FORBIDDEN', '只有发布者可以选择帮助者')
+        requireThat(application, 'NOT_FOUND', '帮助申请已不存在')
+        active(application.helperId)
+      }
+      if (action === 'confirmCompletion') {
+        requireThat(application, 'NOT_FOUND', '帮助申请已不存在')
+        requireThat([application.ownerId, application.helperId].includes(currentUser.id), 'FORBIDDEN', '无权操作他人的帮助申请')
+        active(application.ownerId); active(application.helperId)
+      }
+      const next = transitionHelpCooperation({ action, help, applications, actorId: currentUser.id,
+        applicationId: p.applicationId, now, createId: () => makeId('help_application') })
+      db.helpApplications ||= []
+      for (const changed of next.changedApplications) {
+        const index = db.helpApplications.findIndex(value => value.id === changed.id)
+        if (index >= 0) db.helpApplications[index] = changed
+        else db.helpApplications.push(changed)
+      }
+      Object.assign(help, next.help)
+      if (!next.help.selectedApplicationId) delete help.selectedApplicationId
+      let reward
+      for (const event of next.awardEvents) {
+        const decision = awardDemoContribution(db, event, now)
+        if (event.userId === currentUser.id) reward = decision
+      }
+      for (const event of next.notifications) {
+        if (!db.notifications.some(value => value.eventId === event.eventId && value.recipientId === event.recipientId)) {
+          note(event.recipientId, event.title, event.contentType, event.contentId)
+          db.notifications[0].eventId = event.eventId
+        }
+      }
+      return { application: applicationSummary(next.application), help: summarize(help), ...(reward ? { reward } : {}) }
+    })
+  }
   if (method.startsWith('wardrobe.'))
     return dispatchWardrobe(db, me().id, method.slice(9), p)
   if (method.startsWith('dive.'))
@@ -266,6 +387,7 @@ export function dispatch(db, method, p = {}) {
       if (action === 'update') {
         old = content(type, p.id)
         owned(old)
+        if (type === 'help') requireThat(!old.selectedApplicationId, 'CONFLICT', '已选定帮助者，协作期间不能编辑求助')
         requireThat(
           (type === 'plan' ? ['open', 'full'] : ['open', 'active']).includes(
             old.status
@@ -405,6 +527,7 @@ export function dispatch(db, method, p = {}) {
       const fields = {}
       for (const key of allowed)
         if (p[key] !== undefined) fields[key] = clone(p[key])
+      if (type === 'help') Object.assign(fields, normalizeHelpBrief(p, old || {}))
       const item = {
         ...(old || {}),
         ...fields,
@@ -413,21 +536,30 @@ export function dispatch(db, method, p = {}) {
         ownerId: me().id,
         campusId: me().campusId,
         campusName: me().campusName,
-        visibility: old?.visibility || 'public',
-        createdAt: old?.createdAt || new Date().toISOString(),
+        visibility: p.visibility ?? old?.visibility ?? 'public',
+        createdAt: old?.createdAt || new Date(now).toISOString(),
+        ...(type === 'help' ? { updatedAt: new Date(now).toISOString() } : {}),
         status:
           old?.status || (['plan', 'help'].includes(type) ? 'open' : 'active')
       }
+      requireThat(['public', 'private'].includes(item.visibility), 'INVALID_ARGUMENT', '公开范围不正确')
       if (type === 'plan') item.memberIds = old?.memberIds || [me().id]
       if (old) Object.assign(old, item)
       else db.contents[type].unshift(item)
       if (type === 'market' && p.marketType === 'buy')
         delete (old || item).appraisal
       if (type === 'plan') reconcilePlanState(db)
-      return summarize(old || item)
+      const result = summarize(old || item)
+      if (!old) result.reward = awardDemoContribution(db, { userId: me().id, kind: 'publish', sourceType: type,
+        sourceId: item.id, title: item.title, body: item.body, visibility: item.visibility }, now)
+      return result
     }
     const item = content(type, p.id)
     owned(item)
+    if (type === 'help') {
+      requireThat(item.status === 'open', 'CONFLICT', '求助状态已变化')
+      requireThat(!item.selectedApplicationId, 'CONFLICT', '已有帮助者，请由双方确认完成')
+    }
     if (type === 'plan')
       requireThat(
         ['open', 'full'].includes(item.status),
@@ -436,12 +568,25 @@ export function dispatch(db, method, p = {}) {
       )
     if (type === 'market')
       requireThat(item.status === 'active', 'CONFLICT', '商品状态已变化')
+    if (type === 'lost_found' && action === 'markReturned') {
+      if (item.status === 'returned') return summarize(item)
+      requireThat(item.status === 'active', 'CONFLICT', '失物已结束，不能再次修改')
+      item.returnedAt = new Date().toISOString()
+      const recipients = new Set()
+      for (const c of db.conversations.filter((c) => c.contentType === type && c.contentId === item.id)) {
+        for (const id of c.participantIds) if (id !== me().id && !recipients.has(id)) {
+          recipients.add(id)
+          note(id, '联系过的失物已完成归还', type, item.id, c.id)
+        }
+      }
+    }
     item.status =
       action === 'markReturned'
         ? 'returned'
         : action === 'close'
           ? 'closed'
           : 'completed'
+    if (type === 'help') item.updatedAt = new Date(now).toISOString()
     if (type === 'plan') reconcilePlanState(db)
     return summarize(item)
   }
@@ -676,11 +821,17 @@ export function dispatch(db, method, p = {}) {
   if (method === 'conversation.open') {
     const item = content(p.contentType, p.contentId)
     visible(item)
+    requireThat(item.visibility === 'public', 'FORBIDDEN', '原内容已转为私有，不能建立联系')
+    const authorContactingApplicant = p.contentType === 'help' && item.ownerId === me().id &&
+      (db.helpApplications || []).some(application => application.helpId === item.id &&
+        application.ownerId === item.ownerId && application.helperId === p.peerUserId &&
+        ['pending', 'accepted', 'completed'].includes(application.status))
     requireThat(
-      item.ownerId === p.peerUserId && item.ownerId !== me().id,
+      p.peerUserId !== me().id && ((item.ownerId === p.peerUserId && item.ownerId !== me().id) || authorContactingApplicant),
       'INVALID_ARGUMENT',
-      '请选择内容发布者联系'
+      '请选择内容发布者或本帖的帮助申请者联系'
     )
+    requireThat(db.users.some(value => value.id === p.peerUserId && !value.disabled), 'NOT_FOUND', '对方账号已不可用')
     const existing = db.conversations.find(
       (c) =>
         c.contentType === p.contentType &&
@@ -691,7 +842,7 @@ export function dispatch(db, method, p = {}) {
     if (existing) return clone(existing)
     const conversation = {
       id: makeId('conversation'),
-      participantIds: [me().id, p.peerUserId],
+      participantIds: [me().id, p.peerUserId].sort(),
       contentType: p.contentType,
       contentId: p.contentId,
       contentTitle: item.title,
@@ -699,6 +850,18 @@ export function dispatch(db, method, p = {}) {
     }
     db.conversations.unshift(conversation)
     return clone(conversation)
+  }
+  if (method === 'conversation.get') {
+    const c = db.conversations.find((c) => c.id === p.id)
+    requireThat(c, 'NOT_FOUND', '会话不存在')
+    requireThat(c.participantIds.includes(me().id), 'FORBIDDEN', '无权访问这段会话')
+    return {
+      ...clone(c),
+      peer: user(c.participantIds.find((id) => id !== me().id)),
+      lastMessage: clone(db.messages.filter((m) => m.conversationId === c.id).reduce(
+        (latest, m) => !latest || Date.parse(m.createdAt) >= Date.parse(latest.createdAt) ? m : latest, null
+      ))
+    }
   }
   if (method === 'conversation.list') {
     const userId = me().id
@@ -748,6 +911,8 @@ export function dispatch(db, method, p = {}) {
           .map((m) => ({ ...m, sender: user(m.senderId) }))
       )
     return idem(() => {
+      const original = content(c.contentType, c.contentId)
+      requireThat(original.visibility === 'public', 'FORBIDDEN', '原内容已转为私有，不能继续留言')
       requireThat(
         typeof p.body === 'string' &&
           p.body.trim().length > 0 &&
@@ -765,7 +930,7 @@ export function dispatch(db, method, p = {}) {
       db.messages.push(message)
       for (const id of c.participantIds)
         if (id !== me().id)
-          note(id, '收到一条联系消息', c.contentType, c.contentId)
+          note(id, '收到一条联系消息', c.contentType, c.contentId, c.id)
       return clone(message)
     })
   }

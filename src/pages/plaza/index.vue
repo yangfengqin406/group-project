@@ -57,12 +57,12 @@
       </view>
     </view>
     <view
-      v-if="petLoading || petError || ornamentError || navigationError"
+      v-if="petLoading || petError || ornamentError || navigationError || soundState.message"
       class="game-status"
       role="status"
     >
       <text>
-        {{ navigationError || petError || ornamentError || '正在读取伙伴…' }}
+        {{ navigationError || petError || ornamentError || soundState.message || '正在读取伙伴…' }}
       </text>
       <button
         v-if="petError || ornamentError"
@@ -93,10 +93,15 @@
       </button>
     </view>
     <view class="game-bottom">
-      <text v-if="config.apiMode === 'mock'" class="demo-mark">
-        本机演示 · 数据不跨设备同步
-      </text>
+      <view class="scene-notes">
+        <button class="music-source" @tap="openMusicCredits">♫ Carefree · 音乐来源</button>
+        <text v-if="config.apiMode === 'mock'" class="demo-mark">本机演示 · 数据不跨设备同步</text>
+      </view>
       <view class="game-actions">
+        <button class="hud-button" :aria-pressed="soundState.music" aria-label="切换广场背景音乐" @tap="soundscape.toggleMusic()">
+          <text class="hud-icon">♫</text>
+          <text>{{ soundState.music ? '音乐开' : '音乐关' }}</text>
+        </button>
         <button
           class="hud-button"
           :aria-pressed="overview"
@@ -207,7 +212,7 @@
         class="pavilion-panel"
         role="dialog"
         aria-modal="true"
-        aria-label="四人休息亭"
+        aria-label="三人斗地主亭"
         @tap.stop
       >
         <button
@@ -218,22 +223,22 @@
           ×
         </button>
         <text class="pavilion-kicker">走累了，就坐一会儿</text>
-        <view class="bulletin-title">四人休息亭</view>
+        <view class="bulletin-title">三人斗地主亭</view>
         <view class="pavilion-table-scene">
-          <view class="pavilion-table">闲来一局</view>
+          <view class="pavilion-table">坐下打一局</view>
           <view
-            v-for="seat in [1, 2, 3, 4]"
+            v-for="seat in [1, 2, 3]"
             :key="seat"
             class="pavilion-seat"
             :class="'seat-' + seat"
           >
-            <text>空位</text>
+            <text>牌友</text>
           </view>
         </view>
         <view class="pavilion-description">
-          这里预留四人组队与麻将空间。真人匹配和牌局尚未开放，先去找搭子小屋约一桌牌友吧。
+          进入牌桌后查看在线访客，凑齐三人就开局。叫地主、出牌、合作赢下一局，不设货币下注。
         </view>
-        <button class="pavilion-invite" @tap="goPartner">先去找牌友</button>
+        <button class="pavilion-invite" @tap="goLandlord">进入斗地主亭</button>
       </view>
     </view>
     <FishingPond
@@ -254,9 +259,10 @@
   </view>
 </template>
 <script setup>
-import { nextTick, ref } from 'vue'
+import { nextTick, ref, onMounted, onUnmounted } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { pet, bulletin, wardrobe } from '../../services/index.js'
+import { soundscape } from '../../services/soundscape.js'
 import { formatTime } from '../../utils/routes.js'
 import { config } from '../../config/index.js'
 import { errorText } from '../../utils/errors.js'
@@ -278,6 +284,16 @@ const scene = ref(null),
   welcomeVisible = ref(!isPlazaWelcomeDismissed()),
   navigating = ref(false),
   navigationError = ref('')
+const soundState = soundscape.state
+function openMusicCredits() {
+  const credit = soundscape.musicCredit
+  uni.showModal({
+    title: '背景音乐来源',
+    content: `${credit.title}\n${credit.artist} (incompetech.com)\n${credit.license}\n${credit.licenseUrl}\n来源：${credit.sourceUrl}\n${credit.changes}`,
+    showCancel: false,
+    confirmText: '知道了'
+  })
+}
 const boardOpen = ref(false),
   boardTab = ref('activities'),
   boardLoading = ref(false),
@@ -335,17 +351,19 @@ function receivingWardrobe(state) {
 function openDive() {
   pondOpen.value = false
   diveOpen.value = true
+  soundscape.setScene('dive-menu')
 }
 function closeDive() {
   diveOpen.value = false
+  soundscape.setScene('plaza')
   loadOrnament()
 }
 function openPavilion() {
   pavilionOpen.value = true
 }
-function goPartner() {
+function goLandlord() {
   pavilionOpen.value = false
-  navigate('/pages/partner/index')
+  navigate('/rooms/landlord/index')
 }
 async function loadPet() {
   const current = ++petRevision
@@ -451,6 +469,8 @@ async function loadBoard(more = false) {
 }
 onShow(() => {
   active.value = true
+  soundscape.setVisible(true)
+  if (!diveOpen.value) soundscape.setScene('plaza')
   navigating.value = false
   hidePlazaTabBar()
   loadPet()
@@ -458,6 +478,7 @@ onShow(() => {
 })
 onHide(() => {
   active.value = false
+  soundscape.setVisible(false)
   petRevision++
   ornamentRevision++
   // Keep game components mounted: their onHide hooks pause clocks and input.
@@ -469,6 +490,7 @@ onHide(() => {
 })
 onUnload(() => {
   active.value = false
+  soundscape.setVisible(false)
   petRevision++
   ornamentRevision++
   pondOpen.value = false
@@ -477,6 +499,13 @@ onUnload(() => {
   closeBoard()
   uni.showTabBar({ animation: false, fail: () => {} })
 })
+// #ifdef H5
+function audioVisibility() {
+  soundscape.setVisible(active.value && !globalThis.document.hidden)
+}
+onMounted(() => globalThis.document.addEventListener('visibilitychange', audioVisibility))
+onUnmounted(() => globalThis.document.removeEventListener('visibilitychange', audioVisibility))
+// #endif
 </script>
 <style scoped>
 .board-tabs { display: flex; gap: 6px; margin: 0 0 15px; padding: 4px; background: #e9e5cf; border-radius: 8px; }
@@ -697,7 +726,7 @@ button:focus-visible {
 .first-visit-note {
   position: absolute;
   left: 14px;
-  bottom: calc(78px + env(safe-area-inset-bottom));
+  bottom: calc(102px + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   width: calc(100% - 28px);
@@ -756,6 +785,8 @@ button:focus-visible {
   border-radius: 12px;
   max-width: none;
 }
+.scene-notes { display: flex; flex-direction: column; align-items: flex-start; align-self: flex-start; gap: 4px; }
+.music-source { min-height: 44px; padding: 8px 10px; border-radius: 12px; background: #fffdf1ef; color: #344f3d; font-size: 11px; }
 .game-actions {
   display: flex;
   gap: 8px;
@@ -1049,7 +1080,7 @@ button:focus-visible {
     gap: 8px;
   }
   .first-visit-note {
-    bottom: calc(125px + env(safe-area-inset-bottom));
+    bottom: calc(170px + env(safe-area-inset-bottom));
   }
   .demo-mark {
     align-self: flex-start;

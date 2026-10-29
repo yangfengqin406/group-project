@@ -1,0 +1,31 @@
+"Carefree" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+https://creativecommons.org/licenses/by/4.0/
+
+Track: Carefree
+Composer and recording copyright holder: Kevin MacLeod
+ISRC: USUAN1400037
+Author track page: https://www.incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037
+Author catalog: https://incompetech.com/music/royalty-free/pieces.json
+Official original MP3: https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3
+Author license statement: https://incompetech.com/agent-section/
+Author attribution guidance: https://www.incompetech.com/music/royalty-free/faq.html
+License legal text: https://creativecommons.org/licenses/by/4.0/legalcode.en
+Accessed: 2026-10-25 (Asia/Shanghai)
+
+Technical modifications to this bundled copy:
+The complete official recording was transcoded to MP3 (libmp3lame),
+64 kbit/s constant bitrate, mono, 32000 Hz. No new melody, arrangement,
+additional music, cut, speed change or pitch change was created.
+Original music remains Kevin MacLeod's work; this project claims no authorship.
+
+Keep the track title, author, source and CC BY 4.0 attribution available to
+users through the project's visible music-credit entry. This license text
+must accompany redistribution of this file.
+
+Official source size: 6,566,713 bytes
+Official source SHA256:
+8433B770A630D9B1594FD484442C677907ECE899A4D149954CD2E74FD733E311
+Transcoded copy size: 1,642,496 bytes
+Transcoded copy SHA256:
+6B09620980128DADEE50BA88FE41D8F63E0276458837B872070B8D0BF31656D0

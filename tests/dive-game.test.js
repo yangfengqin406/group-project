@@ -161,7 +161,7 @@ test('泡泡真实击退海胆；碰撞扣心且有短暂无敌，不会一帧�
   assert.equal(collision.getState().player.hearts, 2)
 })
 
-test('未捡齐珍珠不能走捷径通关；氧气耗尽失败且终局不再推进', () => {
+test('未捡齐珍珠不能走捷径通关；缺氧逐步耗尽爱心且终局不再推进', () => {
   const game = createDiveGame(1)
   swim(game, [
     [9, 3],
@@ -172,8 +172,12 @@ test('未捡齐珍珠不能走捷径通关；氧气耗尽失败且终局不再�
   assert.equal(game.getState().status, 'playing')
   const idle = createDiveGame(1)
   idle.step(800)
-  assert.equal(idle.getState().status, 'failed')
+  assert.equal(idle.getState().status, 'playing')
+  assert.equal(idle.getState().player.hearts, 2)
   assert.equal(idle.getState().oxygenTicks, 0)
+  idle.step(200)
+  assert.equal(idle.getState().status, 'failed')
+  assert.equal(idle.getState().player.hearts, 0)
   const final = idle.getState()
   idle.step(20)
   assert.deepEqual(idle.getState(), final)
@@ -181,7 +185,7 @@ test('未捡齐珍珠不能走捷径通关；氧气耗尽失败且终局不再�
 
 test('重放拒绝过量、非整数、倒序/重复时间、速度和成功字段伪造', () => {
   const bad = [
-    { ticks: 901, trace: [] },
+    { ticks: 1201, trace: [] },
     { ticks: 1.5, trace: [] },
     { ticks: 1, trace: [{ tick: 1, dx: 0, dy: 0, fire: false }] },
     {

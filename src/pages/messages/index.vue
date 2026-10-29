@@ -112,7 +112,7 @@
         <text>{{ n.title }}</text>
         <text class="tag">{{ n.read ? '已读' : '未读' }}</text>
       </view>
-      <text class="muted">{{ formatTime(n.createdAt) }} · 查看原内容 →</text>
+      <text class="muted">{{ formatTime(n.createdAt) }} · {{ n.conversationId ? '查看联系消息' : '查看原内容' }} →</text>
     </view>
     <button v-if="noteCursor" class="secondary" :disabled="loading || busy" @tap="moreNotes">
       更多通知
@@ -317,7 +317,10 @@ async function read(n) {
   const current = () => version === loadVersion && userId === session.user?.id
   try {
     await notification.markRead({ notificationId: n.id })
-    if (current()) openContent(n.contentType, n.contentId)
+    if (!current() || !visible) return
+    n.read = true
+    if (n.conversationId) chat(n.conversationId)
+    else openContent(n.contentType, n.contentId)
   } catch (e) {
     if (current()) error.value = errorText(e)
   }

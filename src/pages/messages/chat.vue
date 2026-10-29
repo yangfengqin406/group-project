@@ -15,6 +15,7 @@
       <view v-if="current.peer" class="muted" style="margin-top: 8rpx">
         与 {{ current.peer.nickname }} 联系
       </view>
+      <button v-if="current.peer && config.apiMode === 'http'" class="secondary" @tap.stop="blockPeer">屏蔽对方</button>
     </view>
     <view class="row">
       <text class="muted">当前为留言模式，点击刷新读取新消息</text>
@@ -50,7 +51,8 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { onLoad, onShow, onHide, onUnload } from '@dcloudio/uni-app'
-import { conversation, message } from '../../services/index.js'
+import { conversation, message, user } from '../../services/index.js'
+import { config } from '../../config/index.js'
 import {
   contentNames,
   openContent,
@@ -74,6 +76,19 @@ let loadVersion = 0
 let visible = false
 let initialized = false
 let pendingSend = null
+async function blockPeer() {
+  const peerId = current.value?.peer?.id, userId = session.user?.id
+  if (!peerId) return
+  const confirmed = await new Promise((resolve) => uni.showModal({
+    title: '屏蔽这位用户', content: '双方将无法新建会话或发送新私信；可在“我的 → 账号与隐私”解除。',
+    success: (result) => resolve(result.confirm), fail: () => resolve(false)
+  }))
+  if (!confirmed || session.user?.id !== userId) return
+  try {
+    await user.block({ userId: peerId })
+    if (visible && session.user?.id === userId) error.value = '已屏蔽对方，双方暂时无法发送新私信。'
+  } catch (e) { if (visible && session.user?.id === userId) error.value = errorText(e) }
+}
 async function initialize() {
   const version = ++loadVersion
   const userId = session.user?.id
@@ -84,14 +99,9 @@ async function initialize() {
   cursor.value = null
   error.value = ''
   try {
-    let next = null
-    do {
-      const r = await conversation.list({ cursor: next })
-      if (!currentRequest()) return
-      current.value = r.items.find((c) => c.id === id.value) || current.value
-      next = r.nextCursor
-    } while (next && !current.value)
-    if (!current.value) throw new Error('会话不存在或没有权限')
+    const result = await conversation.get({ id: id.value })
+    if (!currentRequest()) return
+    current.value = result
     await load(true)
   } catch (e) {
     if (currentRequest()) error.value = errorText(e)
@@ -167,5 +177,5 @@ onShow(() => {
   else load(true)
 })
 onHide(() => { visible = false; ++loadVersion; loading.value = false })
-onUnload(() => { ++loadVersion; pendingSend = null })
+onUnload(() => { visible = false; ++loadVersion; pendingSend = null })
 </script>

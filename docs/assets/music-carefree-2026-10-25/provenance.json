@@ -1,0 +1,36 @@
+{
+  "accessedDate": "2026-10-25",
+  "timezone": "Asia/Shanghai",
+  "track": "Carefree",
+  "author": "Kevin MacLeod",
+  "isrc": "USUAN1400037",
+  "trackPage": "https://www.incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037",
+  "originalDownload": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
+  "catalog": "https://incompetech.com/music/royalty-free/pieces.json",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "authorLicenseEvidence": "https://incompetech.com/agent-section/",
+  "original": {
+    "file": "carefree-original.mp3",
+    "bytes": 6566713,
+    "sha256": "8433B770A630D9B1594FD484442C677907ECE899A4D149954CD2E74FD733E311",
+    "etag": "643339-50f21084aa3c0",
+    "duration": "205.139625",
+    "codec": "mp3",
+    "sampleRate": "44100",
+    "channels": 2,
+    "bitRate": "256000"
+  },
+  "encoded": {
+    "file": "carefree-mono64.mp3",
+    "bytes": 1642496,
+    "sha256": "6B09620980128DADEE50BA88FE41D8F63E0276458837B872070B8D0BF31656D0",
+    "duration": "205.139594",
+    "codec": "mp3",
+    "sampleRate": "32000",
+    "channels": 1,
+    "bitRate": "64000",
+    "changes": "Full-length mono 64kbps/32000Hz transcode only; no composition or musical edits"
+  },
+  "finalRuntimePath": "src/static/h5/audio/carefree.mp3 (H5 local copy only); WeChat streams the original official HTTPS URL"
+}

@@ -1,11 +1,11 @@
 {
   "auth": {
     "owner": "B",
-    "methods": ["login"]
+    "methods": ["login", "register", "logout", "deleteAccount"]
   },
   "user": {
     "owner": "B",
-    "methods": ["getProfile", "updateProfile", "listPublicContent"]
+    "methods": ["getProfile", "updateProfile", "listPublicContent", "block", "unblock", "listBlocked"]
   },
   "pet": {
     "owner": "A",
@@ -23,6 +23,10 @@
     "owner": "A",
     "methods": ["getState", "equip", "redeem"]
   },
+  "rewards": {
+    "owner": "A",
+    "methods": ["getState"]
+  },
   "dive": {
     "owner": "A",
     "methods": ["getState", "start", "finish"]
@@ -33,7 +37,7 @@
   },
   "conversation": {
     "owner": "C",
-    "methods": ["open", "list"]
+    "methods": ["open", "get", "list"]
   },
   "message": {
     "owner": "C",
@@ -77,7 +81,7 @@
   },
   "help": {
     "owner": "A",
-    "methods": ["create", "get", "list", "update", "complete", "getCandidates"]
+    "methods": ["create", "get", "list", "listMine", "update", "complete", "getCandidates", "apply", "listApplications", "selectHelper", "confirmCompletion", "cancelCooperation"]
   },
   "market": {
     "owner": "B",

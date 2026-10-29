@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-26",
+  "cause": ["backend was not listening", "compiled WLAN address no longer matched current WLAN"],
+  "recovery": { "existingDatabaseAndUploadsPreserved": true, "loopbackHealth": 200, "currentLanHealth": 200, "anonymousPetCode": "UNAUTHENTICATED" },
+  "simulatorApi": "http://127.0.0.1:8788/api",
+  "launcher": { "reuseRunningBackend": "passed", "startAbsentBackendAndBuild": "passed", "serverRemainsListening": true },
+  "validation": { "node": "22.22.0", "checkPages": 16, "checkMethods": 74, "testsPassed": 388, "testsFailed": 0, "h5Build": "passed", "weixinBuild": "passed", "wxssFiles": 32, "universalSelectorIssues": 0 },
+  "rawPackageBytes": { "main": 2063717, "pages/content": 39550, "rooms": 34777, "perPackageBudget": 2097152 },
+  "notVerified": ["wx.request inside simulator: IDE CLI security port disabled and not enabled", "physical WeChat devices"],
+  "systemProxyChanged": false,
+  "firewallChanged": false,
+  "privateConfigurationCommitted": false,
+  "remaining": ["component selector warnings", "framework external asset request", "suspected SDK report request"]
+}

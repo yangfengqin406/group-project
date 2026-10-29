@@ -1,0 +1,45 @@
+{
+  "title": "广场音乐、水声与食人鱼浏览器验收",
+  "startedAt": "2026-10-25T09:57:40.76Z",
+  "origin": "http://127.0.0.1:8787",
+  "cases": [
+    {
+      "name": "音乐点按解锁、输出有能量、开关不叠声",
+      "status": "passed",
+      "details": {
+        "outputRms": 0.0062851508610154054,
+        "contexts": 1
+      }
+    },
+    {
+      "name": "全部动态敌人为双排尖牙食人鱼，水声及气泡按实际事件触发，独立关闭水声立即静音",
+      "status": "passed",
+      "details": "音乐保持一条；水声与已有短音效均停止，重新开启后恢复水声"
+    },
+    {
+      "name": "暂停静音、恢复单份循环、返航后选关保持音乐、离开广场停声",
+      "status": "passed",
+      "details": "390px界面无横向溢出，实际潜水拾取1颗并返航；声音随实际页面生命周期停止"
+    }
+  ],
+  "screenshots": [
+    "plaza-music-779.png",
+    "piranhas-779.png",
+    "dive-paused-390.png",
+    "piranhas-390.png",
+    "plaza-music-390.png"
+  ],
+  "limitations": [
+    "H5独立浏览器实际点按与Web Audio输出采样，不等于微信真机或人工听感验收",
+    "本轮音频专项使用一个隔离浏览器上下文；未重新验收公网或三台物理设备",
+    "校园业务与潜水收获仍为本机演示"
+  ],
+  "status": "passed",
+  "finishedAt": "2026-10-25T09:57:48.732Z",
+  "runtimeExceptions": [
+    {
+      "name": "声音复核",
+      "errors": []
+    }
+  ]
+}

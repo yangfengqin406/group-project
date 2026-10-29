@@ -175,28 +175,26 @@ test('珍珠兑换不足或参数伪造不扣款，重试已拥有装扮不重�
   }
 })
 
-test('目录按通关进度分层，只有三种钓鱼装饰不设关卡门槛，没有免费装扮', () => {
+test('全部衣柜目录取消关卡兑换门槛，价格与首通或钓鱼获取方式保留', () => {
   assert.equal(new Set(WARDROBE_ITEMS.map((item) => item.id)).size, 23)
   assert.deepEqual(
-    WARDROBE_ITEMS.filter((item) => item.unlockLevel === 0).map(
-      (item) => item.id
-    ),
-    ['lily-pad', 'reed-bow', 'bubble-star']
+    WARDROBE_ITEMS.filter((item) => item.unlockLevel === 0).length,
+    23
   )
   for (const item of WARDROBE_ITEMS) {
-    assert.ok([0, 1, 2, 3].includes(item.unlockLevel))
+    assert.equal(item.unlockLevel, 0)
     assert.ok(Number.isSafeInteger(item.cost) && item.cost > 0)
     assert.equal(item.source.includes('入门赠送'), false)
   }
   const backpack = WARDROBE_ITEMS.find((item) => item.id === 'leaf-backpack')
-  assert.equal(backpack.unlockLevel, 2)
+  assert.equal(backpack.unlockLevel, 0)
   assert.equal(backpack.cost, 90)
 })
 
-test('有旧存款但尚未通关时仍拒绝服饰兑换，先检查关卡且不扣钱不发物', () => {
+test('旧存款无需潜水通关即可兑换服饰，余额不足仍不扣钱不发物', () => {
   const db = createSeed()
   run(db, 'getState')
-  // 模拟升级前已有的珍珠存款；余额不能代替服务保存的通关记录。
+  // 升级后的旧余额继续有效，不要求重玩潜水。
   db.wardrobes[owner].pearls = 1000
   for (const itemId of [
     'acorn-bob',
@@ -204,25 +202,24 @@ test('有旧存款但尚未通关时仍拒绝服饰兑换，先检查关卡且�
     'leaf-backpack',
     'glow-jelly'
   ]) {
-    assert.throws(() => run(db, 'redeem', { itemId }), { code: 'FORBIDDEN' })
-    assert.equal(run(db, 'getState').pearls, 1000)
-    assert.deepEqual(run(db, 'getState').owned, [])
+    const state = run(db, 'redeem', { itemId })
+    assert.ok(state.owned.some(item => item.id === itemId))
+    assert.deepEqual(state.clearedLevels, [])
   }
+  assert.equal(run(db, 'getState').pearls, 715)
   db.wardrobes[owner].pearls = 0
-  assert.throws(() => run(db, 'redeem', { itemId: 'leaf-slippers' }), {
-    code: 'FORBIDDEN'
+  assert.throws(() => run(db, 'redeem', { itemId: 'rain-boots' }), {
+    code: 'CONFLICT'
   })
   assert.equal(run(db, 'getState').pearls, 0)
 })
 
-test('通关与重玩攒珍珠后按新标价兑换，跨级有足够珍珠仍不能提前买', () => {
+test('原通关与重玩珍珠按保留标价兑换，仅按余额检查并保持兑换幂等', () => {
   const db = createSeed()
   grantDiveReward(db, owner, 1)
   for (let index = 0; index < 10; index++) grantDiveReward(db, owner, 1)
   assert.equal(run(db, 'getState').pearls, 110)
-  assert.throws(() => run(db, 'redeem', { itemId: 'leaf-backpack' }), {
-    code: 'FORBIDDEN'
-  })
+  assert.equal(run(db, 'getState').catalog.find(item => item.id === 'leaf-backpack').unlockLevel, 0)
   const firstPurchase = run(db, 'redeem', { itemId: 'acorn-bob' })
   assert.equal(firstPurchase.pearls, 50)
   assert.equal(
@@ -239,7 +236,7 @@ test('通关与重玩攒珍珠后按新标价兑换，跨级有足够珍珠仍�
   )
   assert.equal(run(db, 'redeem', { itemId: 'leaf-backpack' }).pearls, 5)
   assert.throws(() => run(db, 'redeem', { itemId: 'glow-jelly' }), {
-    code: 'FORBIDDEN'
+    code: 'CONFLICT'
   })
   grantDiveReward(db, owner, 3)
   assert.throws(() => run(db, 'redeem', { itemId: 'glow-jelly' }), {

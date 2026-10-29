@@ -35,6 +35,9 @@ test('旧会话收到新留言后按活跃时间置顶，保留原内容与对�
     conversation(db, 'newer', 'plan', new Date(Date.now() - 1000).toISOString()),
     conversation(db, 'older', 'market', new Date(Date.now() - 2000).toISOString())
   ]
+  // New messages require the original to remain public; historical summaries
+  // above can still refer to removed originals without leaking their details.
+  db.contents.market.push({ id: 'market-older', type: 'market', ownerId: 'user_demo_b', title: 'older', visibility: 'public', status: 'active' })
   dispatch(db, 'message.send', { conversationId: 'older', body: '刚刚收到的留言', idempotencyKey: 'latest' })
   const first = dispatch(db, 'conversation.list', { pageSize: 1 })
   assert.equal(first.items[0].id, 'older')

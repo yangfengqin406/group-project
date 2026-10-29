@@ -1,0 +1,25 @@
+{
+  "title": "Original bright plaza loop v2",
+  "bpm": 86,
+  "beats": 32,
+  "tonality": "C major pentatonic melody, major C/F/G harmony",
+  "lowestMidiNote": 60,
+  "noPadOrSubBass": true,
+  "sampleRate": 22050,
+  "seconds": 22.325578231292518,
+  "peak": 0.1583693027496338,
+  "rms": 0.02998006434678057,
+  "loopSeam": 0.0003844333114102483,
+  "lowpass80HzEnergyShare": 0.022170585004221317,
+  "maxAdjacentStep": 0.04057841747999191,
+  "synthesisMs": 91.9375,
+  "effectsUnchanged": {
+    "underwater": true,
+    "bubble": true,
+    "pearl": true,
+    "hurt": true,
+    "return": true,
+    "clear": true,
+    "fail": true
+  }
+}

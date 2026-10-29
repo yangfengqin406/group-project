@@ -1,10 +1,82 @@
 # 接口契约 v0.2
 
+## 2026-10-28 原画风嵌入展示
+
+按用户截图纠正，MyHelp新增可选embedded:boolean（默认false），为true时在资料卡内显示一行可展开入口，读取/错误/当前待办提示不随正文隐藏；展开仍使用原help.listMine及三栏分页。ContributionRewards新增可选embedded:boolean（默认false），在“我的宠物”内不再生成独立卡片，常显余额和规则入口，次数/规则/流水点开查看；showActions默认行为兼容，首页继续传false。均为展示属性，不新增RPC/路由/业务字段，不改变余额或发奖。
+
+## 2026-10-28 业务页视觉整理
+
+本轮无RPC、业务字段、路由或依赖变化。ContributionRewards新增可选展示属性showActions:boolean（默认true）：自己的家传false，与MyHelp的一组互助入口去重；衣柜等现有调用保持默认入口。规则与记录折叠仍读取同一鉴权状态，不改变余额或奖励。其余组件的事件、错误/重试/分页与身份隔离保持原契约；公开状态继续只用helpProgress，不引入私人待办到公开卡片。
+
+## 我的互助与求助说明（2026-10-28，本机验证通过，未发布）
+
+用户批准前三项体验改进，设计见[说明](superpowers/specs/2026-10-28-help-continuity-design.md)。help.create/update新增可选preferredTime（0～80字字符串，默认空）、estimatedMinutes（null或1～480整数，默认null）、meetingMode（flexible/online/offline，默认flexible）。未填字段兼容历史记录；更新未提供的新字段保留原值，选人后仍冻结编辑。时间为自由文本意愿，不是预约日期推断。
+
+公开Content摘要对help附加helpProgress:'waiting'|'helping'|'awaiting_confirmation'|'resolved'|'closed'，从原帖与当前选定协作推导，页面不自行推断谁已确认。公开摘要只带说明和进度，不附本人申请、确认时间或申请数。
+
+新增help.listMine({scope?:'todo'|'posted'|'applied',cursor?,pageSize?}) → {items,nextCursor}，默认todo。条目为{helpId,help:Content|null,application:Application|null,role:'owner'|'helper',pendingCount?,progress,actionRequired,actionLabel,availability:'available'|'unavailable',updatedAt}。身份由会话决定，拒绝客户端身份字段；作者看本人发帖，申请者按同帖最新本人申请去重；待办仅待选人与本人未确认，终态/已确认等待对方不列。筛选、去重后分页，游标绑定账号和scope。原帖私有/删除/注销后对申请者仅给不可访问占位及本人申请状态，不能包含原标题/正文/图片/作者或其他申请者，不能进入其详情。其他人的公开主页仍用user.listPublicContent。
+
+微信静态复制产物仅排除4张当前从不渲染的挂饰背面帧：static/pets/wearables/{bubble-star,pearl-badge,clover-pin,glow-jelly}-back.webp。WardrobeLayers只在正面显示挂饰；源码及H5/App帧均保留，通用衣身/鞋/发型及旧背包回退不裁剪。构建末尾对已知4个文件精确排除，再实际检查2MiB原始目录预算；不改变功能、路由或素材内容。
+
+## 校园贡献与珍珠（2026-10-27，用户已确认，实施中）
+
+完整规则见[设计说明](superpowers/specs/2026-10-27-campus-contribution-design.md)。公开新发布 help/market（sell 与 buy）/lostFound/plan 每篇5珠，每账号北京时间每日前三篇共享额度；编辑、失败、私有发布及七天内同账号规范化同文不重复奖励。create 新增可选 idempotencyKey，新客户端网络重试复用；返回原 Content，可瞬态附加 reward:{eventId,delta,reason}，不将本人奖励信息写进公开 Content。奖励事件、余额、业务与回执同事务提交，零奖励决定也不跨日补领。
+
+新增 rewards.getState() 仅读取本人余额、dayKey、daily:{publish:{awarded,limit:3},helpCompletion:{awarded,limit:2}}、rules 及 recent（最多20条本人贡献奖励）。仅服务端可信业务可发奖，客户端不能指定金额、身份或领奖事件。公开主页继续仅使用 user.listPublicContent。
+
+help 新增 listApplications({helpId,cursor?,pageSize?}) → {items,nextCursor}；作者看本帖申请，其他人只看本人申请。新增 apply({helpId,idempotencyKey})、selectHelper/confirmCompletion/cancelCooperation({helpId,applicationId,idempotencyKey})，返回 {application,help,reward?}；reward 仅当前调用人可见。申请含 id/helpId/ownerId/helperId/status（pending/accepted/completed/cancelled）、ownerConfirmedAt/helperConfirmedAt、createdAt 和公开用户摘要。公开 help 可附加 selectedApplicationId，不附申请清单或钱包信息。选人后冻结编辑，旧 help.complete 不得绕过双方确认；未选人自行解决不发完成奖。任一参与方取消未完成协作不发奖，重新选人不沿用旧确认。
+
+双方确认解决后，帮助者15珠、发布者5珠；每账号每天最多两次完成奖励，跨角色共享，各自独立判断满额，同一对账号同一天最多一次奖励。满额仍可完成，历史已结算事件不可重领。屏蔽禁止新的申请与选择；注销撤销未完成协作、清理本人奖励资料。所有日期由后端北京时间确定，独立账号未核验学籍，不宣称能防止小号互刷。
+
+conversation.open 对 help 增加发布者联系真实申请人的入口：仅该帖发布者可联系本帖 pending/accepted/completed 的申请者，参与者仍由服务端验证，复用既有双人会话并检查屏蔽与账号有效；不得指定无申请的任意账号。其他内容继续只联系发布者。帮助者仍可通过原入口联系作者。
+
+衣柜目录 unlockLevel 统一返回0并移除服务端通关兑换限制；clearedLevels 仍仅用于潜水顺序与首通奖励。旧余额、拥有物及固定游戏奖励保留。本节覆盖下方历史通关兑换门槛说明；H5/微信/App 源码均沿用该规则，本轮不打 APK。
+
+## Android / iOS App 接入（2026-10-27，实施中）
+
+0.1.1音频续修：用户确认华为安装、登录、伙伴与衣柜正常，但主动开启音乐且媒体音量正常仍无声。当前官方App SDK的obeyMuteSwitch为只读，平台适配只在属性可写时配置，不强写只读项；首次播放由调用方明确发起，不能把初始paused=false当作已播放。沿用同包名和云端证书递增版本，旧版本数据与已有账号不重置。新版是否有声仍以真机回验为准。
+
+App业务图片仍保留接口返回的原始URL；`services/media`仅为显示下载本服务`/api/files/`图片，令牌只放请求头，不放URL，不发送给外部图片站点。临时显示文件在组件卸载或账号切换后清理，迟到下载不能回填其他账号；H5/微信沿用原图片路径，不增加RPC。
+
+新增 `rooms/settings/index` 账号与隐私页面，沿用既有服务层。`VITE_APP_CONTACT_EMAIL` / `VITE_APP_PRIVACY_URL` 是可选公开展示配置，不得放密钥；正式发布构建要求提供实际联系方式、HTTPS隐私政策及真实DCloud AppID，开发预检仍明确区分未签名资源。账号注销产生的文件清理任务在SQLite提交后执行并持久重试，访问权限与会话先在事务内撤销。
+
+用户确认改用原生 App 交付，同时支持 Android 和 iOS；先完成适配与 Android 安装包，Apple 会员/签名稍后由用户准备。沿用 uni-app 官方 App 平台、既有 HTTP RPC 和独立账号，完整保留四屋业务、消息、宠物、衣柜、钓鱼、潜水及三人斗地主；不将 H5 网页或编译资源称为已签名安装包。
+
+App 构建新增与现有编译器完全同版本的 `@dcloudio/uni-app-plus`，构建时由 `CAMPUS_APP_ORIGIN` 指定 HTTPS 服务源，不将实际服务地址、DCloud AppID、证书或密码提交源码。原有 H5/微信构建继续可用，正式 App 不自动启用微信调试、不回退演示成功。PNG 导入新增 App 文件读取适配；声音及切后台沿用现有暂停规则。
+
+已实现本人账号注销与用户屏蔽：`auth.deleteAccount({password,confirmation:'注销账号'})` 二次验证当前账号密码后撤销全部会话、删除本人资料与私有存档、下架本人发布并清理上传；不允许客户端指定待注销用户。`user.block({userId})` / `user.unblock({userId})` / `user.listBlocked({})` 只维护当前账号的屏蔽关系，任一方屏蔽后禁止建立新会话和发送新私信；历史消息保留双方的既有访问权限，屏蔽不伪装删除双方已发生的交互。新增契约已通过真实SQLite与隔离浏览器走查；原生App真机及正式发布另验，不由编译成功推定。
+
+## 手机跨网络开发预览（2026-10-27）
+
+同日续修：仅 `build-phone-preview.mjs` 显式设置公开构建标记 `VITE_PHONE_PREVIEW_DEBUG=true`。服务层在首个HTTP请求前等待微信开发/体验环境的调试准备，共享一次在途准备；release环境及默认H5/发布构建不自动开启。调试失败不回退mock、不伪造登录；真实网络失败分别提示域名拒绝、超时、TLS/普通连接失败。不增加RPC、账号字段或业务存储，也不替代微信后台合法域名与成员权限。
+
+手机不能使用电脑回环地址。跨Wi-Fi/流量必须配置可达HTTPS源；`CAMPUS_PHONE_PREVIEW_ORIGIN`仅为手机预览构建指定真实API与牌桌HTTPS源，`CAMPUS_PHONE_PREVIEW_ASSET_ORIGIN`可指定同源静态图片地址，默认与前者一致。预览构建将运行时图片改为该源的/static路径并打开网络WebP解析，app.json底栏图标保持包内；不更改业务RPC、账号字段或演示回退策略，不把临时域名写入源码。默认8791模拟器构建及本机存储不变。原生开发预览的合法域名/调试权限与H5网页分别验收；临时公网连接并非正式微信上线。
+
+## 完整真实小游戏与发布配置（2026-10-26）
+
+沿用既有fishing/wardrobe/dive RPC及参数/返回字段，不新增玩家指定身份、余额或奖励入口。共享玩法模块只操作传入状态，不含浏览器存储；真实服务只允许当前认证账号，在SQLite同步事务内保存钓鱼、鱼册、衣柜、珍珠、关卡、有效局与上次结算。抛竿/潜水编号由服务端签发，潜水仍由相同规则回放并校验服务端经过时间；重复结算不得重复奖励，断线后通过getState读取已保存结算。既有独立访客斗地主契约不改。
+
+服务端新增可选CAMPUS_PUBLIC_ORIGIN（严格HTTPS源，不含路径/凭据）与CAMPUS_TRUSTED_PROXIES（明确代理IP列表）；不带VITE_前缀、不进入前端。固定公共源用于跳转、来源校验与上传URL；只信任配置代理提供的客户端地址，登录文件Cookie在HTTPS源下带Secure。本机未配置时保留原HTTP/LAN行为。私有演示数据与密码目录独立于真实用户目录，部署/演示包排除实际用户数据库。
+
+真实pet.save同时支持通过既有外观/PNG校验的原创画稿，仍只保存当前账号，不接受外链或SVG。仅pet.save的RPC允许最多1MiB请求信封以容纳两张受限PNG；其余RPC仍为64KiB，单张画稿256KiB/512像素限制不变。
+
+发布构建脚本固定读取既有VITE_API_MODE/VITE_API_BASE_URL/VITE_GAME_BASE_URL；CAMPUS_RELEASE_WECHAT_ORIGIN仅在构建时指定微信HTTP/HTTPS源，默认电脑模拟器127.0.0.1:8791，正式构建需改实际HTTPS源。CAMPUS_SHOWCASE_PORT/DATA_DIR仅用于隔离展示进程，样例目录与原真实数据库分开，正式启动不自动创建样例；不新增业务字段、路由或依赖。
+
+## 广场与潜水声音（2026-10-25，本地表现层）
+
+`services/soundscape.js` 提供本次会话的声音状态和控制，不新增RPC、账号字段、业务存储或依赖。按用户最新要求，广场音乐改为已发布录音《Carefree》/Kevin MacLeod（作者授权CC BY4.0），不再使用合成BGM；默认关闭、点击“音乐”播放，可通过“音乐来源”查看署名、来源与转码说明。潜水水声默认开启，在点击出发后解锁；音乐与水声可独立关闭，暂停潜水、离开广场或切后台均停止声音。
+
+`soundscape.musicCredit`是只读展示资料，包含曲名、作者、作者页、许可页及格式压缩说明，不进入业务User或存储。H5在平台层通过原生Audio播放`static/h5/audio/carefree.mp3`并处理play拒绝，路径跟随部署BASE_URL；微信通过InnerAudioContext播放作者官方HTTPS原曲，网络/域名/真机仍需另验。H5专用静态目录不进入微信包，普通小程序不从主包加载rooms私有素材。水声继续使用Web Audio/微信WebAudioContext。迟到播放不能在关闭或离页后继续响，加载、解码或播放失败明确提示，不回退旧合成曲；音频资源、许可和来源记录同源码交付。
+
+页面只通过该服务调用`unlock/toggleMusic/toggleEffects/setVisible/setScene/setPaused/effect`；平台音频操作放在`src/platform`，原创PCM合成放在`src/utils`。音效由实际气泡发射、珍珠拾取、扣心及结局状态触发，不表示结算成功或另行发奖；开关仅保留在当前运行会话，不跨账号写业务资料。
+
 ## 调用层约定
 
-页面调用 src/services 中的模块函数，例如 `market.list({ keyword, cursor, pageSize })`。call 内部在 mock/http 模式之间切换。
+微信构建的斗地主专用JS（landlord、game-transport、game-session）归rooms分包，源码服务仍保留于src/services；不更改页面URL、访客令牌或RPC契约。组件通过mp-weixin.lazyCodeLoading=requiredComponents按需注入，H5输出保持原构建方式。
 
-真实 HTTP 适配建议统一 RPC：`POST <VITE_API_BASE_URL>/rpc`，body 为 `{ method, params }`，登录后带 `Authorization: Bearer <token>`。这是本骨架约定，**还没有实现服务器**。如果后端采用 CloudBase 云函数，在 transport.js 增加云函数适配；页面调用名称和输入结果不变，不要把 CloudBase 环境 ID 当成 HTTP URL。
+页面调用 src/services 中的模块函数，例如 `market.list({ keyword, cursor, pageSize })`。校园业务的call在mock/http模式之间切换；斗地主独立走`game-transport.js`的真实访客HTTP服务，见文末，不复用mock身份或校园令牌。
+
+真实校园HTTP统一RPC：`POST <VITE_API_BASE_URL>/rpc`，body为`{method,params}`，登录后带`Authorization: Bearer <token>`；本机Node22/SQLite实现见[接入契约](local-campus-backend.md)，公网HTTPS适配及验收尚待完成。独立`server/landlord/`仅实现牌桌访客与牌局。若后续改用CloudBase云函数，在transport.js增加适配，页面调用名称和输入结果不变；不要把CloudBase环境ID当成HTTP URL。
 
 返回 envelope：`{ code: 'OK', message: '', data, requestId }`。call 成功只返回 data，失败抛 ServiceError，不回退演示数据。错误有 INVALID_ARGUMENT、UNAUTHENTICATED、FORBIDDEN、NOT_FOUND、CONFLICT、SERVICE_UNAVAILABLE；骨架补充 NOT_IMPLEMENTED / NOT_SUPPORTED，明确尚未实现或平台不支持。
 
@@ -41,21 +113,22 @@
 
 - 新演示身份不再赠送七件入门装扮；`owned`初始为空，七槽初始为null，珍珠为0。已有拥有物、通关、珍珠和旧钓鱼迁移保留，不删除可能已经获得的装扮。
 - `WARDROBE_ITEMS`及`wardrobe.getState().catalog`新增`unlockLevel: 0|1|2|3`：0为三种钓鱼饰品；其余在首次通关指定关卡后才可按目录标价兑换。`wardrobe.redeem`在服务侧校验`clearedLevels`，未满足时返回FORBIDDEN且不扣款；已拥有物的重试仍直接返回当前状态，不重复扣款。请求/状态其余字段、RPC名称和pet.save不变。
-- 关卡首通固定奖及30/45/60珍珠、重玩8/12/18珍珠不变；未获首通装扮可继续收集珍珠自选兑换。界面显示尚需通关的关卡、兑换价格和首通目标，并从衣柜直接进入既有潜水弹层，不新增页面。
+- 关卡首通固定装扮及30/45/60珍珠奖金、重游8/12/18珍珠奖金不变；版本2另计本局带回的每颗1枚收获，见下方潜水契约。界面显示尚需通关的关卡、兑换价格和首通目标，并从衣柜直接进入既有潜水弹层，不新增潜水页面。
 - 四款预设发型按头皮、耳根和帽檐分别绘制正背专属局部，鞋替换裸脚区域并连接脚踝；双肩包正面只显示肩带、背面显示包体。外部PetAvatar调用及服装服务字段不变；原创画稿仍使用通用定位，不识别任意头/脚形状。
 
 ### 分类衣柜、精绘宠物与水下闯关（2026-10-16，本地扩展）
 
 - 用户确认固定首通奖励＋珍珠自选兑换。新增 `wardrobe` 与 `dive`（A），仍只通过 services 调用；业务存储仅在 mock，真实失败不回退演示。新衣柜不向 pet.save 增加字段，既有预设/原创外观兼容。
-- 衣柜7槽为 `hair/head/outfit/feet/bag/hand/charm`，同槽替换、不同槽叠穿。共享目录 `src/utils/wardrobe-catalog.js` 提供 `WARDROBE_SLOTS`（id/label）、`WARDROBE_ITEMS`（id/name/slot/cost/source/description）及 `STARTER_ITEMS`。23件：hair=acorn-bob/cloud-bun/sea-braid；head=lily-pad/reed-bow/straw-hat/shell-crown；outfit=sailor-shirt/moss-cape/coral-dress；feet=rain-boots/shell-shoes/leaf-slippers；bag=leaf-backpack/shell-pouch/bottle-bag；hand=tiny-net/clover-umbrella/star-wand；charm=bubble-star/pearl-badge/clover-pin/glow-jelly。每个槽有一件入门物可直接搭配，其余由钓鱼/首通/珍珠兑换获取。
+- 衣柜7槽为 `hair/head/outfit/feet/bag/hand/charm`，同槽替换、不同槽叠穿。共享目录 `src/utils/wardrobe-catalog.js` 提供 `WARDROBE_SLOTS`（id/label）、`WARDROBE_ITEMS`（id/name/slot/cost/source/description）及 `STARTER_ITEMS`。23件：hair=acorn-bob/cloud-bun/sea-braid；head=lily-pad/reed-bow/straw-hat/shell-crown；outfit=sailor-shirt/moss-cape/coral-dress；feet=rain-boots/shell-shoes/leaf-slippers；bag=leaf-backpack/shell-pouch/bottle-bag；hand=tiny-net/clover-umbrella/star-wand；charm=bubble-star/pearl-badge/clover-pin/glow-jelly。最初的七件入门赠品已取消，STARTER_ITEMS为空，新身份通过钓鱼/首通/满足关卡门槛后兑换获取装扮，旧拥有物保留。
 - `wardrobe.getState()` → `{catalog,owned:[{id,count}],equipped:{hair,head,outfit,feet,bag,hand,charm},pearls,clearedLevels:[1,2,3]}`。`wardrobe.equip({slot,itemId:string|null})` → state，只能穿已拥有且槽位匹配的物品；null摘下该槽。`wardrobe.redeem({itemId})` → state，按目录价格扣珍珠，重复兑换已拥有物不重复扣款；不能伪造价格/余额/身份。
 - 旧 fishing.collection 的荷叶/芦苇结/水泡星迁移为衣柜拥有物，旧单件佩戴迁移到对应槽，不清空存档、不重复累计；后续钓获进入同一衣柜。fishing旧5方法保留兼容。`PetAvatar` 新可选 `wardrobe:Object|null`；传入时按衣柜多槽显示，否则保留旧ornament。新bag覆盖旧satchel，新head覆盖旧flower，避免同部位叠两件。
 - 四款预设改为参照用户概念图的透明精绘像素插画，提供真实正背面及对应耳型/帽型；保留四种配色显示（cream标为“原色”）。原创画布/PNG继续可用；衣柜为独立层，不伪造原创背面。
-- `dive.getState()` → `{clearedLevels,unlockedLevel,pearls,activeRun:Run|null,lastSettlement?:null|{runId,levelId,status:'cleared'|'failed',reward:{firstClear,items:[id],pearls}|null}}`；lastSettlement为当前身份最近一次核验结算的只读回执，旧存档无回执可为null。界面只为当前已发起且已结束的同一runId/levelId恢复结果，不根据珍珠或历史首通推断本局成功；隐藏期间或结果不明先读回执，读取衣柜同步展示，不重复发奖。重复finish仍返回CONFLICT，新局不能套用旧回执。
-- `dive.start({levelId:1|2|3})` → `Run:{id,levelId,seed,startedAt,expiresAt}`，只可开已解锁关卡，新run使旧run失效。每关为固定步长50ms的泡泡冒险：方向操作、发射泡泡、怪鱼/海胆碰撞、珍珠收集、找到出口；3爱心与氧气时限。
-- `dive.finish({runId,ticks,trace})` → `{status:'cleared'|'failed',reward:{firstClear,items:[id],pearls}|null,wardrobe:WardrobeState,state:DiveState}`。trace为输入改变事件数组 `{tick,dx,dy,fire}`，dx/dy为-1..1，fire布尔；工具 `src/utils/dive-game.js` 用 seed 重放固定步长输入核验结果。服务侧拒绝超长/越界/旧或他人编号、客户端直接提交成功/奖励；编号结算一次，失败不发奖。演示回放不等同生产防作弊或在线服务器。
-- 首通L1送sailor-shirt＋shell-shoes及30珍珠；L2送cloud-bun＋shell-pouch及45珍珠；L3送shell-crown＋star-wand＋pearl-badge及60珍珠。重玩通关分别8/12/18珍珠，不重复发首通套装；失败不扣已拥有装扮，不消耗购买资源。全为不可交易本机装扮，无付费或真实货币。
-- `FishingPond` 与宠物收纳袋复用分类衣柜，池边增加“潜水闯关”入口；仍不新增业务房子或路由，潜水以独立弹层打开。亭子真人麻将不属于本轮。
+- 当前潜水契约为2026-10-24版本2，替代旧的“氧气归零直接失败”规则。`dive.getState()` → `{clearedLevels,unlockedLevel,pearls,activeRun:Run|null,lastSettlement:null|Settlement}`；`Settlement:{runId,levelId,rulesVersion:2,status:'cleared'|'returned'|'failed',collectedPearls,reward:{firstClear,items:[id],pearls}|null}`。旧存档无回执可为null；旧回执没有版本时不能用于恢复版本2本局。界面仅按当前账号、同一runId/levelId/rulesVersion恢复已结束本局，不根据余额或历史首通推断成功；结果不明先读回执并刷新衣柜，不重复发奖，重复finish仍返回CONFLICT。
+- `dive.start({levelId:1|2|3})` → `Run:{id,levelId,rulesVersion:2,seed,startedAt,expiresAt}`；只可开已解锁关卡，新run替换旧run，缺少版本或旧版本编号明确失效重开。模拟固定步长50ms，最多1200步（60秒）；活动有效期为startedAt后360秒，其中包括暂停/请求恢复余量，不能把有效期当成模拟氧气。客户端拒绝规则版本不符的开局。
+- 3爱心，氧气40/42/45秒。氧气归零先扣1心，此后每100步（5秒）扣1心，同一步碰撞与缺氧最多扣1心。持续静止按住返航40步（2秒）且未受伤后为returned，移动、松开或受伤打断；暂停/后台停止模拟、不回血。引擎快照增加`rulesVersion:2`、`returningTicks:0..40`、`oxygenDamageTicks:0..100`，后两项是返航进度及缺氧后下次扣心的步数，不是钱包字段。
+- `dive.finish({runId,ticks,trace})` → `{status:'cleared'|'returned'|'failed',rulesVersion:2,collectedPearls,reward:{firstClear,items:[id],pearls}|null,wardrobe:WardrobeState,state:DiveState}`。trace为输入改变事件数组`{tick,dx,dy,fire,returning?}`；dx/dy仅-1/0/1，fire及可选returning为布尔，省略returning按false兼容。ticks为1～1200整数，trace最多1200项，事件tick严格递增且小于ticks。服务按seed回放并检查实际经过时间，拒绝非法/超长/多余终局步数、旧或他人编号及客户端直接指定结果、身份或金额；只有服务核验终局才能消费编号。
+- 每颗场内珍珠先计1枚待带回收获，不即时入袋。returned只入袋已拾数量，reward为`{firstClear:false,items:[],pearls:collectedPearls}`（可为0），不记通关或解锁；cleared入袋本局收获，另发首通固定装扮及30/45/60奖金，重游奖金8/12/18；故首通合计33/49/65，重游11/16/23。failed的reward为null，仅丢本局收获，历史余额、装扮及通关保留。首通L1送sailor-shirt＋shell-shoes；L2送cloud-bun＋shell-pouch；L3送shell-crown＋star-wand＋pearl-badge，不重复领套装。回执与入袋同一次结算，编号仅消费一次，返回对象深拷贝、按身份隔离；本机回放不等同生产防作弊，无付费或真实货币。
+- `FishingPond`与宠物收纳袋复用分类衣柜，潜水以原有弹层打开，不新增业务房子；“离开冒险”和“选择关卡”需确认放弃本局，不能等同返航入袋。亭子最初四人麻将仅为历史规划，当前改为文末的三人斗地主分包。
 
 ### 穿戴表现调整（2026-10-18，仅显示层）
 
@@ -71,7 +144,7 @@
 - `fishing.getState()` → `{catchCount,fishBook:[{id,name,count}],collection:[{id,name,count}],equipped:string|null,activeCast:Cast|null}`。装饰 ID 为 `lily-pad`（小荷叶）、`reed-bow`（芦苇结）、`bubble-star`（水泡星）；`PetAvatar` 增加独立可选显示属性 `ornament`，用于预设及原创，不改 pet.save 数据格式。
 - `fishing.cast()` → `Cast`，每身份只有一条有效抛竿，新抛竿替换旧编号。Cast 包含 `{id,status:'waiting'|'hooked',biteAt,escapeAt,meterStartAt?,meterPeriodMs?,meterZone?,landDeadlineAt?}`，时间均为毫秒时间戳。`hook({castId})` 必须在 biteAt～escapeAt 内，返回 `{status:'hooked',cast}` 或 `{status:'escaped',reason,state}`。`land({castId})` 以服务侧时钟核对三角往返标尺是否落在 meterZone 内，返回 `{status:'caught',fish,reward,state}` 或逃脱结果。结果写入后消费编号，重复或他人编号不得重复发奖；页面不传鱼种、奖励或成功声明。
 - `fishing.equip({decorationId:string|null})` → 最新 state；只能佩戴背包已有装饰，null 可摘下。首次成功钓获赠小荷叶，后续成功有35%概率随机得到上述装饰，重复获得累加数量；无消耗、购买、付费或奖励交易。
-- `PlazaScene` 可用独立 `pond`/`pavilion` 场景地点及支路，不计入四栋业务建筑；走到池边后触发 `pond`，亭子触发 `pavilion` 展示规划状态，不能伪造真人匹配。原四楼 `enter` 和消息入口保持。
+- `PlazaScene`的`pond`/`pavilion`为独立场景地点及支路，不计入四栋业务建筑；池边触发`pond`，亭子触发`pavilion`。本节最初的四人麻将规划已由2026-10-24三人斗地主实现取代，未配置服务时不显示虚构在线或匹配。原四屋`enter`及消息入口保留。
 - `bulletin.list` 原公告字段兼容，校园活动条目增加 `{kind:'campus-activity',startAt,endAt,location,organizer,participation}`。演示活动由 mock 相对当前时间生成，过滤已结束活动后分页；不得将虚构活动描述为本校真实活动或已完成报名。顶部居中活动公告入口与中央公告热点打开同一面板；活动详情展示时间、地点、组织方和参与方式，真实活动来源/报名另接。
 
 contentType 为 plan / help / market / lost_found / event。当前 content/detail 只支持前四项；event 在第二周实现对应入口再开放通知。
@@ -163,3 +236,35 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 ## 服务端必须校验
 
 身份来自登录态；不接受前端伪造 ownerId/currentUserId。查看公开与本人内容分开；修改检查作者；会话/消息检查参与者；通知标读检查归属；管理员处理举报需要管理员权限；上传校验类型、大小、归属。演示检查只能辅助理解，不能当作生产安全措施。
+
+## 2026-10-24 潜水返航与三人斗地主（A，本地实现契约）
+
+潜水以本文“分类衣柜、精绘宠物与水下闯关”的版本2契约为准：返航保存本局收获，真正通关另发奖金和首通礼物；失败不扣历史余额。旧氧气归零直接失败、结果仅cleared/failed的描述不再是现行接口。
+
+斗地主使用独立真实局域网访客会话，不复用固定mock身份，不称真实校园账号认证。公开配置`VITE_GAME_BASE_URL`为空时明确未配置；`npm run game:local`构建时设为`/game`，由`server/landlord`同源托管H5。接口统一`POST <GAME_BASE>/rpc`，body为`{method,params}`，envelope为`{code,message,data}`；网络与服务错误不回退mock。session.open返回`{token,playerId,nickname}`，后续`Authorization: Bearer <访客令牌>`；身份从令牌取得，不接收伪造playerId。访客失效使用`UNAUTHORIZED`，与校园业务的UNAUTHENTICATED分开处理；客户端凭证按牌桌服务地址隔离，不向页面暴露令牌。
+
+| method | params | data/规则 |
+| --- | --- | --- |
+| session.open | {nickname} | {token,playerId,nickname}；有效令牌可恢复本人访客，昵称1—12字 |
+| landlord.getLobby | {} | {onlineCount,queueCount,roomId,matchStatus}；有效心跳去重的在线访客与排队人数 |
+| landlord.joinQueue / cancelQueue | {operationId} | 最新lobby；三人原子匹配；取消与已匹配竞态返回已匹配状态 |
+| landlord.getRoom | {roomId} | 本人牌桌快照，含roomId/revision/selfId/phase/currentPlayerId/deadline/serverTime/landlordId/highestBid/highestBidderId/bids/bottomCards/seats/hand/lastPlay/winnerTeam/winnerIds/message；对手不返回未出手牌 |
+| landlord.bid | {roomId,score:0..3,operationId,expectedRevision} | 最新本人快照；只接受轮到的玩家叫分 |
+| landlord.play | {roomId,cardIds,operationId,expectedRevision} | 服务校验本人持牌、牌型、轮次与压制，合法才移牌 |
+| landlord.pass | {roomId,operationId,expectedRevision} | 首出不能过牌；两人都过后原出牌者重新领出 |
+| landlord.hint | {roomId} | {cardIds}；只读取本人的合法建议，不泄露对手手牌 |
+| landlord.setAuto | {roomId,enabled,operationId,expectedRevision} | 本人托管开关，超时/断线有明确托管标记 |
+| landlord.leave | {roomId?,operationId} | 排队取消；进行中离开由托管继续，不伪造胜负；结束可回亭子再匹配 |
+
+牌桌phase为`bidding/playing/finished`；Card为`{id,rank,suit,label}`，rank为3～17（16小王、17大王），suit为spades/hearts/clubs/diamonds/joker。seats公开`{playerId,nickname,seatIndex,handCount,auto,connected,role,lastAction}`，role为null/landlord/farmer；lastAction只公开已经作出的叫分、过牌或已出的牌。bottomCards在地主确定前为空，确定后公开三张底牌；hand始终只包含请求者本人。lastPlay为null或`{playerId,cards,pattern}`，pattern含type/main/length/size。服务校验单张、对子、三张/三带、顺子、连对、飞机及带牌、四带、炸弹与王炸，不接受客户端指定牌型或胜者。
+
+前台约1秒读取牌桌新版本，异步结果按会话/页面/版本隔离；在线为45秒内有有效请求的独立访客，正常回合20秒，超时/离线切为有标记的托管，可接手。写操作按访客operationId及参数指纹幂等，仅保留最近256个成功回执；网络结果不明重试复用同次参数与编号，旧revision冲突后刷新，超出保留窗口不承诺无限期回放。
+
+数据仅在服务进程内存；结束桌10分钟后收起，活动旧局最长30分钟收起且不虚构胜负，无牌桌闲置访客6小时后清理；重启清空会话、排队与牌桌。页面`/rooms/landlord/index`放在`rooms`分包，服务端规则不打入前端；亭子仍为场景地点，四栋业务房子不变，无货币下注或兑换接口。三独立会话的自动化/浏览器验证与三台物理设备分开记录；公网、微信联网及三台物理设备尚未验收。
+# 2026-10-25 本机真实服务增量
+
+用户选择先完成本机/同 Wi-Fi 账号、上传和持久化服务；新增 `auth.register`、`auth.logout` 和真实 multipart 上传，既有业务 RPC 字段保持兼容。账号名不代表学籍认证，微信登录未配置时明确拒绝。详细契约与集成责任见 [本机校园服务](local-campus-backend.md)。本节先于代码接入登记，验证结果以 verification.md 为准。
+
+`market.getCandidates({id})` 返回本人商品预约分页（含 buyer/seller）；`reservation.respond({reservationId,accept:boolean})` 由卖家确认/拒绝，`reservation.complete({reservationId})` 由买卖任一方完成已确认预约，重复操作结果一致。新增 `rooms/account/index` 分包账号页面用于独立账号注册/登录；401 业务错误转向该页，退出会话撤销服务端令牌。
+
+本地 `help.getCandidates({helpId})` 仅供本人公开进行中的求助，按同校区真实账号 `skillTags` 与 `category` 忽略大小写完全一致匹配，返回账号与规则理由；不代表 AI 能力评估。`pet.get/save` 将预设外观保存到当前账号，游戏奖励暂不接入校园数据库。

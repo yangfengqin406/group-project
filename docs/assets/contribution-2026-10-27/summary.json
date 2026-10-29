@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-28",
+  "startedDate": "2026-10-27",
+  "rules": {
+    "publish": {
+      "pearls": 5,
+      "limit": 3,
+      "duplicateDays": 7
+    },
+    "helpCompletion": {
+      "authorPearls": 5,
+      "helperPearls": 15,
+      "limit": 2,
+      "pairLimit": 1
+    }
+  },
+  "check": {
+    "passed": true,
+    "pages": 17,
+    "serviceCallSites": 84
+  },
+  "tests": {
+    "total": 478,
+    "passed": 478,
+    "failed": 0,
+    "skipped": 0
+  },
+  "builds": {
+    "h5": true,
+    "mpWeixin": true
+  },
+  "weixin": {
+    "styleFiles": 35,
+    "styleIssues": 0,
+    "targetedQuality": "passed",
+    "rawBudget": {
+      "passed": true,
+      "budgetBytes": 2097152,
+      "mainBytes": 2094517,
+      "subpackages": [
+        {
+          "root": "pages/content",
+          "bytes": 52564
+        },
+        {
+          "root": "rooms",
+          "bytes": 44633
+        }
+      ]
+    },
+    "nativeScan": "not-run"
+  },
+  "browser": {
+    "passed": true,
+    "steps": 7,
+    "runtimeErrors": 0
+  },
+  "productionUpdated": false,
+  "apkUpdated": false,
+  "mainMerged": false,
+  "remaining": [
+    "physical-device validation of new features",
+    "public runtime rollout",
+    "later APK when user resumes packaging"
+  ]
+}
