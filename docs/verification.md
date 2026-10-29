@@ -2,6 +2,8 @@
 
 ## 2026-10-29 合并核对与App方向文档更新
 
+本轮文档分支为codex/docs-team-app-direction-20261029，通过[PR #46](https://github.com/yangfengqin406/group-project/pull/46)同步main固定入口；合并与CI状态以该PR为准。
+
 通过GitHub实际读取main e2627d5、PR目标分支/合并时间/头提交和CI：PR #43（B孙瑞）与PR #44（C姜澜）已合main；PR #42（A杨凤琴）于10月29日仅合A人员分支，PR #45为A→main的开放PR，当前mergeable_state=dirty，尚无整合通过结论。本轮不操作其业务合并。
 
 - PR #43的[CI](https://github.com/yangfengqin406/group-project/actions/runs/40709888074)实际check16页/74调用、419测试、H5/微信及发布资源构建、32WXSS和包体通过；H5操作为作者自述，未新增测试文件/真机证据。
