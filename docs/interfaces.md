@@ -1,5 +1,20 @@
 # 接口契约 v0.2
 
+## 2026-10-29 App显示名称与图标
+
+用户确认App显示名为“校园生活广场”，使用已提供的兔子抱小屋头像。调整公开manifest.name、h5.title和app-plus.distribute.icons，并将隐私欢迎文案及政策页标题的显示名称保持一致；图标按本机HBuilderX 5.26 schema的Android与iPhone/iPad字段准备确定性缩放PNG，放在static/app/icons专属目录。原始头像保持不变，来源与SHA256记录在docs/assets/app-brand-2026-10-29。appid、版本、包名、证书、业务接口、路由和存储不变；iOS图标资源不代表已签名IPA。原生启动画面及业务内文字不是本轮额外重设计。
+
+## 2026-10-29 App 0.1.1重新打包整合（本机候选）
+
+用户已恢复App打包授权。独立目录整合A（杨凤琴）的互助/珍珠/原画风/App适配和B（孙瑞）PR #43分类、C（姜澜）PR #44未读提醒/聊天更新；App生命周期同时保留音频后台停止与消息前台轮询。版本0.1.1/code101，原工作区、实际账号数据及现有服务保持；不在本目录记录私有AppID或签名。此为本机候选，不表示远端PR #45已解冲或main已包含整合代码。本轮531测试、check17页/87调用、H5/微信/App双目标预检及包体实际通过，13步双账号验收通过，详情见verification；APK与真机仍单独登记。
+
+## 私信未读与前台提醒（2026-10-29）
+
+- 新增 `conversation.unread({})` → `{total,items:[{id,unreadCount,peer,contentType,contentId,contentTitle,lastMessage}]}`，按最新未读留言排序，仅返回本账号有未读的会话，统计不受列表分页影响。`conversation.get/list` 另附 `unreadCount`。
+- 新增 `conversation.markRead({conversationId,throughMessageId})`，只允许参与者确认同一会话中已展示的消息及其之前记录，返回 `{unreadCount}`。读位置只前进，不误读请求期间新到的消息；已读状态按账号持久保存，不向对方暴露阅读回执。
+- App前台每5秒查询一次未读；底部消息角标、广场消息入口及各业务页面可点击提示共用统计。隐藏/退出/切账号停止并隔离旧响应。提示可收起，未读角标保留；同一消息不重复弹出，正在看的会话不弹提示。
+- 聊天页前台每5秒刷新最新留言，保留已加载历史和输入草稿；读取成功后才提交已读位置。后台/关闭应用不承诺推送，本轮不接微信订阅发送或系统通知权限。
+
 ## 2026-10-28 原画风嵌入展示
 
 按用户截图纠正，MyHelp新增可选embedded:boolean（默认false），为true时在资料卡内显示一行可展开入口，读取/错误/当前待办提示不随正文隐藏；展开仍使用原help.listMine及三栏分页。ContributionRewards新增可选embedded:boolean（默认false），在“我的宠物”内不再生成独立卡片，常显余额和规则入口，次数/规则/流水点开查看；showActions默认行为兼容，首页继续传false。均为展示属性，不新增RPC/路由/业务字段，不改变余额或发奖。
@@ -45,7 +60,6 @@ App业务图片仍保留接口返回的原始URL；`services/media`仅为显示�
 App 构建新增与现有编译器完全同版本的 `@dcloudio/uni-app-plus`，构建时由 `CAMPUS_APP_ORIGIN` 指定 HTTPS 服务源，不将实际服务地址、DCloud AppID、证书或密码提交源码。原有 H5/微信构建继续可用，正式 App 不自动启用微信调试、不回退演示成功。PNG 导入新增 App 文件读取适配；声音及切后台沿用现有暂停规则。
 
 已实现本人账号注销与用户屏蔽：`auth.deleteAccount({password,confirmation:'注销账号'})` 二次验证当前账号密码后撤销全部会话、删除本人资料与私有存档、下架本人发布并清理上传；不允许客户端指定待注销用户。`user.block({userId})` / `user.unblock({userId})` / `user.listBlocked({})` 只维护当前账号的屏蔽关系，任一方屏蔽后禁止建立新会话和发送新私信；历史消息保留双方的既有访问权限，屏蔽不伪装删除双方已发生的交互。新增契约已通过真实SQLite与隔离浏览器走查；原生App真机及正式发布另验，不由编译成功推定。
-
 ## 手机跨网络开发预览（2026-10-27）
 
 同日续修：仅 `build-phone-preview.mjs` 显式设置公开构建标记 `VITE_PHONE_PREVIEW_DEBUG=true`。服务层在首个HTTP请求前等待微信开发/体验环境的调试准备，共享一次在途准备；release环境及默认H5/发布构建不自动开启。调试失败不回退mock、不伪造登录；真实网络失败分别提示域名拒绝、超时、TLS/普通连接失败。不增加RPC、账号字段或业务存储，也不替代微信后台合法域名与成员权限。
@@ -85,7 +99,8 @@ App 构建新增与现有编译器完全同版本的 `@dcloudio/uni-app-plus`，
 ## 第一阶段列表与广场交互补充
 
 - 搭子和技能互助列表组合使用既有 `keyword`、`category`、`status`、`cursor`、`pageSize`。`category` 为与发布内容一致的完整类别/技能字符串，`status` 为既有状态值；空字符串表示不限制。后端先完成筛选再分页，后续页保留同一组已生效条件；只编辑输入框而未提交搜索时，不影响加载更多。
-- `FeedList` 的可选属性为 `showFilters: Boolean`（默认关闭）、`categoryOptions: Array<String>`、`statusOptions: Array<{label,value}>`。预设类别用于快捷选择，允许手动填写已有分类；不得把它们当成新的公共枚举或限制发布。
+- 搭子发布页的类别自 10-28 起改为固定选择：选项来自公共常量 `src/constants/plan.js`（电影、散步、运动、学习、游戏），发帖页与找搭子检索页共用同一份，发布时必选；技能求助仍为自由输入。历史自定义类别内容仍可经关键词/类别筛选查到，列表筛选后端不限定取值。
+- `FeedList` 的可选属性为 `showFilters: Boolean`（默认关闭）、`categoryOptions: Array<String>`、`statusOptions: Array<{label,value}>`。找搭子检索页快捷类别直接传入 `planCategories`；技能求助检索仍允许手动填写已有分类。
 - 广场坐标按背景宽高归一化到 `[0,1]`。移动工具的 `createPlazaWalker` 对外提供 `getState()`、`moveTo(point)`、`advance(seconds)`、`stop()`：目的地投影到闭合步道，沿较短方向行走，不穿越中心树岛；这是本地场景状态，不持久化业务数据，也不表示多人位置同步。
 
 ## 宠物外观（本地版本）

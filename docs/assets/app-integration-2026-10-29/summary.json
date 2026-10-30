@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-29",
+  "versionName": "0.1.1",
+  "versionCode": 101,
+  "sources": {
+    "common": "bfd2dad5caeab714f8dc5d2fd2afa830087b7aad",
+    "a": "6788ab7742bbdb23a742236c261284652b6544f2",
+    "main": "74f429888095fe212dcefe8ac8350bb5a2d35183"
+  },
+  "check": {
+    "pages": 17,
+    "serviceCallSites": 87
+  },
+  "tests": {
+    "total": 531,
+    "passed": 531,
+    "failed": 0,
+    "skipped": 0
+  },
+  "builds": {
+    "h5": true,
+    "mpWeixin": true,
+    "appAndroidCompile": true,
+    "appIosCompile": true
+  },
+  "weixin": {
+    "styleFiles": 37,
+    "styleIssues": 0,
+    "targetedQuality": "passed",
+    "rawBudget": {
+      "passed": true,
+      "mainBytes": 2093800,
+      "budgetBytes": 2097152,
+      "subpackages": [
+        {
+          "root": "pages/content",
+          "bytes": 56311
+        },
+        {
+          "root": "rooms",
+          "bytes": 44633
+        }
+      ]
+    },
+    "nativeScan": "not-run"
+  },
+  "browser": {
+    "passed": true,
+    "steps": 13,
+    "runtimeErrors": 0,
+    "visualChecks": [
+      {
+        "name": "help primary action geometry",
+        "top": 565.46875,
+        "bottom": 609.859375,
+        "height": 44.390625,
+        "viewport": 844
+      },
+      {
+        "name": "original artwork and embedded features",
+        "height": 180,
+        "pictureOpacity": "1",
+        "myHelpEmbedded": true,
+        "pearlsEmbedded": true
+      },
+      {
+        "name": "embedded help expanded layout",
+        "top": 515.59375,
+        "bottom": 839.984375,
+        "viewport": 844,
+        "overflow": false
+      },
+      {
+        "name": "home no horizontal overflow",
+        "width": 320,
+        "overflow": false
+      },
+      {
+        "name": "home no horizontal overflow",
+        "width": 430,
+        "overflow": false
+      }
+    ],
+    "screenshotsVisuallyReviewed": [
+      "new-message-notice.png",
+      "chat-update-keeps-draft.png"
+    ]
+  },
+  "nativePackages": {
+    "apk": false,
+    "ipa": false
+  },
+  "actualAccountDataUsed": false,
+  "publicRuntimeUpdated": false,
+  "businessPr45Merged": false,
+  "limitations": [
+    "App compile preflight used non-routable example origin and no real AppID",
+    "native audio and new APK physical-device validation pending",
+    "packaging and remote integration performed separately by root agent"
+  ]
+}

@@ -4,12 +4,13 @@
     title="找搭子小屋"
     subtitle="先发布计划，再找到时间合拍的人"
     show-filters
-    :category-options="['电影', '散步', '运动', '学习', '游戏']"
+    :category-options="planCategories"
     :status-options="statuses"
   />
 </template>
 <script setup>
 import FeedList from '../../components/FeedList.vue'
+import { planCategories } from '../../constants/plan.js'
 const statuses = [
   { label: '全部状态', value: '' },
   { label: '招募中', value: 'open' },

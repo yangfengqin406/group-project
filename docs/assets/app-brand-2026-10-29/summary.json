@@ -1,0 +1,179 @@
+{
+  "date": "2026-10-29",
+  "appDisplayName": "校园生活广场",
+  "h5Title": "校园生活广场",
+  "source": {
+    "path": "docs/assets/app-avatar-2026-10-25/app-avatar-v1.png",
+    "sha256": "608dcab5401ad5c4d0eebc9b891b680c2543503142ccb92943be1474039ab0c6",
+    "width": 1254,
+    "height": 1254,
+    "bitDepth": 8,
+    "colorType": 2,
+    "unchanged": true
+  },
+  "transformation": "Full square image, high-quality bicubic downscale using System.Drawing; opaque 24-bit RGB PNG; no crop, padding, redesign or AI changes",
+  "resources": [
+    {
+      "path": "src/static/app/icons/icon-20.png",
+      "bytes": 1134,
+      "sha256": "00edbe6e139eec41908fa730c324c94bd437f5468712870e718f310f78559e11",
+      "width": 20,
+      "height": 20,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-29.png",
+      "bytes": 2133,
+      "sha256": "90f050e95e8ec5d7a8a84c9220fda5349d24509c6e6558acef4723c92495660c",
+      "width": 29,
+      "height": 29,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-40.png",
+      "bytes": 3769,
+      "sha256": "8702295e3d70cfa2baaec43273f48a5e135ce3ed85134862ce71caa2a2e00fa8",
+      "width": 40,
+      "height": 40,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-58.png",
+      "bytes": 7418,
+      "sha256": "45239574e3127f36e9d516feb9c3fc51c8c72f041d4960de9f8a7a282effd672",
+      "width": 58,
+      "height": 58,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-60.png",
+      "bytes": 7897,
+      "sha256": "25e1b27caaddf73a06c57d50ddacd2a77c0b0e48c390b64a80300148725fcc30",
+      "width": 60,
+      "height": 60,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-72.png",
+      "bytes": 10981,
+      "sha256": "4463d05ea42e889a2a3bcef161dd67a2f4216c64d6acbfc7a5ecd3172ac02a54",
+      "width": 72,
+      "height": 72,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-76.png",
+      "bytes": 12096,
+      "sha256": "9812048643d85aeb2ea87340c4269cb9f9b684c4264b8d3911b92cf086744587",
+      "width": 76,
+      "height": 76,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-80.png",
+      "bytes": 13367,
+      "sha256": "884fe686fb94769479047a2f53df5399f7d0f589bc9f234763b2cea2f9658d26",
+      "width": 80,
+      "height": 80,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-87.png",
+      "bytes": 15609,
+      "sha256": "cded14f2ddab6cc0f220add22ca6c9c79bccbf7ac89a8d9521c156886ab6eba4",
+      "width": 87,
+      "height": 87,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-96.png",
+      "bytes": 18599,
+      "sha256": "4a98467ffd5ff97c95e6403a626162fa6521690e7bfc68d7bf7116ca98cbe6ec",
+      "width": 96,
+      "height": 96,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-120.png",
+      "bytes": 28113,
+      "sha256": "5a2970866e552ab562ac3f06b8fd91392d6eda86a1282c0c0853379cf6e2a7f0",
+      "width": 120,
+      "height": 120,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-144.png",
+      "bytes": 39119,
+      "sha256": "218d87730ff7617c7ea96b7f7fc6a7ba2cb28d6dcd89f5e580fa53feb1bc74b1",
+      "width": 144,
+      "height": 144,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-152.png",
+      "bytes": 43192,
+      "sha256": "2b383aad0e2d336204b6b4dcea16389fbd77fafeef4cb4f6620a24454dded4eb",
+      "width": 152,
+      "height": 152,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-167.png",
+      "bytes": 51430,
+      "sha256": "b41e2015e264a6d3e2ea171c0dc41a2677d7af870fcd3c63768caa4a923ae70e",
+      "width": 167,
+      "height": 167,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-180.png",
+      "bytes": 59229,
+      "sha256": "f3ce59c114d023ba5e6f84e045fdc901b3faf952019914bd28a5966a4d1d0536",
+      "width": 180,
+      "height": 180,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-192.png",
+      "bytes": 66691,
+      "sha256": "f4d20eb67f625593a4029744f082d4dd1daf1ee92b508f272af739c069a504a6",
+      "width": 192,
+      "height": 192,
+      "bitDepth": 8,
+      "colorType": 2
+    },
+    {
+      "path": "src/static/app/icons/icon-1024.png",
+      "bytes": 1714781,
+      "sha256": "ed90db344d07fb29889a7b2d0e1bf1eaf3b1fe8f4f2b19236e01e8c2df0660e1",
+      "width": 1024,
+      "height": 1024,
+      "bitDepth": 8,
+      "colorType": 2
+    }
+  ],
+  "schema": "HBuilderX 5.26 local uniapp-manifest-schema app-plus.distribute.icons",
+  "officialSchemaFieldsVerified": true,
+  "protectedManifestUnchanged": true,
+  "protectedManifestSha256": "065ed67a3f40f96240e9913d112f4d95b038a745b85914e35f4cd69a2d640508",
+  "versionName": "0.1.1",
+  "versionCode": "101",
+  "nativePackage": "requires rebuilding and signed packaging",
+  "iosSigned": false,
+  "physicalDeviceVerified": false
+}

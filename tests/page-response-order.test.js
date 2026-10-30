@@ -13,6 +13,7 @@ function page(file, services, names) {
   const session = { user: { id: 'a' } }
   const context = vm.createContext({
     ref: (value) => ({ value }), watch: () => {}, reactive: (value) => value,
+    messageAlerts: { state: { items: [], foreground: true }, setActive() {}, acknowledged() {} },
     computed: (getter) => ({ get value() { return getter() } }),
     onShow: (fn) => { hooks.show = fn }, onHide: (fn) => { hooks.hide = fn },
     onUnload: () => {}, onLoad: () => {}, config: { apiMode: 'mock' }, session,
@@ -179,4 +180,41 @@ test('会话权限读取完成前，即使填了文字也不能发送', async ()
   await chat.send()
   assert.equal(sends, 0)
   assert.equal(chat.body.value, '提前输入')
+})
+
+test('聊天自动更新保留草稿和已加载历史，只标读实际获取的新消息', async () => {
+  const reads = []
+  const m1 = { id: 'm1', body: '第一条', createdAt: '2026-10-29T00:00:00Z' }
+  const m2 = { id: 'm2', body: '第二条', createdAt: '2026-10-29T00:00:01Z' }
+  let latest = [m1]
+  const chat = page('messages/chat', {
+    conversation: { get: async () => ({ id: 'chat' }), markRead: async (params) => { reads.push(params); return { unreadCount: 0 } } },
+    message: { list: async () => ({ items: [...latest], nextCursor: 'page-2' }) }
+  }, ['id', 'body', 'items', 'cursor', 'load'])
+  chat.id.value = 'chat'; chat.hooks.show(); await flush()
+  chat.body.value = '尚未发送的草稿'
+  chat.items.value.push({ id: 'history', body: '历史留言', createdAt: '2026-10-28T00:00:00Z' })
+  chat.cursor.value = 'history-page-3'
+  latest = [m2, m1]
+  await chat.load(true, { background: true })
+  assert.deepEqual(Array.from(chat.items.value, (m) => m.id), ['m2', 'm1', 'history'])
+  assert.equal(chat.body.value, '尚未发送的草稿')
+  assert.equal(chat.cursor.value, 'history-page-3')
+  assert.equal(reads.at(-1).throughMessageId, 'm2')
+  assert.equal(reads.at(-1).conversationId, 'chat')
+})
+
+test('自动读取期间离开聊天，迟到的新消息不能被标为已读', async () => {
+  let finish, reads = 0, delayed = false
+  const chat = page('messages/chat', {
+    conversation: { get: async () => ({ id: 'chat' }), markRead: async () => { reads++; return { unreadCount: 0 } } },
+    message: { list: () => delayed ? new Promise((resolve) => { finish = resolve }) : Promise.resolve({ items: [], nextCursor: null }) }
+  }, ['id', 'load', 'items'])
+  chat.id.value = 'chat'; chat.hooks.show(); await flush()
+  delayed = true
+  const poll = chat.load(true, { background: true }); await flush()
+  chat.hooks.hide()
+  finish({ items: [{ id: 'late', createdAt: '2026-10-29T00:00:00Z' }], nextCursor: null }); await poll
+  assert.equal(reads, 0)
+  assert.equal(chat.items.value.length, 0)
 })

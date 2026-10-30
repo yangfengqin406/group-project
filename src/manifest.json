@@ -1,5 +1,5 @@
 {
-  "name": "校园像素生活广场",
+  "name": "校园生活广场",
   "appid": "",
   "description": "三人团队 uni-app 双端骨架",
   "versionName": "0.1.1",
@@ -48,6 +48,38 @@
           "NSCameraUsageDescription": "拍摄你主动发布的闲置、失物照片或个人头像。",
           "NSPhotoLibraryUsageDescription": "选择你主动上传的物品、头像或原创宠物 PNG 图片。"
         }
+      },
+      "icons": {
+        "android": {
+          "hdpi": "static/app/icons/icon-72.png",
+          "xhdpi": "static/app/icons/icon-96.png",
+          "xxhdpi": "static/app/icons/icon-144.png",
+          "xxxhdpi": "static/app/icons/icon-192.png"
+        },
+        "ios": {
+          "appstore": "static/app/icons/icon-1024.png",
+          "iphone": {
+            "app@2x": "static/app/icons/icon-120.png",
+            "app@3x": "static/app/icons/icon-180.png",
+            "spotlight@2x": "static/app/icons/icon-80.png",
+            "spotlight@3x": "static/app/icons/icon-120.png",
+            "settings@2x": "static/app/icons/icon-58.png",
+            "settings@3x": "static/app/icons/icon-87.png",
+            "notification@2x": "static/app/icons/icon-40.png",
+            "notification@3x": "static/app/icons/icon-60.png"
+          },
+          "ipad": {
+            "app": "static/app/icons/icon-76.png",
+            "app@2x": "static/app/icons/icon-152.png",
+            "proapp@2x": "static/app/icons/icon-167.png",
+            "spotlight": "static/app/icons/icon-40.png",
+            "spotlight@2x": "static/app/icons/icon-80.png",
+            "settings": "static/app/icons/icon-29.png",
+            "settings@2x": "static/app/icons/icon-58.png",
+            "notification": "static/app/icons/icon-20.png",
+            "notification@2x": "static/app/icons/icon-40.png"
+          }
+        }
       }
     }
   },
@@ -58,7 +90,7 @@
     "router": {
       "mode": "hash"
     },
-    "title": "校园像素生活广场"
+    "title": "校园生活广场"
   },
   "mp-weixin": {
     "appid": "",

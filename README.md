@@ -1,104 +1,65 @@
-# 校园生活广场 · uni-app 团队项目
+# 校园生活广场 · App 项目
 
-**本次提交（2026-10-28）**：[PR #42](https://github.com/yangfengqin406/group-project/pull/42) 已提交，来源为 `codex/a-mutual-help-original-style-20261028`，目标为 A（杨凤琴）的 `codex/a-plaza-partner-pets`，尚未合入 A 或 main。以最新 main 为基础保留团队成果，完整提交互助/珍珠、原画风融合及 App 适配；排除真实微信 AppID、本机配置与数据。下方“本机改动/无PR”按各阶段当时状态阅读；现有公网和安装包未更新，继续暂停打包。
+**本机App 0.1.1重新打包候选（2026-10-30）**：名称为「校园生活广场」，使用用户指定的兔子抱小屋图标；已整合A互助/珍珠/原画风/App、B分类与C私信提醒。531项测试、H5/微信/Android/iOS编译预检及[13步真实H5验收](docs/assets/app-integration-2026-10-29/summary.json)通过，[新名称/17图标/8音频预检](docs/assets/app-brand-2026-10-29/preflight-2026-10-30.json)通过。10月30日11:09:52安卓云打包成功，已下载0.1.1/code101 APK（25.3MiB），v1/v2验签、旧包身份/证书一致性、原生名称/4图标/8音频及新功能资源检查通过；[APK证据](docs/assets/app-brand-2026-10-29/apk-verification-2026-10-30.json)。最终公网下载验收时临时连接中断，手机下载未验收，华为覆盖安装及有声仍待确认，未上架商店。[打包状态与未验范围](docs/app-release-2026-10-27.md)单独记录；下方PR #45未合main为远端状态，不表示本候选缺少B/C。历史“暂停打包”按当时状态阅读。
 
-**原画风融入新功能（2026-10-28，本机）**：按用户原版截图保留完整房间插画、楷体木牌、奶油卡片和模块侧线；“我的互助”收进资料卡一行，珍珠收进“我的宠物”，规则和记录点开再看，原统计、收藏和资料操作保留。[手机效果](docs/assets/original-style-integration-2026-10-28/home-original-collapsed.png) · [桌面效果](docs/assets/original-style-integration-2026-10-28/home-original-desktop.png) · [求助列表](docs/assets/original-style-integration-2026-10-28/help-card-waiting.png) · [详情](docs/assets/original-style-integration-2026-10-28/help-brief-detail.png)。520项测试、双端构建及隔离真实H5流程通过，范围见[实际验证](docs/verification.md)；仍暂停打包，未更新现有公网、安装包或main。
+面向校园的互助与生活信息应用，提供求助、搭子、二手和失物信息，以像素小镇、虚拟伙伴和装扮形成温暖的使用体验。使用 **uni-app + Vue 3 + JavaScript**，真实服务采用 **Node.js 22 + SQLite**。团队为 A（杨凤琴）、B（孙瑞）、C（姜澜）。
 
-**我的互助与求助说明（2026-10-28，本机改动）**：自己的家集中展示待我处理、我发出的和我申请的互助；求助可选填写期望时间、用时及线上/线下，列表显示实际协作进度。[规则与设计](docs/superpowers/specs/2026-10-28-help-continuity-design.md) · [验收记录](docs/verification.md)。暂不打包，现有公网/安装包及main不会自动更新。
+**交付方向（2026-10-29）**：以 Android / iOS App 为主，H5 用于开发、课堂展示及备用访问；暂停微信小程序正式发布。现有微信源码和构建暂保留作兼容回归，本次不删除功能或调整构建依赖。
 
-**校园互助与珍珠（2026-10-27，本机改动）**：公开发布求助、求购、闲置、失物或搭子均可获得珍珠；求助支持申请帮忙、作者选人和双方确认，帮助者与发布者分别获得奖励。衣柜改为直接珍珠兑换，不强制玩游戏。[完整规则](docs/superpowers/specs/2026-10-27-campus-contribution-design.md) · [实际验证](docs/verification.md)。用户已暂停打包；源码改动不会自动更新已安装 APK 或现有公网预览，未合入 main 的部分按周报状态阅读。
+**[团队周报（监督查看）](docs/weekly-log.md)** · [main 固定周报入口](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [验证记录](docs/verification.md)
 
-**Android / iOS App 适配（2026-10-27）**：用户确认保留完整功能，先交付双端适配和 Android 安装包，Apple 会员稍后准备。[App 构建与打包步骤](docs/app-release-2026-10-27.md)记录实际产物及待完成项；编译资源、已签名安装包、真机验收和商店上线分别记录。
+## 当前交付状态
 
-**10～11分钟作品展示**：[完整逐字稿、分段操作与问答](docs/showcase-10min-2026-10-27.md)，按约2100字正文加约2分钟操作安排，目标10分40秒，实际以排练计时为准。手机预览续修在首个HTTP请求前等待开发调试准备；默认/正式构建不自动开启，不再依赖每次扫码手动开关。
+| 项目 | 已完成与证据 | 仍待完成 |
+| --- | --- | --- |
+| Android | 0.1.0经用户华为基础验收；0.1.1整合候选已实际签名生成APK，原生名称「校园生活广场」、4图标/8音频检查和v1/v2验签及旧包身份/证书一致性通过；[本轮交付记录](docs/app-release-2026-10-27.md) | 临时公网连接中断，手机下载未验收；待华为覆盖安装、桌面显示、声音和完整真机流程验证，未上架商店 |
+| iPhone | A 分支的 iOS 编译预检通过，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40698932730)可查 | Apple 开发者会员、签名与分发配置尚未完成，未生成 IPA |
+| 真实后端 | 独立账号、图片上传、校园业务/消息及玩法存档已接入SQLite；10月30日保留并备份现有7个账号，恢复独立终端及临时HTTPS，新测试账号的登录/伙伴/衣柜等真实接口通过，测试后仅清理该测试账号；[运行与部署](docs/local-campus-backend.md) | 稳定公网环境、持续运维及完整多设备验收；临时展示通道依赖电脑联网和服务进程运行，不能视为生产部署 |
+| H5 备用 | [main 阶段演示](https://yangfengqin406.github.io/group-project/#/)；可在本机连接真实服务 | GitHub Pages 使用虚构本机演示数据，不能替代真实多人后端 |
 
-**手机扫码与跨网络展示**：流量/不同Wi-Fi手机需连接公网HTTPS，不能扫127.0.0.1模拟器包。[手机预览步骤](docs/phone-preview.md)说明真实H5、微信构建、图片与调试权限；已获用户华为流量H5及微信开启调试后场景/伙伴验证，临时入口不是正式微信上线。
+## 最近合并与分支边界
 
-**2026-10-27 发布候选**：[展示流程、演讲稿与答辩](docs/showcase-2026-10-27.md) · [部署包与上线步骤](docs/release-2026-10-27.md)。真实后端现已支持完整钓鱼、三关潜水、衣柜/珍珠持久化及原创宠物保存。Node22 下运行 `node scripts/build-release.mjs` 固定生成真实双端构建，再用 `node scripts/start-showcase.mjs` 启动8791独立展示。首次生成虚构样例和随机测试密码，保留原账号数据。暂无服务器/域名，公网真实部署及微信审核未完成。
+- **B（孙瑞）**：[PR #43](https://github.com/yangfengqin406/group-project/pull/43) 已合入 main。搭子发帖使用五类必选按钮，发布/检索共用分类；技能求助仍可自由输入，历史分类兼容。属于 B 对搭子模块的协作，不改写 A 的原模块归属。
+- **C（姜澜）**：[PR #44](https://github.com/yangfengqin406/group-project/pull/44) 已合入 main。前台约每5秒检查私信，底栏/广场未读角标、可点击/收起的提示及聊天自动更新已接入，保留草稿和历史；关闭应用后不提供离线推送。
+- **A（杨凤琴）**：[PR #42](https://github.com/yangfengqin406/group-project/pull/42) 已合入 A 的 `codex/a-plaza-partner-pets`：完整互助、珍珠激励、本人待办、原画风融合及 App 适配。[PR #45](https://github.com/yangfengqin406/group-project/pull/45) 申请将 A 合入 main，当前有合并冲突，尚未完成。main 当前还不能使用 A 新增的 `build:app` 脚本；也不能把 A 的520项测试视为含 B/C 新变更的整合验收。
 
-使用 **uni-app + Vue 3 + JavaScript**，同一套源码构建H5和微信小程序。团队成员为A（杨凤琴）、B（孙瑞）、C（姜澜）。
+公开发帖与完成互助奖励、衣柜取消通关兑换门槛及原卡片内嵌互助/珍珠，均以 [A 分支设计](https://github.com/yangfengqin406/group-project/blob/4ca2a416985a075c53a2c0a0a58bda5600f3cd89/docs/superpowers/specs/2026-10-27-campus-contribution-design.md)和[效果图](https://github.com/yangfengqin406/group-project/blob/4ca2a416985a075c53a2c0a0a58bda5600f3cd89/docs/assets/original-style-integration-2026-10-28/home-original-desktop.png)为准，待 PR #45 整合后才成为 main 功能。旧 APK 和已运行服务不会因合并源码自动更新。
 
-**[浏览main阶段演示](https://yangfengqin406.github.io/group-project/#/)**：手机或电脑可打开。A（杨凤琴）的第二阶段与质量改进已通过[PR #15](https://github.com/yangfengqin406/group-project/pull/15)合入，B（孙瑞）的估价、求购匹配和个人空间已通过[PR #20](https://github.com/yangfengqin406/group-project/pull/20)合入，C（姜澜）的SQLite失物/统一消息服务端与权限通知已通过[PR #23](https://github.com/yangfengqin406/group-project/pull/23)合入main。main更新后由Actions检查并自动发布，构建失败则保留上次成功版本；使用虚构本机数据，不能跨设备同步。见[部署文档](docs/deployment.md)。
+## App 构建与安装
 
-**[团队周报（监督查看）](docs/weekly-log.md)**：按周查看A/B/C完成内容、成果证据、问题和下一步。固定入口为[main分支周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)；详细测试过程见[验证记录](docs/verification.md)。
+App 源码及[完整步骤](https://github.com/yangfengqin406/group-project/blob/4ca2a416985a075c53a2c0a0a58bda5600f3cd89/docs/app-release-2026-10-27.md)目前在 A 分支。下面的编译命令仅在包含 App 适配的分支执行，需先使用 Node.js **22.22.0** 并安装依赖：
 
-**[H5备用方案与上线条件](docs/h5-backup-and-release.md)**：微信审核前的公网演示、现场真实业务和网络故障备用步骤；区分课程演示与正式多人上线，不将本机端口当公网交付。
+```powershell
+npm ci
+$env:CAMPUS_APP_ORIGIN='https://your-service.example'
+$env:CAMPUS_DCLOUD_APP_ID='__UNI__YOUR_OWN_ID'
+npm run build:app
+```
 
-## 先跑起来
+实际服务地址和AppID留在本机私有配置。命令输出为 `dist/app/<时间戳>/` 中的HBuilderX源码项目及Android/iOS编译资源，**不是签名安装包**。本轮另经云打包生成安卓0.1.1 APK并下载验签；公网下载、覆盖安装和iOS签名分发仍按[交付记录](docs/app-release-2026-10-27.md)分别登记。
 
-**本机真实业务版（2026-10-25）**：使用 Node.js 22，执行 `npm run campus:local`，打开终端显示的 8788 地址并注册账号。账号、真实图片、二手、搭子、失物和消息保存到本机 SQLite，同网络设备共用数据；默认演示和 GitHub Pages 仍用虚构数据。独立账号未核验学籍，微信登录/公网部署尚待配置。见[接入契约](docs/local-campus-backend.md)和[部署说明](docs/deployment.md#本机与同-wi-fi-真实校园服务)。
+## 开发与 H5 备用
 
-[新小程序头像](docs/assets/app-avatar-2026-10-25/app-avatar-v1.png)：薄荷绿底、奶油白兔抱小屋，[提示词与生成记录](docs/assets/app-avatar-2026-10-25/prompt.txt)保留。文件不打入小程序包，尚未在微信后台设置。
-
-1. 安装 Node.js **22.22.0**；三人统一这个版本（`.nvmrc`），本包也按此版本验证。
-2. clone团队仓库后，打开能看到package.json的项目根目录；已有仓库不要重新git init。
-3. 在这个文件夹的终端执行：
+在项目根目录使用 Node.js **22.22.0**：
 
 ```bash
 npm ci
-npm run dev:h5
+npm run campus:local
 ```
 
-打开终端显示的地址，默认 `http://localhost:5173`。首次运行无需云账号、数据库或 .env 文件；默认使用虚构的本机演示数据。
+打开终端显示的8788地址注册独立账号，上传和业务数据保存于本机 SQLite/文件目录；同网络设备使用主机网卡地址，不能使用手机自身的127.0.0.1。该账号未核验学籍。默认演示开发使用 `npm run dev:h5`，不连接真实后端；[部署说明](docs/deployment.md)区分两种模式。
 
-微信小程序开发：
+App 和真实 H5 共用后端。面向不同网络的手机访问时，后端需持续提供可达的 HTTPS 服务；GitHub Pages 的静态页面不能存储大家共用的真实账号或帖子。[H5备用方案](docs/h5-backup-and-release.md)仍供展示及故障切换参考。
 
-```bash
-npm run dev:mp-weixin
-```
+## 功能与展示
 
-在微信开发者工具中导入 `dist/dev/mp-weixin`，用你们自己的 AppID。`src/manifest.json` 的 `mp-weixin.appid` 需要在实际接入时统一填写；个人工具私有配置不要提交。
-
-发布构建用 `npm run build:mp-weixin` 并导入 `dist/build/mp-weixin`。若缺少 `app.json`，核对是否选了编译目录；若白屏，先看工具 Console 的红色错误。构建后运行 `npm run check:mp-styles` 排查不兼容通配选择器，uni-app构建不能代替微信自身WXSS编译或真机验收。
-
-微信代码质量的组件按需注入与牌桌私有JS分包位置通过 `npm run check:mp-quality` 定向检查；构建后在工具“代码质量”中重新扫描，完整扫描结果另记。若仍显示旧接口错误，只清除编译缓存再编译，保留存储、账号与授权；本机地址的令牌独立，需登录原账号。真实衣柜的奖励、兑换、穿戴和重登读取现已接入，需重新构建并连接本轮后端。
-
-**微信电脑模拟器连接本机真实后端**：使用Node22运行 `npm run campus:weixin`。命令先确认或启动SQLite后端，再以 `127.0.0.1:8788` 构建微信目录，避免换Wi-Fi后仍请求旧IP；若本命令启动了后端，终端需保持运行。回工具重新编译并登录已有独立账号。局域网HTTP调试需在工具本地设置关闭域名校验，正式发布仍需HTTPS；手机不能使用电脑的127.0.0.1，改用当前WLAN地址，见[部署步骤](docs/deployment.md#微信本机模拟器真实服务调试)。
-
-## 同一 Wi-Fi 试玩斗地主（本地）
-
-本轮新增三人真人匹配与完整牌局，需要一台电脑运行独立访客服务。它与校园账号、消息等本机演示分开；上方 GitHub Pages 链接尚未接入这项联机服务。
-
-```bash
-npm ci
-npm run game:local
-```
-
-命令先构建 H5，再启动默认 `0.0.0.0:8787` 服务。三台设备连接同一 Wi-Fi，各自打开终端打印的“同Wi-Fi设备打开”地址，在广场进入“亭子 → 去亭子匹配”，填写昵称、入座并开始匹配；凑齐三位真人后叫分、出牌。手机使用主机的网卡 IP，不能使用 `127.0.0.1`。主机保持运行；退出终端或重启服务会清空访客与牌局。网络排查、重新构建及微信限制见[局域网试玩部署](docs/deployment.md#局域网三人斗地主本轮本地实现)。三台物理设备尚待实际验收。
-
-## 已经准备好的内容
-
-- 整屏像素广场包含四栋房子、宠物与中心公告栏；屋顶配色的小木牌用双叶、放大镜、提袋和家图形区分入口。点击建筑后，宠物先沿步道走到门口，再进入对应模块；场景底部保留消息和自己的家入口。
-- 广场适应横竖窗口，提供全景和探索视图；业务列表、发布和推荐在各自模块内操作。搭子和技能求助支持关键词、完整类别/技能与状态组合筛选。
-- 西南小路连接池边栈台，可走到池边钓鱼、查看鱼册或进入三关“潜水闯关”；“衣柜与鱼册”和宠物页“打开衣柜”共用分类衣柜，预设与原创宠物均可穿戴。北侧歇脚亭进入三人斗地主：独立访客、真实在线/排队人数、三人匹配、叫分、完整出牌与胜负、提示和超时托管；没有机器人填位或货币下注。未配置牌桌服务时明确提示，不能假装匹配成功。
-- 顶部居中的“校园活动”和中心公告热点打开同一活动面板，展示相对当前日期未来三天的虚构活动、时间、地点、组织方与参与方式，明确不是真实报名；私信仍进入原有消息中心。
-- 广场底部“音乐关”可开启现成配乐《Carefree》（Kevin MacLeod，CC BY 4.0），通过“音乐来源”查看署名与出处（[详情](docs/music-credits.md)）；潜水右上“水声开/关”控制水下环境声与气泡、拾取、受伤和结局音效。暂停、离开或切后台会停声；开关仅本次会话有效，不支持音频的设备会明确提示。水下动态敌人统一为尖牙食人鱼，珊瑚仍是障碍；角色相遇按脚底位置稳定遮挡。
-- 本地版“我的宠物”：蘑菇、水豚、兔子和松鼠参照用户概念图精绘为透明像素插画，提供真实正背面和耳朵/帽型变体；可选原色、苔绿、杏桃、淡紫并命名。保存成功后用于广场，本机演示身份分别保存。
-- 衣柜按发型、头饰、衣服、鞋袜、背包、手持、挂饰分为七类，共 23 件；新身份从空衣柜开始。首通获得固定装扮，其他服饰先通关指定关卡再用珍珠兑换，衣柜显示获取目标；钓鱼三种小装饰仍可收集。不同部位可叠穿，同一部位替换，穿戴独立保存，旧拥有物保留。
-- 四种预设的三款衣服分别绘制正背专属衣身，穿衣时替换裸躯干，与原头耳和尾巴组合。三款发型沿各自头皮、耳根或帽下生长；三款鞋按左右脚独立包住脚掌，换鞋时移除原脚，保留肚底与尾尖。叶子双肩包正面只露肩带、背面显示包体，斜挎包可自然露在身前或侧面。原创画稿保留通用穿戴定位，不推断任意画稿的肢体。
-- 原创宠物支持 32×32 像素画布、16 色画笔、橡皮擦、撤销、清空及本地 PNG 导入；分别编辑正背面，正面必填、背面可后补。PNG 每张宽高不超过 512 像素、文件不超过 256 KiB。
-- B第二版补充二手类别/成色示例参考估价（非AI识图）、本人求购的公开在售闲置匹配及理由、个人空间统计/收藏/近期发布；本轮接入本机真实服务，公网待配置。
-- 二手、搭子、失物、技能互助的列表、发布和详情页面；二手支持闲置/求购、图片ID、交接预约与完成，失物保留丢失/拾获及分类、照片、评论与归还，联系共用消息中心。
-- 自己的家、资料头像编辑、我的发布过滤与他人公开主页；默认演示仍用虚构身份与临时图，`campus:local` 提供真实独立账号和本机文件存储，不代表学籍认证或云存储。
-- 共用内容卡片、空状态、错误提示、导航、个人状态和消息入口。
-- 各模块接口调用位置、统一 RPC 请求层和框架无关的业务契约。
-- 本机演示：发布、查询、收藏、举报、相近计划推荐、邀请与确认、关联内容的留言和通知。
-- 10月22日A第二阶段首批在A工作分支完善公开计划推荐、取消确认、容量/到期状态及失效邀请；返回推荐会恢复待确认标记，网络结果不明的邀请重试复用操作编号。具体交付与验证见[团队周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)和[验证记录](docs/verification.md)，真实登录与数据库事务仍待接入。
-- 锁定依赖、Git 规则、任务说明、两端构建命令、GitHub 检查和关键业务测试。
-
-## 还没有完成什么
-
-2026-10-25增量：本轮接通本机真实账号、文件上传、A/B/C 统一 SQLite 与 RPC，补预约接受/完成和本机管理员举报入口；实际结果见[验证记录](docs/verification.md)。C 第二阶段及本轮代码/头像均已合入 main，本轮见[PR #25](https://github.com/yangfengqin406/group-project/pull/25)与[周报](docs/weekly-log.md)；公网仍使用演示模式。
-
-本机独立账号、SQLite、消息发布、文件存储及权限事务本轮已接入；真实微信登录、公网 HTTPS、订阅发送和小程序审核仍待环境与验收。钓鱼、衣柜与潜水的真实SQLite后端已接入，HTTPS公共源及可信代理适配已有回归；实际公网部署、完整生产防作弊、真实校园活动来源与报名待完成。斗地主使用独立局域网访客内存服务，三物理设备及微信真机尚未验收。最初四人麻将规划已改为三人斗地主。GitHub Pages 仍是阶段演示，不能当作真实校园数据上线。
-
-演示图片仍用临时地址；本机真实版上传文件并校验类型、大小、所属账号与公开范围，重启后保留。预设和原创像素/PNG正背画稿均可按当前账号持久保存，服务端保留尺寸、签名与CRC等校验，不接收外部画稿URL。
-
-广场角色沿预设步道与建筑支路行走，不支持自由穿越场景或多人位置同步。广场内使用场景导航，离开后恢复普通页面底栏；横竖屏按窗口响应，不强制锁定设备方向。画面来源和生成编辑记录见 [docs/plaza-assets.md](docs/plaza-assets.md)。
-
-池边钓鱼使用“抛一竿 → 咬钩时收竿 → 绿区稳稳收线”的两阶段时机操作，成功后记录鱼册。第一次成功赠小荷叶，后续每次成功有 35% 概率获得小荷叶、芦苇结或水泡星，重复获得累加数量；原有三种装饰与佩戴记录迁入同一衣柜，不清空旧存档。
-
-潜水版本2包含“浅湾拾光”“珊瑚小径”“星光海沟”三关：方向移动、发射泡泡，避开食人鱼与珊瑚；收齐 3/4/5 颗珍珠后到达出口通关。氧气归零先扣一心，此后每5秒再扣一心；静止长按返航2秒可带回本局每颗1枚的收获，移动、松开或受伤会打断。爱心归零或放弃只丢本局未带回收获，历史珍珠与装扮保留；新一局恢复满心满氧，暂停不回血。真正通关另得首通固定装扮与 30/45/60 珍珠奖金，重游奖金为 8/12/18；加上本局收获，首通总额为 33/49/65，重游为 11/16/23。服务按版本、种子和最多60秒输入回放后一次性结算，旧版本编号失效重开；不等同生产防作弊。衣柜独立保存，不混入 pet.save；真实接口失败不回退为演示奖励，不涉及付费、真实货币或奖励交易。
+- 四栋业务房子为二手集市、找搭子、失物招领和自己的家；消息属于底部栏目。跨模块联系进入同一个消息中心，并保留原内容链接。
+- 真实版支持独立账号、头像/物品图片、公开资料、本人发布/收藏、二手闲置与求购、预约交接、搭子邀请及失物评论/归还。参考估价是类别/成色规则，不冒充图片识别。
+- 虚拟伙伴支持四种预设、命名配色和原创正背面PNG/像素画稿，衣柜七类共23件；钓鱼、三关潜水及存档已接入真实服务。贡献奖励和直接兑换的新规则见上方 A 分支状态。
+- 歇脚亭提供三人真实访客斗地主，无机器人填位或货币下注；需独立牌桌服务，三台物理设备仍待验收。
+- 校园活动目前是明确标注的虚构样例，未接入真实活动报名。应用后台/关闭后的系统推送未实现。
+- [10～11分钟演讲稿与操作流程](docs/showcase-10min-2026-10-27.md)、[部署候选与展示包](docs/release-2026-10-27.md)保留；现场使用前按实际版本重新排练。
+- [项目头像](docs/assets/app-avatar-2026-10-25/app-avatar-v1.png)、[场景素材记录](docs/plaza-assets.md)、[音乐署名与许可](docs/music-credits.md)可查。已安装0.1.0的声音问题仍待新版包验证，不能用浏览器有声代替 App 真机结果。
 
 ## 目录与三人分工
 
@@ -119,28 +80,38 @@ npm run game:local
 
 需求、数据模型、接口、实现边界、验收与协作说明均在docs/；[tasks.csv](tasks.csv)按团队分工记录进度，监督人统一查看[main团队周报](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md)。A对B/C共用页面的边界修复或画风协作不改写原业务归属。
 
-## 上传 GitHub
-
-将解压后的源码内容放到仓库根目录，不要只上传 zip。首次由一人初始化，另两人 clone 同一个仓库；不要三个人各建一份不同骨架。
-
-```bash
-git init
-git add .
-git commit -m "chore: 初始化校园生活广场 uni-app 骨架"
-git branch -M main
-git remote add origin <替换为团队仓库地址>
-git push -u origin main
-```
-
-已有仓库请先 clone，在工作分支放入源码后提 PR，不要对已有目录重新 git init。详见 [docs/collaboration.md](docs/collaboration.md)。
-
-## 检查与构建
+## 检查与兼容构建
 
 ```bash
 npm run check
 npm test
 npm run build:h5
 npm run build:mp-weixin
+npm run check:mp-styles
+npm run check:mp-quality
 ```
 
-H5 产物为 `dist/build/h5`；微信产物为 `dist/build/mp-weixin`。产物、node_modules、私有环境文件不提交；package-lock.json 必须提交，队友用 npm ci。
+当前 main 保留上述 H5/微信回归；App 编译预检在 App 适配分支使用 `npm run build:app`。H5 产物位于 `dist/build/h5`，微信兼容产物位于 `dist/build/mp-weixin`。构建成功、签名安装、真机验收和正式分发分别记录，不互相替代。产物、数据库、私有配置、证书和 node_modules 不提交，package-lock.json 必须保留。
+
+<details>
+<summary>微信历史开发说明（暂停正式发布，保留兼容）</summary>
+
+以下仅供已有构建回归及历史排查，不是当前 App 交付入口。
+
+微信小程序开发：
+
+```bash
+npm run dev:mp-weixin
+```
+
+在微信开发者工具中导入 `dist/dev/mp-weixin`，用你们自己的 AppID。`src/manifest.json` 的 `mp-weixin.appid` 需要在实际接入时统一填写；个人工具私有配置不要提交。
+
+发布构建用 `npm run build:mp-weixin` 并导入 `dist/build/mp-weixin`。若缺少 `app.json`，核对是否选了编译目录；若白屏，先看工具 Console 的红色错误。构建后运行 `npm run check:mp-styles` 排查不兼容通配选择器，uni-app构建不能代替微信自身WXSS编译或真机验收。
+
+微信代码质量的组件按需注入与牌桌私有JS分包位置通过 `npm run check:mp-quality` 定向检查；构建后在工具“代码质量”中重新扫描，完整扫描结果另记。若仍显示旧接口错误，只清除编译缓存再编译，保留存储、账号与授权；本机地址的令牌独立，需登录原账号。真实衣柜的奖励、兑换、穿戴和重登读取现已接入，需重新构建并连接本轮后端。
+
+**微信电脑模拟器连接本机真实后端**：使用Node22运行 `npm run campus:weixin`。命令先确认或启动SQLite后端，再以 `127.0.0.1:8788` 构建微信目录，避免换Wi-Fi后仍请求旧IP；若本命令启动了后端，终端需保持运行。回工具重新编译并登录已有独立账号。局域网HTTP调试需在工具本地设置关闭域名校验，正式发布仍需HTTPS；手机不能使用电脑的127.0.0.1，改用当前WLAN地址，见[部署步骤](docs/deployment.md#微信本机模拟器真实服务调试)。
+
+</details>
+
+提交前阅读 [协作规则](docs/collaboration.md)，在人员分支工作并提 PR；main 与 A/B/C 长期工作分支均保留。进度记录在 [tasks.csv](tasks.csv)及唯一团队周报，不另建个人周报。
