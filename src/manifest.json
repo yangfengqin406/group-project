@@ -2,8 +2,8 @@
   "name": "校园生活广场",
   "appid": "",
   "description": "三人团队 uni-app 双端骨架",
-  "versionName": "0.1.1",
-  "versionCode": "101",
+  "versionName": "0.1.2",
+  "versionCode": "102",
   "transformPx": false,
   "vueVersion": "3",
   "app-plus": {

@@ -21,7 +21,7 @@
         <view v-else-if="!blocked.length" class="muted">还没有屏蔽用户。</view>
         <view v-for="item in blocked" :key="item.userId" class="row blocked-row">
           <text>{{ item.nickname }}</text>
-          <button class="secondary" :disabled="busy" @tap="unblock(item)">解除屏蔽</button>
+          <button class="secondary" :disabled="busy || connectionBusy" @tap="unblock(item)">解除屏蔽</button>
         </view>
       </template>
     </view>
@@ -30,8 +30,11 @@
       <view class="body">此操作不可恢复。确认前请处理尚未完成的交接，并保存需要的内容。</view>
       <input v-model="password" class="input" password maxlength="128" placeholder="输入当前账号密码" />
       <input v-model="confirmation" class="input" maxlength="4" placeholder="输入“注销账号”确认" />
-      <button class="delete-button" :disabled="busy || confirmation !== '注销账号' || !password" @tap="deleteAccount">注销此账号</button>
+      <button class="delete-button" :disabled="busy || connectionBusy || confirmation !== '注销账号' || !password" @tap="deleteAccount">注销此账号</button>
     </view>
+    <!-- #ifdef APP-PLUS -->
+    <AppConnectionSettings :active="connectionActive" :disabled="busy" @busy="connectionBusy = $event" />
+    <!-- #endif -->
   </view>
 </template>
 <script setup>
@@ -42,9 +45,17 @@ import { session } from '../../utils/session.js'
 import { config } from '../../config/index.js'
 import { errorText } from '../../utils/errors.js'
 import VillageHeader from '../../components/village/VillageHeader.vue'
+// #ifdef APP-PLUS
+import AppConnectionSettings from '../../components/AppConnectionSettings.vue'
+const connectionActive = ref(true)
+onShow(() => { connectionActive.value = true })
+onHide(() => { connectionActive.value = false })
+onUnload(() => { connectionActive.value = false })
+// #endif
 
 const password = ref(''), confirmation = ref(''), blocked = ref([])
 const busy = ref(false), loading = ref(false), error = ref(''), notice = ref('')
+const connectionBusy = ref(false)
 const isMock = config.apiMode === 'mock'
 let revision = 0, visible = false
 async function load() {
@@ -60,7 +71,7 @@ async function load() {
   } finally { if (version === revision) loading.value = false }
 }
 async function unblock(item) {
-  if (busy.value) return
+  if (busy.value || connectionBusy.value) return
   const userId = session.user?.id
   busy.value = true; error.value = ''; notice.value = ''
   try {
@@ -70,13 +81,13 @@ async function unblock(item) {
   finally { busy.value = false }
 }
 async function deleteAccount() {
-  if (busy.value || confirmation.value !== '注销账号' || !password.value) return
+  if (busy.value || connectionBusy.value || confirmation.value !== '注销账号' || !password.value) return
   const userId = session.user?.id
   const confirmed = await new Promise((resolve) => uni.showModal({
     title: '确认永久注销', content: '账号、存档和发布将按上方说明处理，注销后无法恢复。',
     confirmText: '确认注销', confirmColor: '#9b473d', success: (result) => resolve(result.confirm), fail: () => resolve(false)
   }))
-  if (!confirmed || session.user?.id !== userId) return
+  if (!confirmed || connectionBusy.value || session.user?.id !== userId) return
   busy.value = true; error.value = ''
   try {
     await auth.deleteAccount({ password: password.value, confirmation: confirmation.value })
