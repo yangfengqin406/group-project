@@ -178,8 +178,15 @@ async function load() {
   clearPersonalSummary()
   favLoading.value = true
   try {
+    const profileRead = user.getProfile()
+    // First identity binding triggers the account watcher below. Let that new
+    // load reuse the same profile flight before starting any obsolete content.
+    if (!userId) {
+      await profileRead
+      if (!current()) return
+    }
     const [p, r] = await Promise.all([
-      user.getProfile(),
+      profileRead,
       myContent.list({ contentType: filter })
     ])
     if (!current()) return

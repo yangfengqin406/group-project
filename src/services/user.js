@@ -1,6 +1,8 @@
-import { call } from './transport.js'
+import { call, readOwnProfile } from './transport.js'
 import { getToken, setSession } from '../utils/session.js'
 export async function getProfile(params = {}) {
+  if (params && typeof params === 'object' && !Array.isArray(params) && !Object.keys(params).length)
+    return readOwnProfile()
   const token = getToken()
   const profile = await call('user.getProfile', params)
   if (!params.userId && getToken() === token) setSession(profile)

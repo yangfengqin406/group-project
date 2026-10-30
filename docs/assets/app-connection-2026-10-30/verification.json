@@ -58,8 +58,10 @@
     "appPreflightHasNoBoundDcloudAppId": true
   },
   "delivery": {
-    "v012SignedApkProduced": false,
-    "v012NativeSignatureVerified": false,
+    "v012SignedApkProduced": true,
+    "v012NativeSignatureVerified": true,
+    "publicDownloadVerified": true,
+    "currentHttpsReachable": true,
     "nativeConnectionSettingsVerified": false,
     "physicalDeviceAudioVerified": false,
     "iosIpaGenerated": false,
@@ -75,7 +77,9 @@
     "uploadUrlsMigrated": 2,
     "businessReferencesMigrated": 3,
     "migrationWasTransactional": true,
-    "migrationTargetTemporaryOriginHasExpiredAgain": true
+    "priorMigrationTargetExpiredDuringEarlierAttempt": true,
+    "currentHttpsAndLocalDataServiceRunning": true,
+    "dependsOnHostAndServiceProcesses": true
   },
   "review": {
     "pullRequest": "https://github.com/yangfengqin406/group-project/pull/47",
@@ -84,7 +88,14 @@
     "previousCiTests": 531,
     "previousCiDoesNotValidateV012": true,
     "mergedIntoMain": false,
-    "v012SourceIncludedInThisDraft": true
+    "v012SourceIncludedInThisDraft": true,
+    "currentSourceCommitPrefix": "60cf86a9",
+    "currentSourceCiRun": "https://github.com/yangfengqin406/group-project/actions/runs/41029383023",
+    "currentSourceCiConclusion": "success",
+    "currentSourceCiTests": 551,
+    "draft": true,
+    "target": "codex/a-plaza-partner-pets"
   },
-  "notes": "These are actual automated service/UI and compilation results, not native installation, audible playback or production availability. No private endpoint, AppID, package identifier, local path, account data or certificate is included."
+  "finalApkEvidence": "apk-verification-2026-10-30.json",
+  "notes": "Automated service/UI and compilation results are separate from the final signed APK and complete public-download verification in finalApkEvidence. Native installation, audible playback and actual connection switching/restart on the user's device remain pending. No private endpoint, AppID, package identifier, local path, account data or certificate is included."
 }

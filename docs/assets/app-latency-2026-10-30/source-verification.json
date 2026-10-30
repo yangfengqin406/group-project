@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Shanghai",
+  "versionName": "0.1.3",
+  "versionCode": 103,
+  "scope": "Independent PR47 A/B/C candidate source regression; not the root workspace and not a newly signed APK.",
+  "change": {
+    "sameTokenOwnProfileInFlightShared": true,
+    "noLongLivedProfileCache": true,
+    "failedFlightReleased": true,
+    "publicUserReadsNotShared": true,
+    "writesNotRetried": true,
+    "requestTimeoutMsUnchanged": 12000,
+    "coldHomeRelatedRpcBefore": 7,
+    "coldHomeRelatedRpcAfter": 4,
+    "warmHomeProfileAndContentRemainParallel": true
+  },
+  "regression": {
+    "newTests": 6,
+    "originalVersionNewTestsFailed": 4,
+    "targetedPassedAfterFix": 31,
+    "totalTests": 557,
+    "passed": 557,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "pagesChecked": 17,
+    "contractCallsChecked": 87
+  },
+  "builds": {
+    "h5": true,
+    "mpWeixin": true,
+    "androidCompile": true,
+    "iosCompile": true,
+    "compiler": "5.26",
+    "exampleOriginH5AndMp": true,
+    "privateBoundAppCompilationSeparatelyPassed": true,
+    "wxssFiles": 37,
+    "wxssIssues": 0,
+    "targetedMpQualityPassed": true,
+    "mpRawBytes": {
+      "main": 2094067,
+      "content": 56311,
+      "rooms": 44751,
+      "mainBudget": 2097152,
+      "eachSubpackageBudget": 2097152,
+      "mainBudgetRemaining": 3085
+    }
+  },
+  "delivery": {
+    "codeCiForThisRevisionPending": true,
+    "prior551CiDoesNotCoverThisRevision": true,
+    "newlySignedAndroidApk": false,
+    "physicalDeviceRegressionPassed": false,
+    "iosIpaGenerated": false,
+    "appStoreReleased": false
+  },
+  "limitations": [
+    "Source fix reduces reproduced redundant requests; temporary public-network latency remains variable.",
+    "The installed 0.1.2 package is unchanged.",
+    "Phone timeout/audio/real connection-switch regression and stable production hosting remain pending."
+  ],
+  "privacy": "Actual AppID, package name, origins, credentials, database paths and certificate material omitted."
+}
