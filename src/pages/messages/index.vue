@@ -7,6 +7,8 @@
       <button class="secondary" :disabled="loading || busy" @tap="load">刷新</button>
     </view>
     <view class="subtitle">二手、失物、搭子和互助的联系都在这里</view>
+    <view v-if="messageAlerts.state.total" class="unread-summary">你有 {{ messageAlerts.state.total }} 条未读私信，点击会话查看</view>
+    <view v-if="messageAlerts.state.error" class="muted">{{ messageAlerts.state.error }}</view>
     <view class="message-tools">
       <view class="source-tabs">
         <button
@@ -85,7 +87,8 @@
     >
       <view class="row">
         <text>{{ c.contentTitle }}</text>
-        <text class="link">进入 →</text>
+        <text v-if="unreadCount(c)" class="unread-badge">{{ unreadCount(c) > 99 ? '99+' : unreadCount(c) }}</text>
+        <text v-else class="link">进入 →</text>
       </view>
       <text class="muted">
         {{ contentNames[c.contentType] }} · {{ peerName(c) }} · 保留原内容链接
@@ -136,6 +139,7 @@ import { ref, watch } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { invitation, conversation, notification, plan } from '../../services/index.js'
 import { session } from '../../utils/session.js'
+import { messageAlerts } from '../../services/message-alerts.js'
 import {
   contentNames,
   openContent,
@@ -255,6 +259,9 @@ function peerName(conversation) {
     ? `与 ${conversation.peer.nickname} 的会话`
     : '联系会话'
 }
+function unreadCount(c) {
+  return messageAlerts.state.items.find((item) => item.id === c.id)?.unreadCount || 0
+}
 async function subscribe() {
   subscriptionTip.value = ''
   try {
@@ -338,6 +345,14 @@ watch(() => session.user?.id, () => {
   error.value = ''
   if (visible) load()
 })
+watch(() => [messageAlerts.state.revision, loading.value, busy.value], () => {
+  if (!visible || loading.value || busy.value) return
+  const updates = messageAlerts.state.items.filter((c) => !source.value || c.contentType === source.value)
+  const byId = new Map(conversations.value.map((c) => [c.id, c]))
+  for (const c of updates) byId.set(c.id, c)
+  conversations.value = [...byId.values()].sort((a, b) =>
+    Date.parse(b.lastMessage?.createdAt || b.createdAt) - Date.parse(a.lastMessage?.createdAt || a.createdAt))
+})
 onShow(() => {
   visible = true
   load()
@@ -353,6 +368,8 @@ onUnload(() => {
 </script>
 
 <style scoped>
+.unread-summary { margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: #fff0dd; color: #9d4e39; font-size: 14px; }
+.unread-badge { min-width: 22px; padding: 2px 7px; border-radius: 14px; background: #bb604a; color: #fff; font-size: 12px; text-align: center; }
 .message-tools {
   display: flex;
   align-items: center;

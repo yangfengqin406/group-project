@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Shanghai",
+  "artifact": {
+    "filename": "campus-server-0.1.3-20261030.zip",
+    "version": "0.1.3",
+    "sourceCommitPrefix": "bda2ddb",
+    "bytes": 8872456,
+    "sha256": "14ddad41e0e5caae61b031e4b9278cfdce26bfea89dfeb24c8144b607e398ba8",
+    "entries": 747,
+    "localZipSha256Rechecked": true
+  },
+  "contents": {
+    "sameOriginRealH5ApiAndGame": true,
+    "nginxSystemdAndEnvironmentTemplates": true,
+    "nodeJsRequired": "22.22.0, not bundled",
+    "realUserDataIncluded": false,
+    "actualServiceOriginIncluded": false,
+    "privateCredentialsIncluded": false,
+    "nodeModulesIncluded": false,
+    "actualAppIdIncluded": false,
+    "oldDatedDocumentationIsHistorical": true,
+    "currentInstructions": [
+      "请先阅读.txt",
+      "release.json"
+    ]
+  },
+  "validation": {
+    "version": "0.1.3",
+    "generatedDate": "2026-10-30",
+    "checkedAt": "2026-10-30T15:11:53.343Z",
+    "sourceCommitPrefix": "bda2ddb",
+    "passed": true,
+    "tests": [
+      {
+        "name": "Fresh dedicated SQLite contains zero accounts before validation",
+        "passed": true
+      },
+      {
+        "name": "Packaged same-origin H5 index and generated asset served without node_modules",
+        "passed": true
+      },
+      {
+        "name": "Both /api/health and /game/health respond through simulated HTTPS reverse-proxy headers",
+        "passed": true
+      },
+      {
+        "name": "Two isolated real accounts register and authenticated profile excludes credentials",
+        "passed": true
+      },
+      {
+        "name": "Real upload bytes, private ownership, public association and publish pearl reward work",
+        "passed": true
+      },
+      {
+        "name": "Integrated B study category is accepted by real plan creation",
+        "passed": true
+      },
+      {
+        "name": "Integrated A help application, helper selection, both confirmations and persistent reward/wardrobe balance work",
+        "passed": true
+      },
+      {
+        "name": "Integrated C unread endpoint reports a real message between the test accounts",
+        "passed": true
+      },
+      {
+        "name": "Independent /game visitor authentication and lobby work",
+        "passed": true
+      },
+      {
+        "name": "After server restart the two accounts, uploaded file, market post, pearl balance and unread message persist",
+        "passed": true
+      },
+      {
+        "name": "SQLite integrity_check remains ok",
+        "passed": true
+      }
+    ],
+    "accountScope": "Only two new fictional accounts in a separate temporary database; original user data was never opened",
+    "externalDeployment": false,
+    "nativeOrPhoneTest": false,
+    "nginxOrSystemdExecuted": false,
+    "limitation": "Local HTTP execution with simulated reverse-proxy headers; no cloud purchase, DNS, real TLS certificate, nginx/systemd run or phone performance claim.",
+    "temporaryTestDataRemoved": true
+  },
+  "provenance": {
+    "sourceCommitPrefix": "bda2ddb",
+    "version": "0.1.3",
+    "sourceFiles": [
+      {
+        "path": "src/services/transport.js",
+        "sha256": "dcb66506ae58d93bcf243fe58bb378935b5a7b891cd236a4f486b1751577b80c"
+      },
+      {
+        "path": "src/services/user.js",
+        "sha256": "166cb81794d842756f2b118ca4671a815689c92147af9d7aa4b5fa21878b41ac"
+      },
+      {
+        "path": "src/pages/home/index.vue",
+        "sha256": "cf2fa4c37de0d03c145b6c920f6542bfddb815309c445f8625dc4e0e2c665ba9"
+      },
+      {
+        "path": "backend/campus/service.js",
+        "sha256": "b355143d026151321200b958e69b1209496d2a6203c3f0f30fac55d032f909c6"
+      },
+      {
+        "path": "backend/c/service.js",
+        "sha256": "8d9dde40d88924fc7cbf9df48d97513de7206530adba1a8438af456925132505"
+      }
+    ],
+    "requestRegressionTests": "557/557 including actual transport/user/Home in-memory integration, separately recorded by root"
+  },
+  "deliveryBoundary": {
+    "cloudPurchased": false,
+    "actualCloudDeployed": false,
+    "databaseMigratedFromOriginalComputer": false,
+    "existingAccountsAutomaticallyTransferred": false,
+    "productionTlsDnsAndNginxSystemdValidated": false,
+    "nativeOrPhoneValidation": false,
+    "distributionOfApkIndependent": true
+  },
+  "notes": "A verified empty-data deployable package is available locally. It does not move the live SQLite/upload data off the maintenance computer, keep the application online after that computer stops, or establish a fixed public service. No actual local path, endpoint, account identifier, AppID, certificate or credential is published.",
+  "migrationPrerequisites": {
+    "uploadedFilePathPersistedAsAbsolutePath": true,
+    "httpReadUsesPersistedFilePath": true,
+    "sqliteAndUploadsCopyAloneIsInsufficientAcrossOperatingSystems": true,
+    "ownedFilenameOwnerAndTargetDirectoryMustBeValidated": true,
+    "managedUploadFilePathRequiresExactTargetDirectoryMapping": true,
+    "registeredManagedUrlAndReferencesRequireExactOriginMigration": true,
+    "migrationToolImplementedInThisTask": false,
+    "originalDatabaseModifiedForThisDocumentation": false,
+    "windowsToLinuxMigrationExecuted": false,
+    "originalPackageRebuiltOrModified": false,
+    "sqliteWalRequiresConsistentBackupBeforeCopy": true,
+    "preserveAccountIdsRolesCredentialsSessionsBusinessBalancesAndWardrobe": true,
+    "preserveIdempotencyReceiptsAndCursorSecret": true,
+    "fileCleanupQueueAlsoPersistsAbsoluteFilePath": true,
+    "uploadAndCleanupPathMappingRequiredBeforeFirstTargetStartup": true,
+    "privacyStartupRunsCleanupAndValidatesDirectoryBoundaries": true,
+    "fixedHttpsCookieImagePermissionsAndTrustedProxyNeedTargetValidation": true,
+    "rewardDayExplicitUtcPlus8": true,
+    "accurateClockAndAbsoluteExpiryStillRequired": true,
+    "downtimeDoesNotFreezeSessionOrGameExpiry": true,
+    "appApiOriginChangeRequiresFreshLogin": true,
+    "landlordSessionsRoomsQueuesAndReceiptsAreProcessMemory": true,
+    "landlordInProgressRoomsSurviveMigrationOrRestart": false
+  }
+}

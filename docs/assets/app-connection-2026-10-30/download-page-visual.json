@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-30",
+  "scope": "Actual current public download landing in isolated Edge headless with CDP device-metrics emulation at 390 and 430 CSS px.",
+  "passed": true,
+  "accountUsed": false,
+  "businessApiCalls": 0,
+  "apkModified": false,
+  "publisherModified": false,
+  "nativeDeviceVerified": false,
+  "screenshotsRedacted": true,
+  "measurementsBeforeRedaction": true,
+  "states": [
+    {
+      "viewport": 390,
+      "documentClientWidth": 390,
+      "documentScrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "main": {
+        "x": 14,
+        "right": 376,
+        "width": 362,
+        "height": 1142.59375
+      },
+      "brand": {
+        "x": 39,
+        "right": 351,
+        "width": 312,
+        "height": 72
+      },
+      "download": {
+        "x": 39,
+        "right": 351,
+        "width": 312,
+        "height": 56.796875
+      },
+      "serviceAddress": {
+        "x": 39,
+        "right": 351,
+        "width": 312,
+        "height": 40.796875
+      },
+      "pageHeight": 1191,
+      "brandImageLoaded": true,
+      "headlineMatches": true,
+      "requestedViewport": 390,
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": 430,
+      "documentClientWidth": 430,
+      "documentScrollWidth": 430,
+      "bodyScrollWidth": 430,
+      "main": {
+        "x": 14,
+        "right": 416,
+        "width": 402,
+        "height": 1067.03125
+      },
+      "brand": {
+        "x": 39,
+        "right": 391,
+        "width": 352,
+        "height": 72
+      },
+      "download": {
+        "x": 39,
+        "right": 391,
+        "width": 352,
+        "height": 56.796875
+      },
+      "serviceAddress": {
+        "x": 39,
+        "right": 387,
+        "width": 348,
+        "height": 40.796875
+      },
+      "pageHeight": 1115,
+      "brandImageLoaded": true,
+      "headlineMatches": true,
+      "requestedViewport": 430,
+      "horizontalOverflow": false
+    }
+  ],
+  "notes": "Measurements use the real public page before visual redaction. Screenshots hide the temporary service address while preserving element geometry. This is a public web landing layout check, not an App native/device installation test."
+}

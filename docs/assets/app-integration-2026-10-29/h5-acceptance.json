@@ -1,0 +1,55 @@
+{
+  "startedAt": "2026-10-29T06:40:05.868Z",
+  "environment": "isolated Edge headless, 390x844, two fresh SQLite accounts",
+  "steps": [
+    "两个全新独立账号分别经H5登录",
+    "页面实际公开发布求助，作者获5珠",
+    "原资料按钮与统计收藏保留；互助嵌入资料卡，珍珠嵌入宠物卡，规则流水可展开",
+    "自己的家可找回本人申请和待选人事项，并通过真实卡片回详情",
+    "帮助者申请；作者可进入同一真实双人会话",
+    "真实双账号私信触发前台未读提示，点击提示进入原会话并标读",
+    "两次页面实际发送后聊天自动更新，帮助者未发送草稿保留且未读归零",
+    "作者选定帮助者，帮助者先确认，作者后确认，双方完成只结算一次",
+    "公开卡片显示已有帮助者，单方确认后待办消失且历史显示等待双方确认",
+    "作者余额10（发布5+解决5），帮助者余额15，双方贡献记录独立可读",
+    "求购快捷入口确为求购，两个不同求购正常发帖各得5珠",
+    "从未潜水的账号用互助及求购所得25珠实际兑换小荷叶",
+    "搭子发帖实际渲染五类必选按钮，点击运动正确保持选中"
+  ],
+  "runtimeErrors": [],
+  "visualChecks": [
+    {
+      "name": "help primary action geometry",
+      "top": 565.46875,
+      "bottom": 609.859375,
+      "height": 44.390625,
+      "viewport": 844
+    },
+    {
+      "name": "original artwork and embedded features",
+      "height": 180,
+      "pictureOpacity": "1",
+      "myHelpEmbedded": true,
+      "pearlsEmbedded": true
+    },
+    {
+      "name": "embedded help expanded layout",
+      "top": 515.59375,
+      "bottom": 839.984375,
+      "viewport": 844,
+      "overflow": false
+    },
+    {
+      "name": "home no horizontal overflow",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "name": "home no horizontal overflow",
+      "width": 430,
+      "overflow": false
+    }
+  ],
+  "passed": true,
+  "finishedAt": "2026-10-29T06:40:32.561Z"
+}

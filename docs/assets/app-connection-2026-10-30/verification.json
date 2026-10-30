@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-30",
+  "scope": "Independent A/B/C integration candidate with App test-service connection settings; not the root workspace's 520-test brand regression",
+  "versionName": "0.1.2",
+  "versionCode": 102,
+  "features": {
+    "appOnly": true,
+    "collapsedLoginAndSettingsEntries": true,
+    "offlineHomeRecoveryEntry": true,
+    "anonymousCampusHealthCheck": true,
+    "validatedHttpsOriginOnly": true,
+    "savedPreferenceContainsOriginOnly": true,
+    "currentAndDefaultOriginsShown": true,
+    "confirmationRequiredBeforeSwitchOrRestore": true,
+    "reloginAndNativeRestartRequired": true,
+    "failedChangeRollsBackPreferenceAndSession": true,
+    "hiddenPageInvalidatesPendingCommit": true,
+    "busyLocksAccountActionsAndConcurrentSwitches": true,
+    "lateOldSourceLoginCannotRestoreCredentials": true,
+    "damagedPreferenceCanRestoreDefault": true,
+    "h5AndWeixinUseExistingBuildConfiguration": true,
+    "noNewRouteOrBusinessRpc": true
+  },
+  "validation": {
+    "node": "22.22.0",
+    "compilerVersion": "5.26 (Vue3)",
+    "check": {
+      "passed": true,
+      "pages": 17,
+      "contractCallSites": 87
+    },
+    "tests": {
+      "total": 551,
+      "passed": 551,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "priorIntegrationTests": 531,
+      "newConnectionServiceTests": 13,
+      "newUiTests": 7
+    },
+    "h5Build": true,
+    "mpWeixinBuild": true,
+    "wxss": {
+      "files": 37,
+      "issues": 0
+    },
+    "targetedWeixinQuality": "passed",
+    "rawPackageBudget": {
+      "passed": true,
+      "budgetBytesPerPackage": 2097152,
+      "mainBytes": 2093813,
+      "contentBytes": 56311,
+      "roomsBytes": 44751
+    },
+    "appAndroidExampleOriginCompile": true,
+    "appIosExampleOriginCompile": true,
+    "appPreflightHasNoBoundDcloudAppId": true
+  },
+  "delivery": {
+    "v012SignedApkProduced": true,
+    "v012NativeSignatureVerified": true,
+    "publicDownloadVerified": true,
+    "currentHttpsReachable": true,
+    "nativeConnectionSettingsVerified": false,
+    "physicalDeviceAudioVerified": false,
+    "iosIpaGenerated": false,
+    "appStoreReleased": false,
+    "priorV011SignedPackagesPassedNativeChecks": 2,
+    "priorV011NormalNetworkDeliveryCompleted": false,
+    "temporaryTunnelRecycledAfterHostDisconnects": true,
+    "stablePublicBackendAvailable": false
+  },
+  "backendSnapshot": {
+    "existingAccountsPreserved": 9,
+    "backupBeforeUploadUrlMigration": true,
+    "uploadUrlsMigrated": 2,
+    "businessReferencesMigrated": 3,
+    "migrationWasTransactional": true,
+    "priorMigrationTargetExpiredDuringEarlierAttempt": true,
+    "currentHttpsAndLocalDataServiceRunning": true,
+    "dependsOnHostAndServiceProcesses": true
+  },
+  "review": {
+    "pullRequest": "https://github.com/yangfengqin406/group-project/pull/47",
+    "previousReviewedHeadPrefix": "49a3f880",
+    "previousCiRun": "https://github.com/yangfengqin406/group-project/actions/runs/41001910729",
+    "previousCiTests": 531,
+    "previousCiDoesNotValidateV012": true,
+    "mergedIntoMain": false,
+    "v012SourceIncludedInThisDraft": true,
+    "currentSourceCommitPrefix": "60cf86a9",
+    "currentSourceCiRun": "https://github.com/yangfengqin406/group-project/actions/runs/41029383023",
+    "currentSourceCiConclusion": "success",
+    "currentSourceCiTests": 551,
+    "draft": true,
+    "target": "codex/a-plaza-partner-pets"
+  },
+  "finalApkEvidence": "apk-verification-2026-10-30.json",
+  "notes": "Automated service/UI and compilation results are separate from the final signed APK and complete public-download verification in finalApkEvidence. Native installation, audible playback and actual connection switching/restart on the user's device remain pending. No private endpoint, AppID, package identifier, local path, account data or certificate is included."
+}

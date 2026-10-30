@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Shanghai",
+  "scope": "Final signed Android 0.1.2 APK from the PR 47 independent A/B/C integration candidate; not the root workspace's 520-test brand regression",
+  "cloudBuild": {
+    "submittedLocalTime": "2026-10-30 16:30:13",
+    "mode": "quick safe cloud packaging",
+    "localApkReadyTime": "2026-10-30 16:56:43",
+    "platform": "Android"
+  },
+  "apk": {
+    "nativeDisplayName": "校园生活广场",
+    "versionName": "0.1.2",
+    "versionCode": 102,
+    "bytes": 26481247,
+    "sha256": "e999180a327d18d14446766b9d0860c5cc4ad1a9e6740ce961c7d1bc0b35ede4",
+    "nativeInspectorChecks": 26,
+    "allNativeInspectorChecksPassed": true,
+    "packageMatchesPriorApk": true,
+    "signingCertificateMatchesPriorApk": true
+  },
+  "signature": {
+    "verified": true,
+    "v1": true,
+    "v2": true
+  },
+  "nativeLauncherIcons": {
+    "sizes": [
+      72,
+      96,
+      144,
+      192
+    ],
+    "decodedRgbaPixelsCompared": 72000,
+    "allPixelsMatchSource": true
+  },
+  "compiledResources": {
+    "eightLocalAudioFilesMatchSourceSha256": true,
+    "aHelpAndPearlRewardsIncluded": true,
+    "bCategoryButtonsIncluded": true,
+    "cUnreadMessagesIncluded": true,
+    "readonlyMuteAndFirstPlayGuardsIncluded": true,
+    "connectionPreferenceStaticMarkerIncluded": true,
+    "connectionUiStaticMarkerIncluded": true,
+    "healthValidationStaticMarkerIncluded": true,
+    "nativeRestartStaticMarkerIncluded": true,
+    "restoreDefaultStaticMarkerIncluded": true,
+    "connectionMarkersAreStaticCodeChecksOnly": true
+  },
+  "publicDownload": {
+    "checkedLocalTime": "2026-10-30 17:01:49",
+    "htmlStatus": 200,
+    "pngStatus": 200,
+    "completeApkGetVerified": true,
+    "downloadedSha256MatchesLocalApk": true,
+    "publicDownloadVerified": true,
+    "downloadPageVisualWidths": [
+      390,
+      430
+    ],
+    "downloadPageHasNoHorizontalOverflow": true,
+    "downloadPageProvidesCurrentCopyableTestOrigin": true,
+    "actualOriginAndQrIntentionallyOmitted": true,
+    "reachabilityIsPointInTime": true
+  },
+  "backend": {
+    "currentHttpsReachable": true,
+    "localDataServiceRunning": true,
+    "originalAccountsObserved": 9,
+    "migrationBackupRetained": true,
+    "dependsOnHostAndServiceProcesses": true,
+    "stableProductionDeployment": false,
+    "observedLocalTime": "2026-10-30 17:01:49"
+  },
+  "sourceCi": {
+    "commitPrefix": "60cf86a9",
+    "run": "https://github.com/yangfengqin406/group-project/actions/runs/41029383023",
+    "conclusion": "success",
+    "tests": 551,
+    "pullRequest": "https://github.com/yangfengqin406/group-project/pull/47",
+    "draft": true,
+    "target": "codex/a-plaza-partner-pets",
+    "merged": false
+  },
+  "physicalDeviceInstallationVerified": false,
+  "physicalDeviceAudioVerified": false,
+  "physicalDeviceConnectionSwitchAndRestartVerified": false,
+  "iosIpaGenerated": false,
+  "appStoreReleased": false,
+  "notes": "APK metadata/resources/signature and one complete public download were actually verified at the listed times. The five connection markers establish code inclusion only, not a real native switch/restart. Subsequent Huawei feedback reports click lag and intermittent server timeouts; a complete device regression has not passed. Audio and real native switching remain unverified. Live URLs, QR content, local paths, AppID, package identifier, account data and certificate material are omitted.",
+  "physicalDeviceFeedback": {
+    "versionName": "0.1.2",
+    "clicksFeelSlow": true,
+    "intermittentServerTimeoutReported": true,
+    "successfulFullRegression": false,
+    "latestEvidence": "../app-latency-2026-10-30/summary.json"
+  },
+  "inspectionCountCorrection": {
+    "earlierWrittenCount": 27,
+    "actualJsonChecks": 26,
+    "passedResultUnchanged": true
+  }
+}
