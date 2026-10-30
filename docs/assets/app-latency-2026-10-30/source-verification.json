@@ -48,12 +48,22 @@
     }
   },
   "delivery": {
-    "codeCiForThisRevisionPending": true,
+    "codeCiForThisRevisionPending": false,
     "prior551CiDoesNotCoverThisRevision": true,
-    "newlySignedAndroidApk": false,
+    "newlySignedAndroidApk": true,
     "physicalDeviceRegressionPassed": false,
     "iosIpaGenerated": false,
-    "appStoreReleased": false
+    "appStoreReleased": false,
+    "codeCi": {
+      "commitPrefix": "bda2ddb1",
+      "run": "https://github.com/yangfengqin406/group-project/actions/runs/41076830383",
+      "conclusion": "success",
+      "tests": 557
+    },
+    "v013CloudSubmittedLocalTime": "2026-10-30 23:01:20",
+    "nativeSignatureVerified": true,
+    "completePublicDownloadVerified": true,
+    "finalApkEvidence": "apk-verification-2026-10-30.json"
   },
   "limitations": [
     "Source fix reduces reproduced redundant requests; temporary public-network latency remains variable.",

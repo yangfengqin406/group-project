@@ -1,12 +1,8 @@
 # 校园生活广场 · App 项目
 
-**0.1.3源码续修（2026-10-30，APK待签名）**：已修复冷启动“自己的家”与身份恢复叠加时的重复读取，相关RPC由7次减至4次；本人资料仅共享同令牌在途请求，后续刷新仍访问后端，写操作不重试。独立候选557项、H5/微信及Android/iOS编译通过，[验证范围](docs/assets/app-latency-2026-10-30/source-verification.json)明确尚无新签名包/新真机结论；旧0.1.2不自动更新。临时通道波动及用户超时仍待真机复验。
+**Android 0.1.3/code103测试包已生成（2026-10-30）**：名称「校园生活广场」和原兔子图标保留，冷启动小屋相关读取由7次减至4次。23:49:22官方打包成功；27项包内检查、原身份/旧证书与v1/v2验签、提交时完整app-service.js指纹匹配通过，23:51:42完整公网下载SHA一致。[APK证据](docs/assets/app-latency-2026-10-30/apk-verification-2026-10-30.json)与[557项源码CI](https://github.com/yangfengqin406/group-project/actions/runs/41076830383)可查。新包手机卡顿/超时、声音及实际切源重启仍待验；未上架商店，iOS无IPA。
 
-**10月30日晚间续查**：已收到0.1.2华为使用反馈：点击卡顿且不固定出现服务器超时，尚未解决验收。数据和上传仍保存在维护电脑，公网仅临时转发。恢复后24次读取全部成功，但本机2～19ms、公网318～7034ms；未复现12秒超时，不能据此称真机已修复。[本轮测量](docs/assets/app-latency-2026-10-30/summary.json)与新源码/后续安装包验证分别记录。
-
-**Android 0.1.2/code102测试包已生成（2026-10-30）**：名称「校园生活广场」及原兔子图标保留，包含用户批准的App“测试服务地址”。实际APK为26,481,247字节，27项包内核验及v1/v2验签通过，原包名/证书与旧版相同；17:01:49完整公网GET的SHA256与本机APK一致，下载页提供当前可复制的测试服务地址。[最终APK与下载证据](docs/assets/app-connection-2026-10-30/apk-verification-2026-10-30.json)。华为安装、声音及实际切换/重启仍待用户验证，未上架商店，iOS无IPA。
-
-551项测试、H5/微信及App示例源预检通过；源码60cf86a9的[CI](https://github.com/yangfengqin406/group-project/actions/runs/41029383023)已成功。[PR #47](https://github.com/yangfengqin406/group-project/pull/47)仍是面向A分支的草稿，未合并。当前HTTPS和本机真实服务运行，原库9账号/迁移备份保留，仍依赖电脑与服务进程；此前0.1.1两次临时地址失效保留为历史，不是固定后端。根工作区只同步品牌、保持520项旧业务，远端PR #45尚未合main；[交付边界](docs/app-release-2026-10-27.md)分开记录。
+**后端仍在电脑**：原账号、帖子、珍珠/衣柜与上传保存在维护电脑的SQLite/文件目录，临时HTTPS仅转发请求。已准备无真实数据的0.1.3服务器部署包并通过11项隔离HTTP及校园数据重启验收，[来源与SHA](docs/assets/server-package-2026-10-30/verification.json)可查；尚未购买/部署云服务器或迁移原账号，电脑停止后当前服务仍不可用。
 
 面向校园的互助与生活信息应用，提供求助、搭子、二手和失物信息，以像素小镇、虚拟伙伴和装扮形成温暖的使用体验。使用 **uni-app + Vue 3 + JavaScript**，真实服务采用 **Node.js 22 + SQLite**。团队为 A（杨凤琴）、B（孙瑞）、C（姜澜）。
 
@@ -18,9 +14,9 @@
 
 | 项目 | 已完成与证据 | 仍待完成 |
 | --- | --- | --- |
-| Android | 0.1.2签名APK已生成，27项包内检查/v1v2验签/旧包身份一致性及公网完整下载哈希核对通过；[最终证据](docs/assets/app-connection-2026-10-30/apk-verification-2026-10-30.json) | 覆盖安装、实际连接切换/重启、声音及完整真机流程待验；包内静态标记不等于原生功能验收，未上架商店 |
-| iPhone | 0.1.2示例源iOS编译预检通过，[本轮证据](docs/assets/app-connection-2026-10-30/verification.json)可查 | Apple开发者会员、签名与分发配置尚未完成，未生成IPA |
-| 真实后端 | 当前HTTPS与本机SQLite服务运行，原库9账号及迁移备份保留；[运行与部署](docs/local-campus-backend.md) | 仍依赖电脑联网与服务进程，稳定公网、上传完整真机流程、持续运维及多设备验收待完成 |
+| Android | 0.1.3签名APK、27项核验及原身份/证书、完整编译指纹和完整公网下载SHA匹配；[最终证据](docs/assets/app-latency-2026-10-30/apk-verification-2026-10-30.json) | 新包真机卡顿/超时、声音与实际切源重启待验，未上架商店 |
+| iPhone | 独立0.1.3 Android/iOS编译预检通过，[源码证据](docs/assets/app-latency-2026-10-30/source-verification.json)可查 | Apple会员/签名及分发未完成，无IPA |
+| 真实后端 | 原库账号/上传保留，0.1.3无数据部署包及11项隔离HTTP验收通过；[部署记录](docs/deployment.md) | 当前SQLite与上传仍在电脑，未云部署/迁库；固定HTTPS、运维和手机完整验收待完成 |
 | H5 备用 | [main 阶段演示](https://yangfengqin406.github.io/group-project/#/)；可在本机连接真实服务 | GitHub Pages 使用虚构本机演示数据，不能替代真实多人后端 |
 
 ## 最近合并与分支边界
@@ -42,7 +38,7 @@ $env:CAMPUS_DCLOUD_APP_ID='__UNI__YOUR_OWN_ID'
 npm run build:app
 ```
 
-实际服务地址和AppID留在本机私有配置。命令输出为 `dist/app/<时间戳>/` 中的HBuilderX源码项目及Android/iOS编译资源，**不是签名安装包**。本轮另经云打包生成0.1.2签名APK，并通过完整公网下载哈希核对；编译、验签、真机与iOS签名分发按[交付记录](docs/app-release-2026-10-27.md)分别登记。
+实际服务地址和AppID留在本机私有配置。命令输出为 `dist/app/<时间戳>/` 中的HBuilderX源码项目及Android/iOS编译资源，**不是签名安装包**。本轮另经云打包生成0.1.3签名APK，并通过完整公网下载哈希核对；编译、验签、真机与iOS签名分发按[交付记录](docs/app-release-2026-10-27.md)分别登记。
 
 ## 开发与 H5 备用
 

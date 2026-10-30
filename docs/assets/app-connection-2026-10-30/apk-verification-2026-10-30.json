@@ -14,7 +14,7 @@
     "versionCode": 102,
     "bytes": 26481247,
     "sha256": "e999180a327d18d14446766b9d0860c5cc4ad1a9e6740ce961c7d1bc0b35ede4",
-    "nativeInspectorChecks": 27,
+    "nativeInspectorChecks": 26,
     "allNativeInspectorChecksPassed": true,
     "packageMatchesPriorApk": true,
     "signingCertificateMatchesPriorApk": true
@@ -94,5 +94,10 @@
     "intermittentServerTimeoutReported": true,
     "successfulFullRegression": false,
     "latestEvidence": "../app-latency-2026-10-30/summary.json"
+  },
+  "inspectionCountCorrection": {
+    "earlierWrittenCount": 27,
+    "actualJsonChecks": 26,
+    "passedResultUnchanged": true
   }
 }
