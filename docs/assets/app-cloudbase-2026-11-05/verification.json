@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-05",
+  "version": "0.1.4",
+  "versionCode": 104,
+  "stage": "verified-and-published",
+  "cloudBaseDefault": true,
+  "oldTunnelAbsent": true,
+  "submittedServiceSha256": "d60c860a196d70685fcf191c0f689323fecf6dd46fb6775bcd774884cd9aeb15",
+  "submittedAtCst": "2026-11-05 13:28:20",
+  "originalCloudSigning": true,
+  "paidAcceleration": false,
+  "adsEnabled": false,
+  "userConfirmedV013ManualSwitchWorking": true,
+  "userDataPreserved": true,
+  "tests": {
+    "total": 628,
+    "passed": 627,
+    "skipped": 1,
+    "failed": 0
+  },
+  "structure": {
+    "pages": 17,
+    "apiCallLocations": 87
+  },
+  "h5Build": true,
+  "mpWeixinBuild": true,
+  "androidPreflight": true,
+  "iosPreflight": true,
+  "iosIpa": false,
+  "newAndroidDeviceInstallVerified": false,
+  "computerShutdownPhoneTestVerified": false,
+  "mergedIntoMain": false,
+  "apk": {
+    "bytes": 26481247,
+    "sha256": "7b303b687c515833c2cd634261808fae4d08fd7d7ec6905ad055ef3f6c590401",
+    "checks": 29,
+    "fullPublicDownloadVerified": true
+  }
+}

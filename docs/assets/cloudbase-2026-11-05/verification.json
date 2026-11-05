@@ -1,0 +1,97 @@
+{
+  "date": "2026-11-05",
+  "scope": "isolated CloudBase course backend candidate; not merged into main",
+  "runtime": {
+    "node": "22.21.1",
+    "function": "HTTP",
+    "memoryMB": 256,
+    "configuredTimeoutSeconds": 3,
+    "persistentStore": "CloudBase PostgreSQL JSONB",
+    "files": "private PG storage",
+    "requiresMaintainerComputer": false
+  },
+  "checks": {
+    "structure": {
+      "passed": true,
+      "pages": 17,
+      "apiCallLocations": 87
+    },
+    "tests": {
+      "total": 628,
+      "passed": 627,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "Windows symbolic link creation permission"
+    },
+    "h5Build": true,
+    "weixinCompatibilityBuild": true
+  },
+  "migration": {
+    "initialRecords": 61,
+    "userRecords": 12,
+    "images": 3,
+    "receipts": 6,
+    "emptyTargetGuard": true,
+    "credentialsAndSessionsExact": true,
+    "settingsAndSequenceExact": true,
+    "originalImageBytesExact": true,
+    "sourceSnapshotKept": true,
+    "originalBackupKept": true
+  },
+  "cloudHttp": {
+    "health": 200,
+    "h5Index": 200,
+    "register": true,
+    "login": true,
+    "pet": true,
+    "wardrobe": true,
+    "publicPostReward": true,
+    "privateConversation": true,
+    "messageIdempotency": true,
+    "nonParticipantRejected": true,
+    "privateImageRejectedForOtherUser": true,
+    "privateImageOwnerBytesExact": true,
+    "unauthenticatedDirectDatabaseStatus": 401,
+    "testAccountsDisabledAfterUse": true
+  },
+  "observedLatencyMs": {
+    "ordinaryBusinessMin": 159,
+    "ordinaryBusinessMax": 715,
+    "registrationMax": 1761,
+    "smallUpload": 903,
+    "upload5MiB": 4325
+  },
+  "fileBoundary": {
+    "bytes": 5242880,
+    "uploadStatus": 200,
+    "downloadStatus": 200,
+    "sha256Matches": true
+  },
+  "reviewFixes": [
+    "RPC query parameters cannot bypass distributed authentication limits",
+    "JSONB key ordering does not trigger needless CAS writes",
+    "rate limited calls do not allocate a game server interval",
+    "deletion queue retires at most one object on subsequent business requests"
+  ],
+  "billing": {
+    "profile": "experience",
+    "autoRenew": false,
+    "overrunEnabled": false,
+    "runtimeKeyValidDays": 90
+  },
+  "pending": [
+    "physical phone use after computer shutdown",
+    "three physical devices full game verification",
+    "iOS signing and distribution",
+    "long term production deployment requirements"
+  ],
+  "delivery": {
+    "newSignedApkGenerated": false,
+    "gitCommitted": false,
+    "mergedIntoMain": false,
+    "existingSignedApkPublished": true,
+    "existingApkPublicFullDownloadSha256Verified": true,
+    "existingApkVersion": "0.1.3"
+  },
+  "androidV013UserReportedManualSwitchWorking": true
+}

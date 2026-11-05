@@ -1,6 +1,5 @@
 <template>
   <view class="plaza-page">
-    <MessageNotice />
     <PlazaScene
       ref="scene"
       :active="active && !boardOpen && !pondOpen && !pavilionOpen && !diveOpen"
@@ -74,7 +73,7 @@
       </button>
     </view>
     <view
-      v-if="welcomeVisible && active && appearance && !boardOpen && !pondOpen && !pavilionOpen && !diveOpen"
+      v-if="welcomeVisible && active && appearance && !boardOpen && !pondOpen && !pavilionOpen && !diveOpen && !messageAlerts.state.banner"
       class="first-visit-note"
     >
       <button
@@ -94,6 +93,7 @@
       </button>
     </view>
     <view class="game-bottom">
+      <MessageNotice above-actions />
       <view class="scene-notes">
         <button class="music-source" @tap="openMusicCredits">♫ Carefree · 音乐来源</button>
         <text v-if="config.apiMode === 'mock'" class="demo-mark">本机演示 · 数据不跨设备同步</text>
@@ -111,9 +111,16 @@
           <text class="hud-icon">⌖</text>
           <text>{{ overview ? '回到身边' : '广场地图' }}</text>
         </button>
-        <button class="hud-button" @tap="goMessages">
-          <text class="hud-icon">✉</text>
-          <text>私信{{ messageAlerts.state.total ? ` · ${messageAlerts.state.total > 99 ? '99+' : messageAlerts.state.total}` : '' }}</text>
+        <button
+          class="hud-button plaza-messages-button"
+          :aria-label="messageAlerts.state.total ? `私信，${messageAlerts.state.total} 条未读` : '私信'"
+          @tap="goMessages"
+        >
+          <text class="hud-icon" aria-hidden="true">✉</text>
+          <text>私信</text>
+          <text v-if="messageAlerts.state.total" class="plaza-unread-badge" aria-hidden="true">
+            {{ messageAlerts.state.total > 99 ? '99+' : messageAlerts.state.total }}
+          </text>
         </button>
         <button class="hud-button" @tap="goHome">
           <image class="home-icon" src="/static/tabs/home-active.png" />
@@ -798,6 +805,27 @@ button:focus-visible {
 .hud-icon {
   font-size: 21px;
   line-height: 1;
+}
+.plaza-messages-button {
+  position: relative;
+  overflow: visible;
+}
+.plaza-unread-badge {
+  position: absolute;
+  top: -5px;
+  right: -4px;
+  box-sizing: border-box;
+  min-width: 20px;
+  padding: 0 4px;
+  border: 1px solid #fffdf1;
+  border-radius: 10px;
+  background: #a9403b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+  pointer-events: none;
 }
 .home-icon {
   width: 20px;

@@ -1,6 +1,6 @@
 # 团队与工具修改约定
 
-- 项目是 uni-app + Vue 3 + JavaScript，目前以 Android/iOS App 为交付方向，H5 用于开发/展示备用；微信正式发布暂停，现有源码及 H5/微信构建继续保留兼容回归。App 适配脚本在 A 分支，待 PR #45 解冲整合 main 后再统一使用。
+- 项目是 uni-app + Vue 3 + JavaScript，以 Android/iOS App 为交付方向，H5 用于开发和展示备用。App 构建脚本已合入 main。微信正式发布暂停，保留现有源码及 H5/微信兼容构建。
 - 页面只调用 `src/services/`，不要在页面直接调用 `uni.request` 或操作业务存储。
 - 演示存储只允许出现在 `src/mock/`；真实接口失败不能回退为演示成功。
 - 修改公共字段、接口、路由、依赖前，先同步 docs/interfaces.md / docs/collaboration.md。

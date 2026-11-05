@@ -64,9 +64,10 @@ export function createCampusServer(options = {}) {
   mkdirSync(dataDir, { recursive: true })
   const store = options.store || openCStore(resolve(dataDir, 'campus.sqlite'))
   const trustedUploadOrigins = []
+  const pushProvider = options.pushProvider === undefined ? createPushBridge() : options.pushProvider
   const service = createCampusService({
     store, uploadsDir: resolve(dataDir, 'uploads'), uploadOrigin: '', trustedUploadOrigins,
-    pushProvider: options.pushProvider ?? createPushBridge()
+    pushProvider
   })
   const server = createLandlordServer({ ...options, staticRoot: options.staticRoot || resolve(ROOT, 'dist/local/campus-h5') })
   const [fallback] = server.listeners('request')
@@ -157,8 +158,15 @@ export function createCampusServer(options = {}) {
       if (['GET', 'HEAD'].includes(request.method) && file) {
         const image = service.accounts.getUpload(file[1])
         if (!service.canReadUpload(image, principal(request, true))) return reply('NOT_FOUND', '图片不存在或无权查看', null, 404)
+        let cloudBytes
+        if (request.method === 'GET' && options.readUploadFile) {
+          cloudBytes = await options.readUploadFile(image)
+          if (!Buffer.isBuffer(cloudBytes) || cloudBytes.length !== image.size)
+            throw fail('SERVICE_UNAVAILABLE', '图片读取失败，请稍后重试')
+        }
         response.writeHead(200, { 'Content-Type': image.mime, 'Content-Length': image.size, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'Cross-Origin-Resource-Policy': 'same-site' })
         if (request.method === 'HEAD') return response.end()
+        if (cloudBytes) return response.end(cloudBytes)
         createReadStream(image.filePath).on('error', () => response.destroy()).pipe(response)
         return
       }
@@ -170,8 +178,10 @@ export function createCampusServer(options = {}) {
     }
   })
   // Durable queue survives restart. Network delivery never runs in a write transaction.
-  const pushTimer = setInterval(() => service.push.flush().catch(() => options.onError?.({ code: 'PUSH_QUEUE_FAILURE' })), 5000)
-  pushTimer.unref()
+  const pushTimer = pushProvider
+    ? setInterval(() => service.push.flush().catch(() => options.onError?.({ code: 'PUSH_QUEUE_FAILURE' })), 5000)
+    : null
+  pushTimer?.unref()
   server.once('close', () => { clearInterval(pushTimer); service.push.stop(); if (!options.store) store.close() })
   server.campusService = service
   return server
