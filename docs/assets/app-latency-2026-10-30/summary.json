@@ -1,0 +1,335 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Shanghai",
+  "scope": "Maintenance-host local HTTP versus temporary public HTTPS; not a physical-phone trace or a production load test.",
+  "userFeedback": {
+    "versionName": "0.1.2",
+    "device": "Huawei",
+    "clicksFeelSlow": true,
+    "intermittentServerTimeoutReported": true,
+    "fixedByThisMeasurement": false
+  },
+  "persistence": {
+    "accountsAndBusinessData": "SQLite on the maintenance computer",
+    "uploads": "Files on the same computer",
+    "publicEndpoint": "Temporary tunnel forwarding to that computer",
+    "dataMigratedToCloud": false,
+    "originalAccountsObservedAfterRecovery": 11,
+    "integrityCheck": "ok"
+  },
+  "stoppedServiceObservation": {
+    "observedAtUtc": "2026-10-30T14:31:50.126Z",
+    "localSamples": [
+      {
+        "round": 1,
+        "cause": "ECONNREFUSED",
+        "totalMs": 84
+      },
+      {
+        "round": 2,
+        "cause": "ECONNREFUSED",
+        "totalMs": 20
+      },
+      {
+        "round": 3,
+        "cause": "ECONNREFUSED",
+        "totalMs": 15
+      },
+      {
+        "round": 4,
+        "cause": "ECONNREFUSED",
+        "totalMs": 3
+      }
+    ],
+    "publicSamples": [
+      {
+        "round": 1,
+        "cause": "ENOTFOUND",
+        "totalMs": 174
+      },
+      {
+        "round": 2,
+        "cause": "ENOTFOUND",
+        "totalMs": 2
+      },
+      {
+        "round": 3,
+        "cause": "ENOTFOUND",
+        "totalMs": 2
+      },
+      {
+        "round": 4,
+        "cause": "ENOTFOUND",
+        "totalMs": 16
+      }
+    ],
+    "previousTunnelLog": {
+      "streamClosedLocalTimes": [
+        "17:15:27",
+        "17:17:36",
+        "17:22:07"
+      ],
+      "processTerminationLocalTime": "17:28:07"
+    },
+    "scopeLimit": "The later stopped-service observation is separate from earlier reported lag; it cannot establish the cause of every phone timeout."
+  },
+  "recoveredAnonymousHealth": {
+    "observedAtUtc": "2026-10-30T14:35:01.123Z",
+    "samples": [
+      {
+        "round": 1,
+        "endpoint": "local",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 69
+      },
+      {
+        "round": 1,
+        "endpoint": "public",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 1739
+      },
+      {
+        "round": 2,
+        "endpoint": "local",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 2
+      },
+      {
+        "round": 2,
+        "endpoint": "public",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 334
+      },
+      {
+        "round": 3,
+        "endpoint": "local",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 2
+      },
+      {
+        "round": 3,
+        "endpoint": "public",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 352
+      },
+      {
+        "round": 4,
+        "endpoint": "local",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 2
+      },
+      {
+        "round": 4,
+        "endpoint": "public",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 346
+      }
+    ]
+  },
+  "authenticatedReadComparison": {
+    "observedAtUtc": "2026-10-30T14:39:52.490Z",
+    "appRequestTimeoutMs": 12000,
+    "sameTemporaryAccountForBothPaths": true,
+    "local": {
+      "samples": 12,
+      "minMs": 2,
+      "maxMs": 19
+    },
+    "public": {
+      "samples": 12,
+      "minMs": 318,
+      "maxMs": 7034
+    },
+    "allRepliesOk": true,
+    "twelveSecondTimeoutReproduced": false,
+    "noReadRetries": true,
+    "samples": [
+      {
+        "endpoint": "local",
+        "method": "user.getProfile",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 3
+      },
+      {
+        "endpoint": "public",
+        "method": "user.getProfile",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 1455
+      },
+      {
+        "endpoint": "local",
+        "method": "pet.get",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 4
+      },
+      {
+        "endpoint": "public",
+        "method": "pet.get",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 7034
+      },
+      {
+        "endpoint": "local",
+        "method": "wardrobe.getState",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 19
+      },
+      {
+        "endpoint": "public",
+        "method": "wardrobe.getState",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 348
+      },
+      {
+        "endpoint": "local",
+        "method": "rewards.getState",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 5
+      },
+      {
+        "endpoint": "public",
+        "method": "rewards.getState",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 521
+      },
+      {
+        "endpoint": "local",
+        "method": "help.listMine",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 5
+      },
+      {
+        "endpoint": "public",
+        "method": "help.listMine",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 418
+      },
+      {
+        "endpoint": "local",
+        "method": "conversation.unread",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 2
+      },
+      {
+        "endpoint": "public",
+        "method": "conversation.unread",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 387
+      },
+      {
+        "endpoint": "local",
+        "method": "user.getProfile",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 4
+      },
+      {
+        "endpoint": "public",
+        "method": "user.getProfile",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 555
+      },
+      {
+        "endpoint": "local",
+        "method": "pet.get",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 4
+      },
+      {
+        "endpoint": "public",
+        "method": "pet.get",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 318
+      },
+      {
+        "endpoint": "local",
+        "method": "wardrobe.getState",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 16
+      },
+      {
+        "endpoint": "public",
+        "method": "wardrobe.getState",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 1101
+      },
+      {
+        "endpoint": "local",
+        "method": "rewards.getState",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 2
+      },
+      {
+        "endpoint": "public",
+        "method": "rewards.getState",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 537
+      },
+      {
+        "endpoint": "local",
+        "method": "help.listMine",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 3
+      },
+      {
+        "endpoint": "public",
+        "method": "help.listMine",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 1055
+      },
+      {
+        "endpoint": "local",
+        "method": "conversation.unread",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 3
+      },
+      {
+        "endpoint": "public",
+        "method": "conversation.unread",
+        "status": 200,
+        "code": "OK",
+        "totalMs": 413
+      }
+    ],
+    "newFictionalAccountDeleted": true,
+    "savedUserCredentialsUsed": false
+  },
+  "interpretation": "During this sample the public path added substantial and variable latency, including pet.get at 7034 ms versus 4 ms locally. This supports reducing unnecessary requests and replacing the temporary path for sustained service, but does not prove every click lag or the reported 12-second phone timeout is resolved.",
+  "pending": [
+    "New source request-deduplication fix and its own regression/build evidence",
+    "Any newly signed APK and its own signature/resource inspection",
+    "Physical Huawei latency/timeout/audio/connection-switch regression",
+    "Stable production hosting independent of this computer"
+  ],
+  "privacy": "Actual origins, credentials, account identifiers, database paths and QR content intentionally omitted."
+}

@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Shanghai",
+  "scope": "Signed Android APK built from the independent A/B/C integration candidate; separate from the existing root workspace's 520-test regression",
+  "cloudBuild": {
+    "submittedLocalTime": "2026-10-30 10:50:32",
+    "completedLocalTime": "2026-10-30 11:09:52",
+    "downloadedLocalMinute": "2026-10-30 11:12",
+    "platform": "Android",
+    "certificateType": "existing cloud certificate",
+    "adsEnabled": false,
+    "paidAccelerationPurchased": false
+  },
+  "apk": {
+    "nativeDisplayName": "校园生活广场",
+    "versionName": "0.1.1",
+    "versionCode": 101,
+    "bytes": 26521822,
+    "sha256": "605d339357f9ab57374a622189e5f0b5c313407a50c1aac1592e3d4bf9b2447e",
+    "containsNativeDex": true,
+    "packageMatchesPriorApk": true,
+    "signingCertificateMatchesPriorApk": true
+  },
+  "signature": {
+    "verified": true,
+    "v1": true,
+    "v2": true
+  },
+  "nativeLauncherIcons": {
+    "sizes": [72, 96, 144, 192],
+    "comparison": "Exact decoded RGBA pixel equality against each source icon",
+    "allMatchSource": true,
+    "extractedPreview": "native-launcher-192.png",
+    "previewVisuallyChecked": true
+  },
+  "compiledResources": {
+    "eightLocalAudioFilesMatchSourceSha256": true,
+    "aHelpAndPearlRewardsIncluded": true,
+    "bCategoryButtonsIncluded": true,
+    "cUnreadMessagesIncluded": true,
+    "readonlyMuteGuardIncluded": true,
+    "firstPlayGuardIncluded": true,
+    "nativePrivacyAndPolicyDisplayNamesMatch": true,
+    "realApiAndGameOriginsConfigured": true,
+    "oldOriginsAbsent": true
+  },
+  "publicDownloadVerified": false,
+  "currentTemporaryAccess": "connection interrupted during final validation",
+  "publicDownloadHashVerification": "not passed: temporary HTTPS connection returned 1033; local backend health remained 200",
+  "physicalDeviceInstallationVerified": false,
+  "physicalDeviceAudioVerified": false,
+  "iosIpaGenerated": false,
+  "appStoreReleased": false,
+  "notes": "Native APK metadata, resources and signature checks passed. Reinstallation on the user's Huawei phone and audible playback remain unverified. Live endpoints, AppID, package identifier, account data and certificate material are intentionally omitted."
+}

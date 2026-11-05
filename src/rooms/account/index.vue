@@ -13,9 +13,12 @@
         <input class="input" v-model="nickname" maxlength="12" placeholder="同学们怎么称呼你" />
       </template>
       <view v-if="error" class="error" role="alert">{{ error }}</view>
-      <button class="primary" :disabled="busy" @tap="submit">{{ busy ? '正在办理…' : registering ? '注册并进入' : '登录小镇' }}</button>
-      <button class="secondary" :disabled="busy" @tap="toggle">{{ registering ? '已有账号，去登录' : '第一次来，注册账号' }}</button>
+      <button class="primary" :disabled="busy || connectionBusy" @tap="submit">{{ busy ? '正在办理…' : registering ? '注册并进入' : '登录小镇' }}</button>
+      <button class="secondary" :disabled="busy || connectionBusy" @tap="toggle">{{ registering ? '已有账号，去登录' : '第一次来，注册账号' }}</button>
       <view class="account-note">这是独立的校园服务账号，未核验学籍。微信登录暂未配置。</view>
+      <!-- #ifdef APP-PLUS -->
+      <AppConnectionSettings :active="connectionActive" :disabled="busy" @busy="connectionBusy = $event" />
+      <!-- #endif -->
     </view>
   </view>
 </template>
@@ -23,10 +26,19 @@
 import { ref } from 'vue'
 import { auth } from '../../services/index.js'
 import { errorText } from '../../utils/errors.js'
+// #ifdef APP-PLUS
+import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
+import AppConnectionSettings from '../../components/AppConnectionSettings.vue'
+const connectionActive = ref(true)
+onShow(() => { connectionActive.value = true })
+onHide(() => { connectionActive.value = false })
+onUnload(() => { connectionActive.value = false })
+// #endif
 const studentId = ref(''), password = ref(''), nickname = ref(''), registering = ref(false), busy = ref(false), error = ref('')
-function toggle() { registering.value = !registering.value; error.value = '' }
+const connectionBusy = ref(false)
+function toggle() { if (busy.value || connectionBusy.value) return; registering.value = !registering.value; error.value = '' }
 async function submit() {
-  if (busy.value) return
+  if (busy.value || connectionBusy.value) return
   error.value = ''; busy.value = true
   try {
     const params = { type: 'h5', studentId: studentId.value.trim(), password: password.value }

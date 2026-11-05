@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "广场收到真实私信，显示发送者、正文预览和未读入口",
+    "点击提醒进入对应会话，保留商品链接并在展示后清除未读",
+    "聊天页自动刷新、保留输入草稿，当前会话不重复弹提醒",
+    "小屋也有提醒，收起后不重复弹出，消息中心仍保留未读角标"
+  ],
+  "runtimeErrors": [],
+  "accounts": "two independent test accounts",
+  "transport": "real HTTP + SQLite",
+  "viewports": [
+    390,
+    1280
+  ]
+}

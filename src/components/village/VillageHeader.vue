@@ -1,28 +1,32 @@
 <template>
-  <view class="village-header wx-v" :class="[`room-${roomKind}`, { compact }]">
-    <view class="room-picture wx-v" aria-hidden="true">
-      <view class="room-window wx-v"><view class="wx-v" /><view class="wx-v" /><view class="wx-v" /><view class="wx-v" /></view>
-      <view class="room-shelf wx-v"><view class="wx-v" /><view class="wx-v" /></view>
-      <image
-        class="room-atlas"
-        :class="{ ready: illustrationReady }"
-        :style="atlasPosition"
-        src="/static/village/room-interiors.webp"
-        mode="scaleToFill"
-        @load="illustrationReady = true"
-        @error="illustrationReady = false"
-      />
+  <view class="village-header-host wx-v">
+    <MessageNotice />
+    <view class="village-header wx-v" :class="[`room-${roomKind}`, { compact }]">
+      <view class="room-picture wx-v" aria-hidden="true">
+        <view class="room-window wx-v"><view class="wx-v" /><view class="wx-v" /><view class="wx-v" /><view class="wx-v" /></view>
+        <view class="room-shelf wx-v"><view class="wx-v" /><view class="wx-v" /></view>
+        <image
+          class="room-atlas"
+          :class="{ ready: illustrationReady }"
+          :style="atlasPosition"
+          src="/static/village/room-interiors.webp"
+          mode="scaleToFill"
+          @load="illustrationReady = true"
+          @error="illustrationReady = false"
+        />
+      </view>
+      <view class="room-caption wx-v">
+        <view class="room-nameplate wx-v"><view class="room-mark wx-v" /><text>{{ title }}</text></view>
+        <view v-if="subtitle" class="room-description wx-v">{{ subtitle }}</view>
+      </view>
+      <view v-if="$slots.default" class="room-action wx-v"><slot /></view>
     </view>
-    <view class="room-caption wx-v">
-      <view class="room-nameplate wx-v"><view class="room-mark wx-v" /><text>{{ title }}</text></view>
-      <view v-if="subtitle" class="room-description wx-v">{{ subtitle }}</view>
-    </view>
-    <view v-if="$slots.default" class="room-action wx-v"><slot /></view>
   </view>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
+import MessageNotice from '../MessageNotice.vue'
 const props = defineProps({
   kind: { type: String, default: 'home' },
   title: { type: String, required: true },

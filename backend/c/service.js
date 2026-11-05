@@ -31,7 +31,7 @@ const profile = (user) => user ? Object.fromEntries(
 
 export const C_METHODS = new Set([
   'lostFound.create', 'lostFound.update', 'lostFound.get', 'lostFound.list', 'lostFound.markReturned',
-  'conversation.open', 'conversation.get', 'conversation.list', 'message.list', 'message.send',
+  'conversation.open', 'conversation.get', 'conversation.list', 'conversation.unread', 'conversation.markRead', 'message.list', 'message.send',
   'comment.list', 'comment.create', 'notification.list', 'notification.markRead',
   'report.create', 'report.adminResolve', 'subscription.send'
 ])
@@ -56,8 +56,13 @@ export function createCService({ store, getUser, getExternalContent, getUploadBy
     requireThat(c.participantIds.includes(userId), 'FORBIDDEN', '无权访问这段会话')
     return c
   }
+  const readKey = (id, userId) => canonical([userId, id])
+  const unreadFor = (c, userId) => store.query('messages',
+    "json_extract(data, '$.conversationId') = ? AND json_extract(data, '$.senderId') != ? AND seq > ?",
+    [c.id, userId, store.get('conversationReads', readKey(c.id, userId))?.seq || 0], 'seq DESC', -1)
   const conversationSummary = (c, userId) => ({
     ...clean(c), peer: publicUser(c.participantIds.find((id) => id !== userId)),
+    unreadCount: unreadFor(c, userId).length,
     lastMessage: store.query('messages', "json_extract(data, '$.conversationId') = ?", [c.id], 'seq DESC', 1)[0]?.value || null
   })
   const notify = (event) => {
@@ -223,6 +228,34 @@ export function createCService({ store, getUser, getExternalContent, getUploadBy
       return conversationSummary(c, userId)
     }
     if (method === 'conversation.get') return conversationSummary(member(p.id, userId), userId)
+    if (method === 'conversation.unread') {
+      const items = store.query('conversations',
+        "EXISTS (SELECT 1 FROM json_each(json_extract(data, '$.participantIds')) WHERE value = ?)",
+        [userId], 'seq DESC', -1).flatMap(({ value: c }) => {
+        const unread = unreadFor(c, userId)
+        if (!unread.length) return []
+        return [{ ...conversationSummary(c, userId), lastMessage: unread[0].value, order: unread[0].seq }]
+      }).sort((a, b) => b.order - a.order).map(({ order, ...c }) => c)
+      return { total: items.reduce((sum, c) => sum + c.unreadCount, 0), items }
+    }
+    if (method === 'conversation.markRead') {
+      const c = member(p.conversationId, userId)
+      const messageId = identifier(p.throughMessageId)
+      const row = store.query('messages', "id = ? AND json_extract(data, '$.conversationId') = ?", [messageId, c.id], 'seq DESC', 1)[0]
+      requireThat(row, 'INVALID_ARGUMENT', '已读消息不属于这段会话')
+      const id = readKey(c.id, userId)
+      const previous = store.get('conversationReads', id)
+      if (row.seq > (previous?.seq || 0)) {
+        const value = { id, seq: row.seq }
+        previous ? store.update('conversationReads', value) : store.insert('conversationReads', value)
+      }
+      const readEvents = new Set(store.query('messages', "json_extract(data, '$.conversationId') = ? AND seq <= ?", [c.id, row.seq], 'seq DESC', -1)
+        .map(({ value: m }) => canonical([userId, `message:${m.id}`])))
+      for (const { value: n } of store.query('notifications', "json_extract(data, '$.recipientId') = ? AND json_extract(data, '$.conversationId') = ? AND json_extract(data, '$.read') = 0", [userId, c.id], 'seq DESC', -1)) {
+        if (readEvents.has(n.uniqueKey)) { n.read = true; store.update('notifications', n) }
+      }
+      return { unreadCount: unreadFor(c, userId).length }
+    }
     if (method === 'conversation.list') {
       const source = p.contentType ?? ''
       if (source !== '') contentType(source)

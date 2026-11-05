@@ -61,6 +61,7 @@ function dispatchInternal(db, method, p, now) {
   if (['auth.deleteAccount', 'user.block', 'user.unblock', 'user.listBlocked'].includes(method))
     throw new ServiceError('NOT_SUPPORTED', '演示版不执行真实账号注销或屏蔽，请在真实服务中操作')
   db.comments ||= []
+  db.conversationReads ||= {}
   const me = () => {
     const user = db.users.find((u) => u.id === db.currentUserId && !u.disabled)
     requireThat(user, 'UNAUTHENTICATED', '请先登录')
@@ -112,6 +113,11 @@ function dispatchInternal(db, method, p, now) {
     owner: user(item.ownerId)
   })
   const all = () => Object.values(db.contents).flat()
+  const unreadMessages = (c) => {
+    const through = db.conversationReads[JSON.stringify([me().id, c.id])]
+    const position = through ? db.messages.findIndex((m) => m.id === through) : -1
+    return db.messages.filter((m, index) => index > position && m.conversationId === c.id && m.senderId !== me().id)
+  }
   const note = (recipientId, title, type, id, conversationId) =>
     db.notifications.unshift({
       id: makeId('note'),
@@ -851,12 +857,35 @@ function dispatchInternal(db, method, p, now) {
     db.conversations.unshift(conversation)
     return clone(conversation)
   }
+  if (method === 'conversation.unread') {
+    const items = db.conversations.filter((c) => c.participantIds.includes(me().id)).flatMap((c) => {
+      const unread = unreadMessages(c)
+      return unread.length ? [{ ...c, unreadCount: unread.length, peer: user(c.participantIds.find((id) => id !== me().id)), lastMessage: unread.at(-1) }] : []
+    }).sort((a, b) => db.messages.indexOf(b.lastMessage) - db.messages.indexOf(a.lastMessage))
+    return clone({ total: items.reduce((sum, c) => sum + c.unreadCount, 0), items })
+  }
+  if (method === 'conversation.markRead') {
+    const c = db.conversations.find((c) => c.id === p.conversationId)
+    requireThat(c, 'NOT_FOUND', '会话不存在')
+    requireThat(c.participantIds.includes(me().id), 'FORBIDDEN', '无权访问这段会话')
+    const index = db.messages.findIndex((m) => m.id === p.throughMessageId && m.conversationId === c.id)
+    requireThat(index >= 0, 'INVALID_ARGUMENT', '已读消息不属于这段会话')
+    const key = JSON.stringify([me().id, c.id])
+    const previous = db.messages.findIndex((m) => m.id === db.conversationReads[key])
+    if (index > previous) db.conversationReads[key] = p.throughMessageId
+    const readIds = new Set(db.messages.slice(0, index + 1).filter((m) => m.conversationId === c.id).map((m) => m.id))
+    for (const n of db.notifications) {
+      if (n.recipientId === me().id && n.messageId && readIds.has(n.messageId)) n.read = true
+    }
+    return { unreadCount: unreadMessages(c).length }
+  }
   if (method === 'conversation.get') {
     const c = db.conversations.find((c) => c.id === p.id)
     requireThat(c, 'NOT_FOUND', '会话不存在')
     requireThat(c.participantIds.includes(me().id), 'FORBIDDEN', '无权访问这段会话')
     return {
       ...clone(c),
+      unreadCount: unreadMessages(c).length,
       peer: user(c.participantIds.find((id) => id !== me().id)),
       lastMessage: clone(db.messages.filter((m) => m.conversationId === c.id).reduce(
         (latest, m) => !latest || Date.parse(m.createdAt) >= Date.parse(latest.createdAt) ? m : latest, null
@@ -890,6 +919,7 @@ function dispatchInternal(db, method, p, now) {
       .sort((a, b) => b.activeAt - a.activeAt || a.index - b.index)
       .map(({ conversation, lastMessage }) => ({
         ...conversation,
+        unreadCount: unreadMessages(conversation).length,
         peer: user(conversation.participantIds.find((id) => id !== userId)),
         lastMessage
       }))
@@ -928,9 +958,12 @@ function dispatchInternal(db, method, p, now) {
         createdAt: new Date().toISOString()
       }
       db.messages.push(message)
-      for (const id of c.participantIds)
-        if (id !== me().id)
+      for (const id of c.participantIds) {
+        if (id !== me().id) {
           note(id, '收到一条联系消息', c.contentType, c.contentId, c.id)
+          db.notifications[0].messageId = message.id
+        }
+      }
       return clone(message)
     })
   }

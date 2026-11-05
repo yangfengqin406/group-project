@@ -51,6 +51,44 @@ function fixture(t) {
 }
 const fails = (run, code) => assert.throws(run, { code })
 
+test('私信未读按账号持久保存，标读只推进到已展示消息，新到/其他会话不被清除', (t) => {
+  const f = fixture(t), c = f.open(), other = f.open('plan')
+  const send = (id, key, userId = 'bob') => f.call('message.send', { conversationId: id, body: key, idempotencyKey: key }, userId)
+  const first = send(c.id, 'first'), second = send(c.id, 'second')
+  send(other.id, 'another')
+  assert.equal(f.call('conversation.unread').total, 3)
+  assert.equal(f.call('conversation.unread', {}, 'bob').total, 0)
+  assert.equal(f.call('conversation.get', { id: c.id }).unreadCount, 2)
+  assert.equal(f.call('conversation.markRead', { conversationId: c.id, throughMessageId: first.id }).unreadCount, 1)
+  assert.equal(f.call('conversation.unread').total, 2)
+  const notes = f.call('notification.list').items
+  assert.equal(notes.filter((n) => n.read).length, 1)
+  f.reopen()
+  assert.equal(f.call('conversation.unread').total, 2)
+  f.call('conversation.markRead', { conversationId: c.id, throughMessageId: second.id })
+  f.call('conversation.markRead', { conversationId: c.id, throughMessageId: first.id })
+  assert.equal(f.call('conversation.get', { id: c.id }).unreadCount, 0)
+  send(c.id, 'after-read')
+  assert.equal(f.call('conversation.get', { id: c.id }).unreadCount, 1)
+  fails(() => f.call('conversation.markRead', { conversationId: c.id, throughMessageId: first.id }, 'eve'), 'FORBIDDEN')
+  fails(() => f.call('conversation.markRead', { conversationId: other.id, throughMessageId: first.id }), 'INVALID_ARGUMENT')
+  assert.equal(f.call('conversation.unread', {}, 'eve').total, 0)
+})
+
+test('私信未读统计跨过分页且发送重试不增加计数，通知标读不冒充阅读会话', (t) => {
+  const f = fixture(t), c = f.open()
+  for (let i = 0; i < 55; i++) {
+    const params = { conversationId: c.id, body: `线索${i}`, idempotencyKey: `many-${i}` }
+    f.call('message.send', params, 'bob'); f.call('message.send', params, 'bob')
+  }
+  assert.equal(f.call('conversation.unread').total, 55)
+  const newest = f.call('message.list', { conversationId: c.id }).items[0]
+  f.call('notification.markRead', { notificationId: f.call('notification.list').items[0].id })
+  assert.equal(f.call('conversation.unread').total, 55)
+  f.call('conversation.markRead', { conversationId: c.id, throughMessageId: newest.id })
+  assert.equal(f.call('conversation.unread').total, 0)
+})
+
 test('C 持久化：重开数据库后失物、消息、通知、举报及幂等回执仍存在', (t) => {
   const f = fixture(t)
   const item = f.lost({ ownerId: 'eve', campusId: 'forged', status: 'returned' })

@@ -1,0 +1,143 @@
+{
+  "date": "2026-10-30",
+  "scope": "Actual Vue SFC + actual theme and account-card styles in isolated desktop Edge at 390 CSS px; service is stubbed.",
+  "nativeVerification": false,
+  "businessApiUsed": false,
+  "realAccountsUsed": false,
+  "stateChangesPersisted": false,
+  "actualSfcSha256": "3d3d2ab9c2e8fcccc695d6a6fb50255bbe094cb5cb52901ce5d39b73264ad612",
+  "actualThemeSha256": "66152a3ad020d24982565a44792bed294459688884c38416146049c5c2d63d37",
+  "responsiveUnits": "theme rpx converted using 390/750 for this fixed-width visual fixture",
+  "states": [
+    {
+      "name": "collapsed",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "component": {
+        "x": 45,
+        "y": 612.921875,
+        "width": 300,
+        "height": 51.796875,
+        "right": 345,
+        "bottom": 664.71875
+      },
+      "toggle": {
+        "x": 45,
+        "y": 623.921875,
+        "width": 300,
+        "height": 40.796875,
+        "right": 345,
+        "bottom": 664.71875
+      },
+      "input": null,
+      "actions": [],
+      "errorVisible": false,
+      "restoreEnabled": null,
+      "bodyHeight": 844,
+      "runtimeErrors": []
+    },
+    {
+      "name": "expanded",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "component": {
+        "x": 45,
+        "y": 534.640625,
+        "width": 300,
+        "height": 259.703125,
+        "right": 345,
+        "bottom": 794.34375
+      },
+      "toggle": {
+        "x": 45,
+        "y": 545.640625,
+        "width": 300,
+        "height": 40.796875,
+        "right": 345,
+        "bottom": 586.4375
+      },
+      "input": {
+        "x": 45,
+        "y": 690.21875,
+        "width": 300,
+        "height": 42.625,
+        "right": 345,
+        "bottom": 732.84375
+      },
+      "actions": [
+        {
+          "x": 45,
+          "y": 744.84375,
+          "width": 146,
+          "height": 41.5,
+          "right": 191,
+          "bottom": 786.34375
+        },
+        {
+          "x": 199,
+          "y": 744.84375,
+          "width": 146,
+          "height": 41.5,
+          "right": 345,
+          "bottom": 786.34375
+        }
+      ],
+      "errorVisible": false,
+      "restoreEnabled": false,
+      "bodyHeight": 851,
+      "runtimeErrors": []
+    },
+    {
+      "name": "error",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "component": {
+        "x": 45,
+        "y": 534.640625,
+        "width": 300,
+        "height": 349.015625,
+        "right": 345,
+        "bottom": 883.65625
+      },
+      "toggle": {
+        "x": 45,
+        "y": 545.640625,
+        "width": 300,
+        "height": 40.796875,
+        "right": 345,
+        "bottom": 586.4375
+      },
+      "input": {
+        "x": 45,
+        "y": 707.21875,
+        "width": 300,
+        "height": 42.625,
+        "right": 345,
+        "bottom": 749.84375
+      },
+      "actions": [
+        {
+          "x": 45,
+          "y": 834.15625,
+          "width": 146,
+          "height": 41.5,
+          "right": 191,
+          "bottom": 875.65625
+        },
+        {
+          "x": 199,
+          "y": 834.15625,
+          "width": 146,
+          "height": 41.5,
+          "right": 345,
+          "bottom": 875.65625
+        }
+      ],
+      "errorVisible": true,
+      "restoreEnabled": true,
+      "bodyHeight": 941,
+      "runtimeErrors": []
+    }
+  ],
+  "passed": true
+}

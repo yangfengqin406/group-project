@@ -1,5 +1,6 @@
 <template>
   <view class="page pet-page">
+    <MessageNotice />
     <DemoNotice />
     <view class="editor-heading">
       <view>
@@ -297,6 +298,7 @@
 </template>
 
 <script setup>
+import MessageNotice from '../../components/MessageNotice.vue'
 import { computed, ref, watch } from 'vue'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
 import DemoNotice from '../../components/DemoNotice.vue'

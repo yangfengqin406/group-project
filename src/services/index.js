@@ -23,3 +23,6 @@ export * as lostFound from './lostFound.js'
 export * as event from './event.js'
 export * as appraisal from './appraisal.js'
 export * as subscription from './subscription.js'
+// #ifdef APP-PLUS
+export * as connection from './connection.js'
+// #endif

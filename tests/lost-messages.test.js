@@ -6,6 +6,25 @@ import { dispatch } from '../src/mock/engine.js'
 const failCode = (run, code) =>
   assert.throws(run, (error) => error.code === code)
 
+test('演示私信未读与真实接口一致：按身份隔离、快照标读且不误读后续新消息', () => {
+  const db = createSeed()
+  const c = dispatch(db, 'conversation.open', { contentType: 'lost_found', contentId: 'lost_demo_key', peerUserId: 'user_demo_b' })
+  const send = (key) => dispatch(db, 'message.send', { conversationId: c.id, body: key, idempotencyKey: key })
+  const first = send('first'), second = send('second')
+  assert.equal(dispatch(db, 'conversation.unread').total, 0)
+  db.currentUserId = 'user_demo_b'
+  assert.equal(dispatch(db, 'conversation.get', { id: c.id }).unreadCount, 2)
+  dispatch(db, 'conversation.markRead', { conversationId: c.id, throughMessageId: first.id })
+  assert.equal(dispatch(db, 'conversation.unread').total, 1)
+  assert.equal(db.notifications.find((n) => n.messageId === first.id).read, true)
+  dispatch(db, 'conversation.markRead', { conversationId: c.id, throughMessageId: second.id })
+  dispatch(db, 'conversation.markRead', { conversationId: c.id, throughMessageId: first.id })
+  assert.equal(dispatch(db, 'conversation.unread').total, 0)
+  db.currentUserId = 'user_demo_c'
+  failCode(() => dispatch(db, 'conversation.markRead', { conversationId: c.id, throughMessageId: first.id }), 'FORBIDDEN')
+  assert.equal(dispatch(db, 'conversation.unread').total, 0)
+})
+
 test('直接读取会话只允许参与者，通知保留会话链接，最新摘要按实际时间选取', () => {
   const db = createSeed()
   const c = dispatch(db, 'conversation.open', { contentType: 'lost_found', contentId: 'lost_demo_key', peerUserId: 'user_demo_b' })

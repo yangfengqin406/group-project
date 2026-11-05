@@ -3,6 +3,11 @@
     <VillageHeader kind="home" title="自己的家" subtitle="在小屋里歇歇脚，整理你的校园生活。" />
     <DemoNotice />
     <view v-if="error" class="error">{{ error }}</view>
+    <!-- #ifdef APP-PLUS -->
+    <view v-if="!profile" class="actions">
+      <button class="secondary" @tap="openSettings">测试服务地址</button>
+    </view>
+    <!-- #endif -->
     <view v-if="profile" class="panel home-profile">
       <view class="row home-identity">
         <ServiceImage v-if="profile.avatarUrl" :src="profile.avatarUrl" class="profile-avatar" mode="aspectFill" />
@@ -173,8 +178,15 @@ async function load() {
   clearPersonalSummary()
   favLoading.value = true
   try {
+    const profileRead = user.getProfile()
+    // First identity binding triggers the account watcher below. Let that new
+    // load reuse the same profile flight before starting any obsolete content.
+    if (!userId) {
+      await profileRead
+      if (!current()) return
+    }
     const [p, r] = await Promise.all([
-      user.getProfile(),
+      profileRead,
       myContent.list({ contentType: filter })
     ])
     if (!current()) return
