@@ -6,7 +6,9 @@
 
 使用隔离的真实 HTTP + SQLite 和两个测试账号，在 390×844 H5 视口操作。收起提醒保留未读，下一次检查不重复弹出；第二条私信提示不遮挡操作栏，点击进入对应会话后红色角标由 2 减到 1；进入剩余会话后广场和消息中心的角标都隐藏。真实 CloudBase 数据未变更，本机浏览器验证未使用线上账号。
 
-课程环境已有 CloudBase 及公开安卓 0.1.4 交付。0.1.5 签名与分发以 [App 交付记录](app-release-2026-10-27.md) 为准；原生真机、锁屏/退出推送和 iOS 安装仍需单独验收。
+[PR #49](https://github.com/yangfengqin406/group-project/pull/49) 已合入 main（`b967ddb`），[PR CI](https://github.com/yangfengqin406/group-project/actions/runs/42048293352)、[主分支 CI](https://github.com/yangfengqin406/group-project/actions/runs/42050864351)及[公开 H5 演示](https://github.com/yangfengqin406/group-project/actions/runs/42050864083)均通过。线上 H5 静态资源实查含新版未读角标，CloudBase 健康检查返回 OK。
+
+Android 0.1.5 已签名，30 项验包通过，签名与 0.1.4 一致，包内确认新版角标。当前公开下载页仍是 0.1.4，详见[App 交付记录](app-release-2026-10-27.md)。原生真机覆盖安装、锁屏/退出推送和 iOS 安装仍需单独验收。
 
 ## 2026-11-05 C手机系统私信通知源码
 

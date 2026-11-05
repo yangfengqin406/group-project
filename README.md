@@ -10,7 +10,7 @@
 
 | 项目 | 已完成与证据 | 仍待完成 |
 | --- | --- | --- |
-| Android | 当前已验签并公开分发 **0.1.4（code104）**，默认连接 CloudBase。应用身份与原签名匹配，29 项包内检查及完整下载哈希通过。[下载页](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/app-download.html) · [验证证据](docs/assets/app-cloudbase-2026-11-05/verification.json) | **0.1.5（code105）** 为本次源码整合版本，签名、分发和真机状态见[验证记录](docs/verification.md)。应用商店分发待办 |
+| Android | 最新已验签安装包为 **0.1.5（code105）**，默认连接 CloudBase，包含新版广场私信角标，沿用原应用签名。[交付与校验](docs/app-release-2026-10-27.md) | 当前[公开下载页](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/app-download.html)仍提供 0.1.4；0.1.5 本地交付，真机覆盖安装及应用商店分发待办 |
 | iPhone | 0.1.4 对应 iOS 编译预检通过，iPhone 可通过浏览器使用课程版。[验证证据](docs/assets/app-cloudbase-2026-11-05/verification.json) | Apple 会员、签名与原生安装分发待办 |
 | 真实后端 | CloudBase 已部署并核验原账号、帖子、私信、回执和上传。公网临时账号通过登录、互助、图片权限与私信验收。[部署与验证](docs/cloudbase-deployment.md) | 课程环境的长期运营、关机与多台真机验收另行记录 |
 | H5 备用 | [CloudBase 课程版](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/#/)连接真实后端，[GitHub Pages 阶段演示](https://yangfengqin406.github.io/group-project/#/)使用本机虚构数据 | 线上前台私信体验随各自发布版本更新 |
