@@ -1,5 +1,13 @@
 # Android / iOS App 适配与交付
 
+## 2026-11-05 Android 0.1.5 签名包
+
+A（杨凤琴）用已合入 main 的 [PR #49](https://github.com/yangfengqin406/group-project/pull/49) 产品源码生成 `campus-plaza-0.1.5-android.apk`（code105）。应用默认连接现有 CloudBase，包内包含广场私信提示及红色未读角标。Android 原包名和证书与 0.1.4 一致，支持沿用签名的覆盖安装；实际真机覆盖安装待验。
+
+30 项检查通过，包括 v1/v2 签名、提交的前端编译文件与包内文件匹配、CloudBase 连接、4 张启动图标和 8 个音频。文件 26,485,343 字节，SHA-256 为 `f14a86b0aa6556ee86b0f05cc5a1edd27f536f4b7863aa521ee7e4d6b80946db`。[核验摘要](assets/app-cloudbase-2026-11-05/verification-v015.json)。
+
+0.1.5 为本地签名交付，CloudBase 公开下载页仍提供 0.1.4。线上账号和数据未迁移或清空。iOS 编译资源已验证，尚无签名 IPA；课程环境的系统离线推送未启用。
+
 ## 2026-11-05 Android 0.1.4 默认连接 CloudBase
 
 用户确认安卓0.1.3按「检查并切换」连接CloudBase后测试正常，并选择保留账号、帖子、私信、图片和存档。本轮未清空或重新导入用户数据。A（杨凤琴）以原整合候选为基础将安装包默认服务地址指向CloudBase，版本升至0.1.4/code104；保留名称、图标、原应用身份和B（孙瑞）/C（姜澜）原业务归属。仅构建期写入公开HTTPS地址，不写CloudBase管理密钥。已保存其他自定义服务地址的旧安装可在设置中选择「恢复默认地址」。

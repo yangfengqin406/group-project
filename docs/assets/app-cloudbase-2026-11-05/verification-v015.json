@@ -1,0 +1,21 @@
+{
+  "versionName": "0.1.5",
+  "versionCode": 105,
+  "filename": "campus-plaza-0.1.5-android.apk",
+  "bytes": 26485343,
+  "sha256": "f14a86b0aa6556ee86b0f05cc5a1edd27f536f4b7863aa521ee7e4d6b80946db",
+  "checkedAt": "2026-11-05T15:50:16.45Z",
+  "sourceIntegration": "b967ddba7854296450ec89d93c23903a41dc27ad",
+  "passedChecks": 30,
+  "failedChecks": 0,
+  "originalPackageNameAndSigningCertificateMatch": true,
+  "androidV1AndV2SignaturesVerify": true,
+  "packagedServiceMatchesSubmittedBuild": true,
+  "plazaUnreadBadgeIncludedInJavaScriptAndCss": true,
+  "defaultCloudbaseOriginMatches": true,
+  "nativeLauncherImagesVerified": 4,
+  "audioFilesVerified": 8,
+  "physicalDeviceVerified": false,
+  "publicDownloadUpdated": false,
+  "signedIosPackageCreated": false
+}
