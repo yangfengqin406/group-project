@@ -1,5 +1,27 @@
 # 接口契约 v0.2
 
+## 2026-10-30 本人资料在途读取与冷启动小屋
+
+同一HTTP令牌的本人资料读取与冷启动身份恢复共用正在进行的一次请求，完成或失败后立即释放；后续主动刷新仍请求后端，不缓存长期资料。指定userId的公开资料及非空参数请求不合并，不合并写操作、不自动重试、失败不回退演示。旧令牌的迟到结果不得绑定到新会话，过期令牌仍清理本机身份并进入登录。
+
+自己的家在尚未确定当前身份时，先等待已有本人资料请求；首次身份绑定触发原账号监听重载，旧加载在版本检查后停止，不再发失效的本人内容请求。已知身份的资料与首屏内容仍并行读取，保留真正换账号、退出及隐藏页面的清空和迟到保护。不新增RPC、路由、存储或依赖；此修复只减少已复现的冗余读取，不宣称消除公网通道延迟或真机超时。
+
+## 2026-10-30 App 测试服务地址设置
+
+用户确认增加可切换测试服务地址，避免临时通道变化后必须重打包。沿现有 config/transport 与账号设置流程扩展，仅 App 生效；H5/微信继续使用构建参数。新增本机连接偏好（只含 HTTPS origin，不含账号/令牌/业务数据），启动时派生同源 `/api` 与 `/game`。只接受无凭据、路径、查询或片段的 HTTPS 源；错误/损坏偏好不能切换为 mock。
+
+页面只调用新增 `services/connection`，不得自行请求或读写存储。服务提供读取当前/默认地址、无凭据检查 `/api/health`、检查成功后保存并重启 App、恢复默认地址。检查只发送匿名 GET，不携带 Bearer、密码或用户资料；必须核验校园后端响应。检查失败或存储失败保留原偏好，错误如实展示。切换前退出本机登录状态、停止提醒/声音，新目标不得继承其他源的令牌；不注销服务端账号或删除后端数据。同一后端地址变化可继续使用原账号，不承诺不同服务器数据互通。
+
+入口放在登录页（断线、未登录仍可访问）与已有账号/隐私页，使用现有奶油绿样式，不新增路由/房子/RPC/依赖。原生重启和真机设置单独验收；自动测试覆盖无浏览器URL构造器、地址拒绝、匿名检查、失败回滚、跨源登录隔离与重启后读取偏好。
+
+## 2026-10-29 App显示名称与图标
+
+用户确认App显示名为“校园生活广场”，使用已提供的兔子抱小屋头像。调整公开manifest.name、h5.title和app-plus.distribute.icons，并将隐私欢迎文案及政策页标题的显示名称保持一致；图标按本机HBuilderX 5.26 schema的Android与iPhone/iPad字段准备确定性缩放PNG，放在static/app/icons专属目录。原始头像保持不变，来源与SHA256记录在docs/assets/app-brand-2026-10-29。appid、版本、包名、证书、业务接口、路由和存储不变；iOS图标资源不代表已签名IPA。原生启动画面及业务内文字不是本轮额外重设计。
+
+## 2026-10-29 App 0.1.1重新打包整合（本机候选）
+
+用户已恢复App打包授权。独立目录整合A（杨凤琴）的互助/珍珠/原画风/App适配和B（孙瑞）PR #43分类、C（姜澜）PR #44未读提醒/聊天更新；App生命周期同时保留音频后台停止与消息前台轮询。版本0.1.1/code101，原工作区、实际账号数据及现有服务保持；不在本目录记录私有AppID或签名。此为本机候选，不表示远端PR #45已解冲或main已包含整合代码。本轮531测试、check17页/87调用、H5/微信/App双目标预检及包体实际通过，13步双账号验收通过，详情见verification；APK与真机仍单独登记。
+
 ## 私信未读与前台提醒（2026-10-29）
 
 - 新增 `conversation.unread({})` → `{total,items:[{id,unreadCount,peer,contentType,contentId,contentTitle,lastMessage}]}`，按最新未读留言排序，仅返回本账号有未读的会话，统计不受列表分页影响。`conversation.get/list` 另附 `unreadCount`。
@@ -7,6 +29,51 @@
 - App前台每5秒查询一次未读；底部消息角标、广场消息入口及各业务页面可点击提示共用统计。隐藏/退出/切账号停止并隔离旧响应。提示可收起，未读角标保留；同一消息不重复弹出，正在看的会话不弹提示。
 - 聊天页前台每5秒刷新最新留言，保留已加载历史和输入草稿；读取成功后才提交已读位置。后台/关闭应用不承诺推送，本轮不接微信订阅发送或系统通知权限。
 
+## 2026-10-28 原画风嵌入展示
+
+按用户截图纠正，MyHelp新增可选embedded:boolean（默认false），为true时在资料卡内显示一行可展开入口，读取/错误/当前待办提示不随正文隐藏；展开仍使用原help.listMine及三栏分页。ContributionRewards新增可选embedded:boolean（默认false），在“我的宠物”内不再生成独立卡片，常显余额和规则入口，次数/规则/流水点开查看；showActions默认行为兼容，首页继续传false。均为展示属性，不新增RPC/路由/业务字段，不改变余额或发奖。
+
+## 2026-10-28 业务页视觉整理
+
+本轮无RPC、业务字段、路由或依赖变化。ContributionRewards新增可选展示属性showActions:boolean（默认true）：自己的家传false，与MyHelp的一组互助入口去重；衣柜等现有调用保持默认入口。规则与记录折叠仍读取同一鉴权状态，不改变余额或奖励。其余组件的事件、错误/重试/分页与身份隔离保持原契约；公开状态继续只用helpProgress，不引入私人待办到公开卡片。
+
+## 我的互助与求助说明（2026-10-28，本机验证通过，未发布）
+
+用户批准前三项体验改进，设计见[说明](superpowers/specs/2026-10-28-help-continuity-design.md)。help.create/update新增可选preferredTime（0～80字字符串，默认空）、estimatedMinutes（null或1～480整数，默认null）、meetingMode（flexible/online/offline，默认flexible）。未填字段兼容历史记录；更新未提供的新字段保留原值，选人后仍冻结编辑。时间为自由文本意愿，不是预约日期推断。
+
+公开Content摘要对help附加helpProgress:'waiting'|'helping'|'awaiting_confirmation'|'resolved'|'closed'，从原帖与当前选定协作推导，页面不自行推断谁已确认。公开摘要只带说明和进度，不附本人申请、确认时间或申请数。
+
+新增help.listMine({scope?:'todo'|'posted'|'applied',cursor?,pageSize?}) → {items,nextCursor}，默认todo。条目为{helpId,help:Content|null,application:Application|null,role:'owner'|'helper',pendingCount?,progress,actionRequired,actionLabel,availability:'available'|'unavailable',updatedAt}。身份由会话决定，拒绝客户端身份字段；作者看本人发帖，申请者按同帖最新本人申请去重；待办仅待选人与本人未确认，终态/已确认等待对方不列。筛选、去重后分页，游标绑定账号和scope。原帖私有/删除/注销后对申请者仅给不可访问占位及本人申请状态，不能包含原标题/正文/图片/作者或其他申请者，不能进入其详情。其他人的公开主页仍用user.listPublicContent。
+
+微信静态复制产物仅排除4张当前从不渲染的挂饰背面帧：static/pets/wearables/{bubble-star,pearl-badge,clover-pin,glow-jelly}-back.webp。WardrobeLayers只在正面显示挂饰；源码及H5/App帧均保留，通用衣身/鞋/发型及旧背包回退不裁剪。构建末尾对已知4个文件精确排除，再实际检查2MiB原始目录预算；不改变功能、路由或素材内容。
+
+## 校园贡献与珍珠（2026-10-27，用户已确认，实施中）
+
+完整规则见[设计说明](superpowers/specs/2026-10-27-campus-contribution-design.md)。公开新发布 help/market（sell 与 buy）/lostFound/plan 每篇5珠，每账号北京时间每日前三篇共享额度；编辑、失败、私有发布及七天内同账号规范化同文不重复奖励。create 新增可选 idempotencyKey，新客户端网络重试复用；返回原 Content，可瞬态附加 reward:{eventId,delta,reason}，不将本人奖励信息写进公开 Content。奖励事件、余额、业务与回执同事务提交，零奖励决定也不跨日补领。
+
+新增 rewards.getState() 仅读取本人余额、dayKey、daily:{publish:{awarded,limit:3},helpCompletion:{awarded,limit:2}}、rules 及 recent（最多20条本人贡献奖励）。仅服务端可信业务可发奖，客户端不能指定金额、身份或领奖事件。公开主页继续仅使用 user.listPublicContent。
+
+help 新增 listApplications({helpId,cursor?,pageSize?}) → {items,nextCursor}；作者看本帖申请，其他人只看本人申请。新增 apply({helpId,idempotencyKey})、selectHelper/confirmCompletion/cancelCooperation({helpId,applicationId,idempotencyKey})，返回 {application,help,reward?}；reward 仅当前调用人可见。申请含 id/helpId/ownerId/helperId/status（pending/accepted/completed/cancelled）、ownerConfirmedAt/helperConfirmedAt、createdAt 和公开用户摘要。公开 help 可附加 selectedApplicationId，不附申请清单或钱包信息。选人后冻结编辑，旧 help.complete 不得绕过双方确认；未选人自行解决不发完成奖。任一参与方取消未完成协作不发奖，重新选人不沿用旧确认。
+
+双方确认解决后，帮助者15珠、发布者5珠；每账号每天最多两次完成奖励，跨角色共享，各自独立判断满额，同一对账号同一天最多一次奖励。满额仍可完成，历史已结算事件不可重领。屏蔽禁止新的申请与选择；注销撤销未完成协作、清理本人奖励资料。所有日期由后端北京时间确定，独立账号未核验学籍，不宣称能防止小号互刷。
+
+conversation.open 对 help 增加发布者联系真实申请人的入口：仅该帖发布者可联系本帖 pending/accepted/completed 的申请者，参与者仍由服务端验证，复用既有双人会话并检查屏蔽与账号有效；不得指定无申请的任意账号。其他内容继续只联系发布者。帮助者仍可通过原入口联系作者。
+
+衣柜目录 unlockLevel 统一返回0并移除服务端通关兑换限制；clearedLevels 仍仅用于潜水顺序与首通奖励。旧余额、拥有物及固定游戏奖励保留。本节覆盖下方历史通关兑换门槛说明；H5/微信/App 源码均沿用该规则，本轮不打 APK。
+
+## Android / iOS App 接入（2026-10-27，实施中）
+
+0.1.1音频续修：用户确认华为安装、登录、伙伴与衣柜正常，但主动开启音乐且媒体音量正常仍无声。当前官方App SDK的obeyMuteSwitch为只读，平台适配只在属性可写时配置，不强写只读项；首次播放由调用方明确发起，不能把初始paused=false当作已播放。沿用同包名和云端证书递增版本，旧版本数据与已有账号不重置。新版是否有声仍以真机回验为准。
+
+App业务图片仍保留接口返回的原始URL；`services/media`仅为显示下载本服务`/api/files/`图片，令牌只放请求头，不放URL，不发送给外部图片站点。临时显示文件在组件卸载或账号切换后清理，迟到下载不能回填其他账号；H5/微信沿用原图片路径，不增加RPC。
+
+新增 `rooms/settings/index` 账号与隐私页面，沿用既有服务层。`VITE_APP_CONTACT_EMAIL` / `VITE_APP_PRIVACY_URL` 是可选公开展示配置，不得放密钥；正式发布构建要求提供实际联系方式、HTTPS隐私政策及真实DCloud AppID，开发预检仍明确区分未签名资源。账号注销产生的文件清理任务在SQLite提交后执行并持久重试，访问权限与会话先在事务内撤销。
+
+用户确认改用原生 App 交付，同时支持 Android 和 iOS；先完成适配与 Android 安装包，Apple 会员/签名稍后由用户准备。沿用 uni-app 官方 App 平台、既有 HTTP RPC 和独立账号，完整保留四屋业务、消息、宠物、衣柜、钓鱼、潜水及三人斗地主；不将 H5 网页或编译资源称为已签名安装包。
+
+App 构建新增与现有编译器完全同版本的 `@dcloudio/uni-app-plus`，构建时由 `CAMPUS_APP_ORIGIN` 指定 HTTPS 服务源，不将实际服务地址、DCloud AppID、证书或密码提交源码。原有 H5/微信构建继续可用，正式 App 不自动启用微信调试、不回退演示成功。PNG 导入新增 App 文件读取适配；声音及切后台沿用现有暂停规则。
+
+已实现本人账号注销与用户屏蔽：`auth.deleteAccount({password,confirmation:'注销账号'})` 二次验证当前账号密码后撤销全部会话、删除本人资料与私有存档、下架本人发布并清理上传；不允许客户端指定待注销用户。`user.block({userId})` / `user.unblock({userId})` / `user.listBlocked({})` 只维护当前账号的屏蔽关系，任一方屏蔽后禁止建立新会话和发送新私信；历史消息保留双方的既有访问权限，屏蔽不伪装删除双方已发生的交互。新增契约已通过真实SQLite与隔离浏览器走查；原生App真机及正式发布另验，不由编译成功推定。
 ## 手机跨网络开发预览（2026-10-27）
 
 同日续修：仅 `build-phone-preview.mjs` 显式设置公开构建标记 `VITE_PHONE_PREVIEW_DEBUG=true`。服务层在首个HTTP请求前等待微信开发/体验环境的调试准备，共享一次在途准备；release环境及默认H5/发布构建不自动开启。调试失败不回退mock、不伪造登录；真实网络失败分别提示域名拒绝、超时、TLS/普通连接失败。不增加RPC、账号字段或业务存储，也不替代微信后台合法域名与成员权限。
@@ -230,3 +297,12 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 `market.getCandidates({id})` 返回本人商品预约分页（含 buyer/seller）；`reservation.respond({reservationId,accept:boolean})` 由卖家确认/拒绝，`reservation.complete({reservationId})` 由买卖任一方完成已确认预约，重复操作结果一致。新增 `rooms/account/index` 分包账号页面用于独立账号注册/登录；401 业务错误转向该页，退出会话撤销服务端令牌。
 
 本地 `help.getCandidates({helpId})` 仅供本人公开进行中的求助，按同校区真实账号 `skillTags` 与 `category` 忽略大小写完全一致匹配，返回账号与规则理由；不代表 AI 能力评估。`pet.get/save` 将预设外观保存到当前账号，游戏奖励暂不接入校园数据库。
+# 2026-11-05 App 系统私信通知（C，源码交接）
+
+新增真实 RPC `push.status {}` → `{ configured }`、`push.bind { clientId, platform }` → `{ enabled: true }`、`push.unbind { clientId }` → `{ enabled: false }`。仅登录用户可调用，platform 为 android/ios；绑定归属来自服务端会话，不接受客户端 userId。演示模式不模拟推送成功。客户端在消息页主动开启权限，登录恢复/前台恢复时更新绑定；点击通知经当前账号与 conversation.get 权限核验后进入既有聊天路由。
+
+私信与每设备推送任务同事务落库；后台任务在事务提交后发送，失败有界重试，不影响私信成功；发送前复查会话、未读、屏蔽、账号及绑定会话有效性。通知使用固定文案，不传聊天正文。已读/登出/注销/设备换号后的过期任务丢弃。
+
+采用 uni-push 2 原生通道；现有业务后端（包括 CloudBase 托管容器）通过服务端签名 HTTPS 调用独立 uniCloud 推送桥，不迁移账号/业务数据库。服务端私有配置 `CAMPUS_PUSH_BRIDGE_URL`、`CAMPUS_PUSH_BRIDGE_SECRET`；桥函数使用同一 secret 及 `CAMPUS_PUSH_APP_ID`。不允许放入 VITE_。桥仅接受 HMAC 签名/短时效/唯一请求，不能公开任意群发。
+
+构建新增 `CAMPUS_APP_PUSH=true`，须先开通原 AppID 的 uni-push 2 并配置对应厂商通道/APNs。只在生成的 HBuilderX 项目启用 Push 模块与离线能力；未开通时不能盲目云打包。App 系统通知与微信订阅分开；H5/微信不引入原生推送。[源码交接与剩余配置](app-system-push.md)。

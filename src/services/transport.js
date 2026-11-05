@@ -11,15 +11,30 @@ function networkFailure(error = {}) {
   if (/domain|域名/.test(detail)) message = '微信未允许访问这个服务域名，开发预览请开启调试；普通体验可使用H5入口'
   else if (/timeout|timed out|超时/.test(detail)) message = '服务器响应超时，请稍后重试'
   else if (/ssl|tls|certificate|cert_|handshake/.test(detail)) message = 'HTTPS连接校验失败，请联系维护者检查服务证书'
+  // #ifdef APP-PLUS
+  if (typeof plus !== 'undefined' && /domain|域名/.test(detail)) message = '服务域名无法访问，请检查网络或联系维护者'
+  // #endif
   return new ServiceError('SERVICE_UNAVAILABLE', message)
 }
 export async function restoreIdentity() {
   const token = getToken()
   if (config.apiMode !== 'http' || !token || session.user) return session.user
+  await readOwnProfile()
+  return session.user
+}
+// Share only an unfinished own-profile read, including its identity binding.
+// A later refresh still reaches the server; another token has a separate flight.
+export async function readOwnProfile() {
+  const token = getToken()
+  if (config.apiMode !== 'http') {
+    const profile = await call('user.getProfile')
+    if (getToken() === token) setSession(profile)
+    return profile
+  }
   if (!restoringIdentity || restoringToken !== token) {
     const pending = call('user.getProfile').then((profile) => {
       if (getToken() === token) setSession(profile)
-      return session.user
+      return profile
     }).finally(() => { if (restoringIdentity === pending) restoringIdentity = null })
     restoringToken = token
     restoringIdentity = pending

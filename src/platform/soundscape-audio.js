@@ -1,7 +1,12 @@
 import { createEffectSamples, createUnderwaterSamples } from '../utils/soundscape-score.js'
 import { createBackgroundMusic } from './background-music.js'
+import { createNativeSoundscapeAudio } from './native-audio.js'
 
 export function createSoundscapeAudio(options = {}) {
+  // #ifdef APP-PLUS
+  if (typeof plus !== 'undefined' && typeof uni !== 'undefined' && uni.createInnerAudioContext)
+    return createNativeSoundscapeAudio(options)
+  // #endif
   const background = options.music || createBackgroundMusic()
   let context
   // #ifdef H5

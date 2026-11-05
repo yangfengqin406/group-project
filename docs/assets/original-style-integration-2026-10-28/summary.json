@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-28",
+  "scope": "preserve original room artwork and cream cards; embed help and pearls in existing profile and pet cards",
+  "check": {
+    "pages": 17,
+    "serviceCallSites": 85
+  },
+  "tests": {
+    "total": 520,
+    "passed": 520,
+    "failed": 0,
+    "skipped": 0
+  },
+  "builds": {
+    "h5": true,
+    "mpWeixin": true
+  },
+  "weixin": {
+    "styleFiles": 36,
+    "styleIssues": 0,
+    "targetedQuality": "passed",
+    "rawBudget": {
+      "passed": true,
+      "mainBytes": 2084168,
+      "budgetBytes": 2097152,
+      "subpackages": [
+        {
+          "root": "pages/content",
+          "bytes": 55762
+        },
+        {
+          "root": "rooms",
+          "bytes": 44633
+        }
+      ]
+    },
+    "nativeScan": "not-run"
+  },
+  "browser": {
+    "passed": true,
+    "steps": 10,
+    "runtimeErrors": 0,
+    "finishedAt": "2026-10-28T12:55:17.832Z",
+    "visualChecks": [
+      {
+        "name": "help primary action geometry",
+        "top": 565.46875,
+        "bottom": 609.859375,
+        "height": 44.390625,
+        "viewport": 844
+      },
+      {
+        "name": "original artwork and embedded features",
+        "height": 180,
+        "pictureOpacity": "1",
+        "myHelpEmbedded": true,
+        "pearlsEmbedded": true
+      },
+      {
+        "name": "embedded help expanded layout",
+        "top": 515.59375,
+        "bottom": 839.984375,
+        "viewport": 844,
+        "overflow": false
+      },
+      {
+        "name": "home no horizontal overflow",
+        "width": 320,
+        "overflow": false
+      },
+      {
+        "name": "home no horizontal overflow",
+        "width": 430,
+        "overflow": false
+      }
+    ],
+    "screenshotsVisuallyReviewed": [
+      "home-original-desktop.png",
+      "home-original-collapsed.png"
+    ]
+  },
+  "mainMerged": false,
+  "publicRuntimeUpdated": false,
+  "apkUpdated": false,
+  "remaining": [
+    "physical device layout and new-flow validation",
+    "public rollout",
+    "later APK when user resumes packaging"
+  ]
+}

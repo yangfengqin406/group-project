@@ -20,3 +20,4 @@ showcase-assets/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+src/static/app/audio/

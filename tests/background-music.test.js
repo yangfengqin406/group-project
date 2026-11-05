@@ -51,6 +51,23 @@ test('背景音乐默认不创建、不自动播放；主动开启后使用Caref
   assert.equal(calls.play, 1)
 })
 
+test('App SDK只读静音属性及初始paused=false不能阻止主动首次播放', async () => {
+  let plays = 0, pauses = 0
+  const audio = { paused: false, play() { plays++ }, pause() { pauses++ }, onError() {} }
+  // The pinned App SDK defines this as a getter without a setter.
+  Object.defineProperty(audio, 'obeyMuteSwitch', { get: () => true })
+  const subject = createBackgroundMusic({ createAudio: () => audio })
+  await subject.sync({ enabled: true, underwater: false })
+  assert.equal(plays, 1)
+  await subject.sync({ enabled: true, underwater: true })
+  assert.equal(plays, 1)
+  subject.stop()
+  await subject.sync({ enabled: true, underwater: false })
+  assert.equal(plays, 2)
+  assert.equal(pauses, 1)
+  assert.equal(audio.obeyMuteSwitch, true)
+})
+
 test('重复同步复用同一录音实例，水下调低音量，关闭和stop均暂停播放', async () => {
   const { subject, instances, calls } = setup()
   await subject.sync({ enabled: true, underwater: false })

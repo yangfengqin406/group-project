@@ -1,5 +1,13 @@
 # 接口维护清单
 
+## 2026-10-28 我的互助增量（本机，未合入main）
+
+新增A（杨凤琴）负责的help.listMine，真实与演示均支持本人todo/posted/applied、去重与分页；help.create/update兼容可选说明字段，Content摘要附公开helpProgress。自己的家读取新的私有服务，其他人的主页继续user.listPublicContent仅展示公开发布。17页/85调用位置，无新路由或依赖；验证见verification。
+
+## 2026-10-27 校园贡献增量（本机，未合入main）
+
+A（杨凤琴）协作接入 rewards.getState 和 help.apply/listApplications/selectHelper/confirmCompletion/cancelCooperation，真实 SQLite 与独立 mock 均已实现；market/plan/help/lostFound.create 可选幂等并返回本人发布奖励回执，不能客户端指定发奖。conversation.open 仅对真实帮助申请补充作者联系入口。衣柜去除潜水兑换门槛，旧余额与游戏保留。B（孙瑞）二手/求购、C（姜澜）失物/消息原创归属不变；验证和剩余项见 verification。
+
 ## 2026-10-27 接入增量
 
 A（杨凤琴）完成真实钓鱼、三关潜水、七槽衣柜、珍珠与原创画稿持久化。规则由无存储的 `src/domain/leisure` 共用，真实适配只用SQLite事务、不导入mock。下表按当前实现更新，公网与微信真机仍另验。
@@ -86,3 +94,6 @@ A（杨凤琴）完成真实钓鱼、三关潜水、七槽衣柜、珍珠与原�
 | event.createPlan | A | 仅预留，未实现 |
 | appraisal.estimate | B | 本机真实 SQLite + 权限/事务已接；已纳入 HTTP 与联合回归，公网及物理设备/微信真机另验 |
 | subscription.send | C | C服务明确NOT_IMPLEMENTED，真实模板/服务端发送及真机未完成 |
+# 2026-11-05 C手机通知增量
+
+`src/services/push.js`提供push.status/bind/unbind；`system-push.js`编排原生权限/CID/通知点击及真实RPC。`backend/campus/push.js`负责鉴权绑定和持久排队，通过HMAC签名HTTPS桥调用uni-push 2。桥函数位于uniCloud-aliyun/cloudfunctions/campus-system-push；现有业务库位置不变。配置缺失明确返回未配置，不模拟成功。本轮未部署至用户CloudBase，签名打包/厂商配置与物理设备仍待团队，见[交接](app-system-push.md)。

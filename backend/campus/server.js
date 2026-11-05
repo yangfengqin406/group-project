@@ -6,6 +6,7 @@ import { openCStore } from '../c/store.js'
 import { createCampusService } from './service.js'
 import { localAddresses } from './network.js'
 import { publicAccess } from './public-access.js'
+import { createPushBridge } from './push.js'
 import { createLandlordServer } from '../../server/landlord/index.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -64,7 +65,8 @@ export function createCampusServer(options = {}) {
   const store = options.store || openCStore(resolve(dataDir, 'campus.sqlite'))
   const trustedUploadOrigins = []
   const service = createCampusService({
-    store, uploadsDir: resolve(dataDir, 'uploads'), uploadOrigin: '', trustedUploadOrigins
+    store, uploadsDir: resolve(dataDir, 'uploads'), uploadOrigin: '', trustedUploadOrigins,
+    pushProvider: options.pushProvider ?? createPushBridge()
   })
   const server = createLandlordServer({ ...options, staticRoot: options.staticRoot || resolve(ROOT, 'dist/local/campus-h5') })
   const [fallback] = server.listeners('request')
@@ -137,11 +139,11 @@ export function createCampusServer(options = {}) {
         if (!input || typeof input.method !== 'string' || Object.keys(input).some((key) => !['method', 'params'].includes(key)))
           throw fail('INVALID_ARGUMENT', '请求格式不正确')
         if (raw.length > 64 * 1024 && input.method !== 'pet.save') throw fail('INVALID_ARGUMENT', '请求内容过大')
-        if (['auth.login', 'auth.register'].includes(input.method)) limited(request, input.method)
+        if (['auth.login', 'auth.register', 'auth.deleteAccount'].includes(input.method)) limited(request, input.method)
         const data = service.invoke(input.method, input.params ?? {}, principal(request))
         if (['auth.login', 'auth.register'].includes(input.method) && data.token)
           response.setHeader('Set-Cookie', `campus_session=${data.token}; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=604800${access.secureCookie ? '; Secure' : ''}`)
-        if (input.method === 'auth.logout') response.setHeader('Set-Cookie', `campus_session=; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=0${access.secureCookie ? '; Secure' : ''}`)
+        if (['auth.logout', 'auth.deleteAccount'].includes(input.method)) response.setHeader('Set-Cookie', `campus_session=; HttpOnly; SameSite=Strict; Path=/api/files; Max-Age=0${access.secureCookie ? '; Secure' : ''}`)
         return reply('OK', '', data)
       }
       if (request.method === 'POST' && url.pathname === '/api/upload') {
@@ -167,7 +169,10 @@ export function createCampusServer(options = {}) {
       reply(known ? error.code : 'SERVICE_UNAVAILABLE', known ? error.message : '服务暂时不可用，请稍后重试')
     }
   })
-  server.once('close', () => { if (!options.store) store.close() })
+  // Durable queue survives restart. Network delivery never runs in a write transaction.
+  const pushTimer = setInterval(() => service.push.flush().catch(() => options.onError?.({ code: 'PUSH_QUEUE_FAILURE' })), 5000)
+  pushTimer.unref()
+  server.once('close', () => { clearInterval(pushTimer); service.push.stop(); if (!options.store) store.close() })
   server.campusService = service
   return server
 }

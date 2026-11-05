@@ -1,0 +1,7 @@
+{
+  "name": "campus-system-push",
+  "version": "1.0.0",
+  "main": "index.js",
+  "extensions": { "uni-cloud-push": {} },
+  "cloudfunction-config": { "timeout": 20, "path": "/campus-system-push" }
+}

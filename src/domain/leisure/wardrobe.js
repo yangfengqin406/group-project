@@ -91,6 +91,16 @@ export function getWardrobeState(db, userId) {
   })
 }
 
+// Trusted domain adapters only; deliberately absent from dispatchWardrobe/RPC.
+export function grantContributionPearls(db, userId, delta) {
+  requireThat(Number.isSafeInteger(delta) && delta > 0, 'INVALID_ARGUMENT', '贡献奖励必须为正整数')
+  const state = stateFor(db, userId)
+  requireThat(Number.isSafeInteger(state.pearls) && state.pearls >= 0 && Number.isSafeInteger(state.pearls + delta),
+    'CONFLICT', '珍珠余额无效')
+  state.pearls += delta
+  return getWardrobeState(db, userId)
+}
+
 export function dispatchWardrobe(db, userId, action, params = {}) {
   requireThat(
     Object.prototype.hasOwnProperty.call(actionFields, action),
@@ -139,14 +149,9 @@ export function dispatchWardrobe(db, userId, action, params = {}) {
     if (state.owned.some((entry) => entry.id === item.id && entry.count > 0))
       return getWardrobeState(db, userId)
     requireThat(
-      item.unlockLevel === 0 || state.clearedLevels.includes(item.unlockLevel),
-      'FORBIDDEN',
-      `请先通关第${item.unlockLevel}关，再兑换这件装扮`
-    )
-    requireThat(
       state.pearls >= item.cost,
       'CONFLICT',
-      '珍珠还不够，去潜水闯关收集一些吧'
+      '珍珠还不够，可通过公开发布和完成校园互助获得'
     )
     state.pearls -= item.cost
     addOwned(state, item.id)

@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-28",
+  "scope": [
+    "my-help tabs and authenticated pagination",
+    "optional help brief",
+    "public cooperation progress"
+  ],
+  "check": {
+    "pages": 17,
+    "serviceCallSites": 85
+  },
+  "tests": {
+    "total": 507,
+    "passed": 507,
+    "failed": 0,
+    "skipped": 0
+  },
+  "builds": {
+    "h5": true,
+    "mpWeixin": true
+  },
+  "weixin": {
+    "styleFiles": 36,
+    "styleIssues": 0,
+    "targetedQuality": "passed",
+    "rawBudget": {
+      "passed": true,
+      "mainBytes": 2079505,
+      "budgetBytes": 2097152,
+      "subpackages": [
+        {
+          "root": "pages/content",
+          "bytes": 54488
+        },
+        {
+          "root": "rooms",
+          "bytes": 44633
+        }
+      ]
+    },
+    "unusedFramesExcludedOnlyFromWeixin": true,
+    "nativeScan": "not-run"
+  },
+  "browser": {
+    "passed": true,
+    "steps": 9,
+    "runtimeErrors": 0
+  },
+  "mainMerged": false,
+  "publicRuntimeUpdated": false,
+  "apkUpdated": false,
+  "remaining": [
+    "physical-device validation",
+    "public rollout",
+    "later APK when user resumes packaging"
+  ]
+}

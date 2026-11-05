@@ -1,5 +1,11 @@
 # 校园生活广场 · App 项目
 
+**2026-11-05 C系统私信通知增量**：手机通知开关、会话绑定、推送队列与uni-push 2签名桥源码已补充；配置交接见[手机系统通知](docs/app-system-push.md)。本增量未部署、未生成安装包或完成真机验收，原安装包不会自动更新。下方10月30日记录保留当时发布状态，用户报告的后续CloudBase部署尚未在此工作区验证。
+
+**Android 0.1.3/code103测试包已生成（2026-10-30）**：名称「校园生活广场」和原兔子图标保留，冷启动小屋相关读取由7次减至4次。23:49:22官方打包成功；27项包内检查、原身份/旧证书与v1/v2验签、提交时完整app-service.js指纹匹配通过，23:51:42完整公网下载SHA一致。[APK证据](docs/assets/app-latency-2026-10-30/apk-verification-2026-10-30.json)与[557项源码CI](https://github.com/yangfengqin406/group-project/actions/runs/41076830383)可查。新包手机卡顿/超时、声音及实际切源重启仍待验；未上架商店，iOS无IPA。
+
+**后端仍在电脑**：原账号、帖子、珍珠/衣柜与上传保存在维护电脑的SQLite/文件目录，临时HTTPS仅转发请求。已准备无真实数据的0.1.3服务器部署包并通过11项隔离HTTP及校园数据重启验收，[来源与SHA](docs/assets/server-package-2026-10-30/verification.json)可查；尚未购买/部署云服务器或迁移原账号，电脑停止后当前服务仍不可用。
+
 面向校园的互助与生活信息应用，提供求助、搭子、二手和失物信息，以像素小镇、虚拟伙伴和装扮形成温暖的使用体验。使用 **uni-app + Vue 3 + JavaScript**，真实服务采用 **Node.js 22 + SQLite**。团队为 A（杨凤琴）、B（孙瑞）、C（姜澜）。
 
 **交付方向（2026-10-29）**：以 Android / iOS App 为主，H5 用于开发、课堂展示及备用访问；暂停微信小程序正式发布。现有微信源码和构建暂保留作兼容回归，本次不删除功能或调整构建依赖。
@@ -10,9 +16,9 @@
 
 | 项目 | 已完成与证据 | 仍待完成 |
 | --- | --- | --- |
-| Android | 0.1.0 已生成签名测试 APK，用户确认华为安装、登录、伙伴及衣柜正常；[App 交付记录（A 分支）](https://github.com/yangfengqin406/group-project/blob/4ca2a416985a075c53a2c0a0a58bda5600f3cd89/docs/app-release-2026-10-27.md) | 0.1.1 声音修复及新互助功能尚未重新打包/真机验证；当前保持暂停打包，未宣布商店上线 |
-| iPhone | A 分支的 iOS 编译预检通过，[CI](https://github.com/yangfengqin406/group-project/actions/runs/40698932730)可查 | Apple 开发者会员、签名与分发配置尚未完成，未生成 IPA |
-| 真实后端 | 独立账号、图片上传、校园业务/消息及玩法存档已接入 SQLite；[运行与部署](docs/local-campus-backend.md) | 稳定公网环境、持续运维及完整多设备验收；临时展示通道依赖电脑和进程运行 |
+| Android | 0.1.3签名APK、27项核验及原身份/证书、完整编译指纹和完整公网下载SHA匹配；[最终证据](docs/assets/app-latency-2026-10-30/apk-verification-2026-10-30.json) | 新包真机卡顿/超时、声音与实际切源重启待验，未上架商店 |
+| iPhone | 独立0.1.3 Android/iOS编译预检通过，[源码证据](docs/assets/app-latency-2026-10-30/source-verification.json)可查 | Apple会员/签名及分发未完成，无IPA |
+| 真实后端 | 原库账号/上传保留，0.1.3无数据部署包及11项隔离HTTP验收通过；[部署记录](docs/deployment.md) | 当前SQLite与上传仍在电脑，未云部署/迁库；固定HTTPS、运维和手机完整验收待完成 |
 | H5 备用 | [main 阶段演示](https://yangfengqin406.github.io/group-project/#/)；可在本机连接真实服务 | GitHub Pages 使用虚构本机演示数据，不能替代真实多人后端 |
 
 ## 最近合并与分支边界
@@ -34,7 +40,7 @@ $env:CAMPUS_DCLOUD_APP_ID='__UNI__YOUR_OWN_ID'
 npm run build:app
 ```
 
-实际服务地址和 AppID 留在本机私有配置。输出为 `dist/app/<时间戳>/` 中的 HBuilderX 源码项目及 Android/iOS 编译资源，**不是签名安装包**。Android 签名打包、iOS 签名及真机分发另按上述交付记录执行；本次文档更新不重启打包。
+实际服务地址和AppID留在本机私有配置。命令输出为 `dist/app/<时间戳>/` 中的HBuilderX源码项目及Android/iOS编译资源，**不是签名安装包**。本轮另经云打包生成0.1.3签名APK，并通过完整公网下载哈希核对；编译、验签、真机与iOS签名分发按[交付记录](docs/app-release-2026-10-27.md)分别登记。
 
 ## 开发与 H5 备用
 

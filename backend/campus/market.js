@@ -26,7 +26,7 @@ export const MARKET_METHODS = new Set([
   'favorite.list', 'favorite.set'
 ])
 
-export function createMarketService({ store, accounts, content, notify = () => {} }) {
+export function createMarketService({ store, accounts, content, notify = () => {}, awardContribution = () => undefined, now = Date.now }) {
   // Guard the invariant at the database boundary as well as inside transactions.
   store.database.exec(`CREATE UNIQUE INDEX IF NOT EXISTS campus_active_reservation
     ON c_records(json_extract(data, '$.contentId'))
@@ -140,7 +140,7 @@ export function createMarketService({ store, accounts, content, notify = () => {
   const reservationSummary = (r) => ({ ...r, buyer: user(r.buyerId), seller: user(r.sellerId) })
   const note = (r, recipientId, title, event) => notify({ eventId: `reservation:${r.id}:${event}`, recipientId, title, contentType: 'market', contentId: r.contentId })
 
-  function execute(method, p, me) {
+  function execute(method, p, me, operationNow) {
     const userId = me.id
     const scope = (filters = {}) => [userId, method, filters]
     if (method === 'user.getProfile') return user(p.userId || userId)
@@ -218,10 +218,13 @@ export function createMarketService({ store, accounts, content, notify = () => {
       }
       const item = { ...marketFields(p, me, old), id: old?.id || randomUUID(), type: 'market', ownerId: userId,
         campusId: me.campusId || '', campusName: me.campusName || '', status: 'active',
-        createdAt: old?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() }
+        createdAt: old?.createdAt || new Date(operationNow).toISOString(), updatedAt: new Date(operationNow).toISOString() }
       if (old) store.update(MARKET, item)
       else store.insert(MARKET, item)
-      return summary(item)
+      const reward = old ? undefined : awardContribution({ userId, kind: 'publish', sourceType: 'market', sourceId: item.id,
+        title: item.title, body: item.body, visibility: item.visibility, now: operationNow })
+      requireThat(!reward?.then, 'SERVICE_UNAVAILABLE', '奖励必须与业务在同一同步事务内提交')
+      return { ...summary(item), ...(reward ? { reward } : {}) }
     }
     if (method === 'market.close' || method === 'market.complete') {
       const item = get('market', p.id); owned(item, userId)
@@ -296,7 +299,10 @@ export function createMarketService({ store, accounts, content, notify = () => {
       const me = accounts.getUser(context.userId)
       requireThat(me && !me.disabled, 'UNAUTHENTICATED', '请先登录')
       requireThat(p && typeof p === 'object' && !Array.isArray(p), 'INVALID_ARGUMENT', '请求参数格式不正确')
-      return store.transaction(() => operation(method, p, me.id, () => execute(method, p, me)))
+      return store.transaction(() => {
+        const operationNow = now()
+        return operation(method, p, me.id, () => execute(method, p, me, operationNow))
+      })
     }
   }
 }

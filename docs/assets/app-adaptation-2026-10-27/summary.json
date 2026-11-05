@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-27",
+  "scope": "Android/iOS adaptation; preserve all existing business and games",
+  "check": { "status": "passed", "pages": 17, "serviceCallSites": 78 },
+  "tests": { "total": 428, "passed": 428, "failed": 0, "skipped": 0 },
+  "builds": { "h5": "passed", "mp-weixin": "passed", "app-android-resources": "passed", "app-ios-resources": "passed" },
+  "wechatChecks": { "styleFiles": 33, "styleIssues": 0, "targetedQuality": "passed", "fullNativeScan": "not-run-for-this-change" },
+  "isolatedBrowser": {
+    "viewport": "390x844", "runtimeErrors": 0,
+    "passed": ["real login", "chat block persisted", "settings unblock persisted", "password-confirmed deletion", "all sessions revoked", "other account preserved"]
+  },
+  "publicRecovery": { "databaseIntegrity": "ok", "originalAccountsPreserved": 5, "imageRecordsRebound": 3, "health": "passed", "disposableAccountReadsAndCleanup": "passed", "storedCredentialLogin": "not-executed" },
+  "packaging": { "dcloudAppId": "obtained-under-user-account", "officialPlugins": "installed", "androidCertificate": "cloud-signed", "apk": true, "androidVersion": "0.1.0", "signatureSchemes": ["v1", "v2"], "ipa": false, "blocking": "User paused further packaging to prioritize campus contribution rewards", "paidServicesPurchased": false, "advertisingSelected": false },
+  "androidPhysicalFeedback": { "device": "Huawei", "installation": "user-confirmed", "login": "user-confirmed", "petAndWardrobe": "user-confirmed", "audio": "silent with music enabled and normal media volume; source fix tested, no updated APK yet" },
+  "remaining": ["audio and contribution flow validation in a later APK", "full Android physical acceptance", "Apple membership and signing", "iOS physical device acceptance", "permanent backend", "formal filing and distribution review"],
+  "mainMerged": false
+}

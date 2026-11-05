@@ -27,13 +27,17 @@
       </view>
     </view>
     <view class="wardrobe-intro wx-v">
-      通关收集喜欢的装扮，不同部位可以一起穿戴。
+      校园互助、发布需求都能攒珍珠，兑换喜欢的装扮，不同部位可以一起穿戴。
     </view>
+    <ContributionRewards compact />
     <view v-if="error" class="wardrobe-error wx-v" role="alert">
       {{ error }}
       <button class="wx-b" v-if="!state" @tap="refresh">重新打开</button>
     </view>
-    <view v-if="state" class="adventure-goals wx-v">
+    <view v-if="state" class="adventure-toggle wx-v">
+      <button class="adventure-toggle-button wx-b" @tap="showAdventure = !showAdventure">{{ showAdventure ? '收起休闲冒险收藏' : '看看休闲冒险收藏' }}</button>
+    </view>
+    <view v-if="state && showAdventure" class="adventure-goals wx-v">
       <view class="goal-heading wx-v">
         <view class="goal-title wx-v">潜水首通收藏</view>
         <text class="goal-progress wx-t">已通关 {{ clearedCount }}/3</text>
@@ -158,20 +162,12 @@
           {{ busy === item.id ? '整理中…' : isWorn(item) ? '脱下' : '穿戴' }}
         </button>
         <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
-          v-else-if="isLevelLocked(item)"
-          class="item-action collect-action wx-b"
-          :disabled="Boolean(busy)"
-          @tap="adventure"
-        >
-          先通关第{{ levelLabels[item.unlockLevel] }}关
-        </button>
-        <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
           v-else-if="missingPearls(item) > 0"
           class="item-action collect-action wx-b"
           :disabled="Boolean(busy)"
-          @tap="adventure"
+          @tap="openHelp"
         >
-          还差 {{ missingPearls(item) }} 珍珠 · 去闯关
+          还差 {{ missingPearls(item) }} 珍珠 · 去互助
         </button>
         <button :class="{'wx-disabled':Boolean(Boolean(busy))}"
           v-else
@@ -184,7 +180,7 @@
       </view>
     </view>
     <view class="wardrobe-hint wx-v">
-      首通收好固定装扮，重游攒珍珠。更多服饰通关后开放兑换；三种池塘小饰品也可钓鱼收集。
+      所有装扮都可用珍珠兑换，无需先通关。发布需求、完成互助都能积攒珍珠；休闲冒险与池塘收藏也继续保留。
       {{
         config.apiMode === 'mock'
           ? '装扮按当前演示身份保存在本机。'
@@ -195,12 +191,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { wardrobe } from '../../services/index.js'
 import { config } from '../../config/index.js'
 import { WARDROBE_SLOTS, WARDROBE_ITEMS } from '../../utils/wardrobe-catalog.js'
 import { errorText } from '../../utils/errors.js'
 import PetAvatar from './PetAvatar.vue'
+import ContributionRewards from '../ContributionRewards.vue'
+import { session } from '../../utils/session.js'
 const props = defineProps({ appearance: { type: Object, default: null } })
 const emit = defineEmits(['change', 'adventure'])
 const slots = WARDROBE_SLOTS
@@ -215,6 +213,7 @@ const state = ref(null),
   view = ref('front'),
   busy = ref(''),
   error = ref('')
+const showAdventure = ref(false)
 let revision = 0,
   mounted = true
 const items = computed(() => state.value?.catalog || WARDROBE_ITEMS)
@@ -256,8 +255,6 @@ const nextGoalWardrobe = computed(() => {
 const nextGoalHasUnowned = computed(() =>
   nextGoal.value?.items.some((id) => !isOwned(id)) || false
 )
-const isLevelLocked = (item) =>
-  item.unlockLevel > 0 && !hasCleared(item.unlockLevel)
 const missingPearls = (item) =>
   Math.max(0, item.cost - (state.value?.pearls || 0))
 const countInSlot = (slot) =>
@@ -267,15 +264,17 @@ const ownedInSlot = (slot) =>
 async function request(id, action) {
   if (busy.value || !mounted) return
   const current = ++revision
+  const userId = session.user?.id
+  const active = () => mounted && current === revision && userId === session.user?.id
   busy.value = id
   error.value = ''
   try {
     const next = await action()
-    if (!mounted || current !== revision) return
+    if (!active()) return
     state.value = next
     emit('change', next)
   } catch (failure) {
-    if (mounted && current === revision) error.value = errorText(failure)
+    if (active()) error.value = errorText(failure)
   } finally {
     if (current === revision) busy.value = ''
   }
@@ -289,12 +288,14 @@ function equip(item) {
   )
 }
 function redeem(item) {
-  if (!state.value || isLevelLocked(item) || missingPearls(item) > 0) return
+  if (!state.value || missingPearls(item) > 0) return
   return request(item.id, () => wardrobe.redeem({ itemId: item.id }))
 }
 function adventure() {
   if (state.value && !busy.value && mounted) emit('adventure')
 }
+function openHelp() { if (!busy.value) uni.navigateTo({ url: '/pages/help/index' }) }
+watch(() => session.user?.id, () => { ++revision; state.value = null; error.value = ''; busy.value = ''; refresh() })
 onMounted(refresh)
 onUnmounted(() => {
   mounted = false
@@ -303,6 +304,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.adventure-toggle { margin: 10px 0; }
+.adventure-toggle-button { width: 100%; padding: 8px 10px; background: #ecebd9; color: #72765d; font-size: 13px; line-height: 1.8; }
 .wardrobe-panel {
   color: #36534b;
   padding-bottom: 12px;

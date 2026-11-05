@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-30",
+  "node": "v22.22.0",
+  "compilerVersion": "5.26 (Vue3)",
+  "displayName": "校园生活广场",
+  "versionName": "0.1.1",
+  "versionCode": "101",
+  "sourceAvatarSha256": "608dcab5401ad5c4d0eebc9b891b680c2543503142ccb92943be1474039ab0c6",
+  "originalAvatarUnchanged": true,
+  "publicManifestIdsEmpty": true,
+  "preflightUsesUnroutableExampleOrigin": true,
+  "boundProjectNameAndIconsMatch": true,
+  "boundAppIdentityPreserved": true,
+  "boundPackageMatchesPriorApk": true,
+  "privacyDisplayNamesMatch": true,
+  "targets": [
+    {
+      "target": "app-android",
+      "passed": true,
+      "icons": 17,
+      "iconsMatchSource": true,
+      "localAudioFiles": 8,
+      "audioMatchesSource": true
+    },
+    {
+      "target": "app-ios",
+      "passed": true,
+      "icons": 17,
+      "iconsMatchSource": true,
+      "localAudioFiles": 8,
+      "audioMatchesSource": true
+    }
+  ],
+  "nativePackage": {
+    "apk": false,
+    "ipa": false
+  },
+  "physicalDeviceVerified": false,
+  "nativeSignatureVerified": false,
+  "notes": "Metadata and compiled resources verified; no cloud packaging, signing, device installation or live backend operations performed by this check.",
+  "check": {
+    "passed": true,
+    "pages": 17,
+    "serviceCallSites": 87
+  },
+  "tests": {
+    "total": 531,
+    "passed": 531,
+    "failed": 0,
+    "skipped": 0,
+    "rerunReason": "Initial sandbox denied localhost sockets (13 HTTP test failures); unchanged suite passed with local-network permissions."
+  },
+  "compatibility": {
+    "h5Build": true,
+    "mpWeixinBuild": true,
+    "wxssFiles": 37,
+    "wxssIssues": 0,
+    "targetedQuality": "passed",
+    "appIconsExcluded": true,
+    "initialMpBuild": "EPERM creating workspace output under sandbox; unchanged build passed with required filesystem access."
+  }
+}

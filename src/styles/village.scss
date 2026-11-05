@@ -1,5 +1,12 @@
 /* The village interiors use bounded CSS pixels so H5 rpx scaling never enlarges the reading area. */
 .village-page {
+  --ui-primary: #3e654f;
+  --ui-ink: #354d3e;
+  --ui-paper: #fffbec;
+  --ui-soft: #eee9d7;
+  --ui-muted: #727760;
+  --ui-line: #d8cbaa;
+  --ui-amber: #b9784e;
   --room-accent: #6e9b80;
   --room-tint: #e7eddf;
   width: 100%;
@@ -83,7 +90,14 @@
 .village-page button:focus-visible, .village-page .input:focus-within { outline: 2px solid var(--room-accent); outline-offset: 3px; }
 /* #endif */
 @media (max-width: 520px) {
-  .village-page { padding: 12px 12px 32px; }
+  .village-page {
+  --ui-primary: #3e654f;
+  --ui-ink: #354d3e;
+  --ui-paper: #fffbec;
+  --ui-soft: #eee9d7;
+  --ui-muted: #727760;
+  --ui-line: #d8cbaa;
+  --ui-amber: #b9784e; padding: 12px 12px 32px; }
   .village-page .panel { padding: 18px 16px; margin: 14px 0; }
   .village-page .panel::before { left: 16px; }
   .village-page .title { font-size: 23px; }

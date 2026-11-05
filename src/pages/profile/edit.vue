@@ -6,7 +6,7 @@
     <view v-if="profile" class="panel">
       <text class="label">头像</text>
       <view class="actions" style="align-items: center">
-        <image
+        <ServiceImage
           v-if="avatarUrl"
           :src="avatarUrl"
           mode="aspectFill"
@@ -48,6 +48,7 @@
   </view>
 </template>
 <script setup>
+import ServiceImage from '../../components/ServiceImage.vue'
 import { computed, reactive, ref, watch } from 'vue'
 import { onShow, onUnload } from '@dcloudio/uni-app'
 import { upload, user } from '../../services/index.js'
