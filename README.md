@@ -21,7 +21,7 @@
 - **B（孙瑞）**负责二手、账号和个人资料，并协作统一搭子发布和检索的五类选项，保留技能求助自由输入和历史分类兼容。[PR #43](https://github.com/yangfengqin406/group-project/pull/43)
 - **C（姜澜）**负责私信与失物。main 已包含前台未读检查、可点击提醒、自动刷新，以及手机系统通知开关、设备绑定和推送桥源码。CloudBase 课程环境尚未启用离线推送。[PR #44](https://github.com/yangfengqin406/group-project/pull/44) · [PR #48](https://github.com/yangfengqin406/group-project/pull/48) · [系统通知配置](docs/app-system-push.md)
 
-`codex/team-sync-cloudbase-20261105` 整合已部署的 CloudBase 适配源码及最新广场私信体验。新消息提示位于广场操作栏上方，私信入口显示红色未读数，阅读后按会话扣减，归零后隐藏。A（杨凤琴）负责集成，私信原功能归 C（姜澜）。[团队周报](docs/weekly-log.md) · [验证记录](docs/verification.md)
+[PR #49](https://github.com/yangfengqin406/group-project/pull/49) 汇总已部署的 CloudBase 适配源码及最新广场私信体验。新消息提示位于广场操作栏上方，私信入口显示红色未读数，阅读后按会话扣减，归零后隐藏。A（杨凤琴）负责集成，私信原功能归 C（姜澜）。[团队周报](docs/weekly-log.md) · [验证记录](docs/verification.md)
 
 ## App 构建与安装
 

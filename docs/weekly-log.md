@@ -14,7 +14,7 @@
 
 | 日期 | 执行成员 | 实际更新与成果证据 | 实际验证、剩余工作与合并状态 |
 | --- | --- | --- | --- |
-| 11月5日 | A（杨凤琴），团队同步与广场私信体验 | 从团队 main 同步 A/B/C 源码。在 `codex/team-sync-cloudbase-20261105` 加入 CloudBase 适配和交付证据，将私信提示移到广场操作栏上方，并显示红色未读角标。私信原功能归 C（姜澜）。 | 独立候选用 390×844 浏览器和两个测试账号验证关闭提醒仍保留未读、提示不挡按钮、分别阅读两个会话时红色数字从 2 变 1 再消失。合并与 0.1.5 构建、签名及分发进度见[验证记录](verification.md) |
+| 11月5日 | A（杨凤琴），团队同步与广场私信体验 | 从团队 main 同步 A/B/C 源码。在 `codex/team-sync-cloudbase-20261105` 加入 CloudBase 适配和交付证据，将私信提示移到广场操作栏上方，并显示红色未读角标。私信原功能归 C（姜澜）。 | 本机 655 项通过、1 项 Windows 符号链接跳过，H5、微信、Android/iOS 编译通过。390×844 浏览器双账号验证收起不标读、提示不挡按钮，角标从 2 变 1 再隐藏。[PR #49 合并状态和 CI](https://github.com/yangfengqin406/group-project/pull/49) · [签名、分发和待验项](verification.md) |
 | 11月5日 | A（杨凤琴），CloudBase 课程版与 Android 0.1.4 | CloudBase 已部署并迁移原账号、会话、帖子及图片。0.1.4（code104）签名 APK 默认连接 CloudBase，使用原应用身份。B（孙瑞）账号与 C（姜澜）私信业务归属保留。[部署](cloudbase-deployment.md) · [APK 验证](assets/app-cloudbase-2026-11-05/verification.json) | 迁移逐条核验 61 条记录、12 条用户记录、6 条幂等回执和 3 张图片。公网临时账号通过注册、私信、权限和上传验收。0.1.4 通过 29 项包内检查及完整下载哈希核验。新包覆盖安装、关机与多台真机验收待办 |
 | 11月5日 | C（姜澜），App 系统私信通知 | 在固定 C 分支加入通知权限、设备绑定、点击通知进入会话、持久推送队列和 uni-push 2 签名桥，源码已通过 PR #48 合入 main。[PR #48](https://github.com/yangfengqin406/group-project/pull/48) · [配置交接](app-system-push.md) | C 分支实测 584 项、结构检查、H5/微信兼容构建、37 份 WXSS 及定向质量检查通过。CloudBase 课程环境尚未启用推送，厂商通道、APNs 和真机后台通知待验。[验证](verification.md) |
 
