@@ -1,5 +1,5 @@
 <template>
-  <view v-if="visible && alerts.banner" class="message-notice" role="status" aria-live="polite">
+  <view v-if="visible && alerts.banner" class="message-notice" :class="{ 'notice-above-actions': aboveActions }" role="status" aria-live="polite">
     <button class="message-notice-open" @tap.stop="messageAlerts.open(alerts.banner.id)">
       <text class="notice-heading">{{ alerts.banner.peer?.nickname || '同学' }} 发来新私信</text>
       <text class="notice-preview">{{ alerts.banner.lastMessage?.body }}</text>
@@ -12,6 +12,7 @@
 import { ref } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { messageAlerts } from '../services/message-alerts.js'
+defineProps({ aboveActions: Boolean })
 const alerts = messageAlerts.state
 const visible = ref(false)
 onShow(() => { visible.value = true })
@@ -20,6 +21,7 @@ onUnload(() => { visible.value = false })
 </script>
 <style scoped>
 .message-notice { position: fixed; z-index: 2000; left: 16px; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); max-width: 480px; margin: 0 auto; display: flex; border: 1px solid #d8c4a0; border-left: 5px solid #bc654e; border-radius: 14px; background: #fff9e9; box-shadow: 0 5px 20px #55483330; }
+.notice-above-actions { position: absolute; left: 2px; right: 2px; bottom: calc(100% + 10px); pointer-events: auto; }
 .message-notice-open { flex: 1; min-width: 0; margin: 0; padding: 12px 14px; text-align: left; background: transparent; line-height: 1.5; }
 .message-notice-open::after, .message-notice-close::after { border: 0; }
 .notice-heading { display: block; color: #3e654f; font-size: 14px; font-weight: 700; }

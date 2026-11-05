@@ -1,5 +1,11 @@
 # 接口契约 v0.2
 
+## 2026-11-05 CloudBase 课程部署适配
+
+保留 `/api/rpc`、`/api/upload`、`/api/files/:id` 和 `/game/rpc` 的现有鉴权及协议。CloudBase HTTP 函数在请求内用 SQLite 执行业务规则，通过带版本条件的原子更新把状态保存到私有 PostgreSQL。牌局检查点仅服务端可见。上传文件由私有桶持久保存，读取仍须通过原业务权限检查，并核对字节和 SHA-256。
+
+`/api/health` 保留旧客户端识别所需的 `mode:local-persistent` 和 `database:sqlite`，并用 `persistence:cloudbase`、`profile:course-test` 标明实际部署。状态记录大小上限为 4 MiB，版本冲突可有限重算，提交结果不明时不会盲目重放。CloudBase 请求实例禁用 C 的系统推送发送器，消息仍可在前台接收。服务端配置与私有存储见 [CloudBase 部署说明](cloudbase-deployment.md)。
+
 ## 2026-10-30 本人资料在途读取与冷启动小屋
 
 同一HTTP令牌的本人资料读取与冷启动身份恢复共用正在进行的一次请求，完成或失败后立即释放；后续主动刷新仍请求后端，不缓存长期资料。指定userId的公开资料及非空参数请求不合并，不合并写操作、不自动重试、失败不回退演示。旧令牌的迟到结果不得绑定到新会话，过期令牌仍清理本机身份并进入登录。

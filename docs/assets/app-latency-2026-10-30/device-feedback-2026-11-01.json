@@ -1,0 +1,43 @@
+{
+  "feedbackDate": "2026-11-01",
+  "timezone": "Asia/Shanghai",
+  "source": "User reply to the Huawei Android 0.1.3 installation/login/partner/wardrobe/music follow-up; not a Codex-controlled physical-device trace.",
+  "device": "Huawei Android phone",
+  "versionName": "0.1.3",
+  "versionCode": 103,
+  "userReply": "登录、伙伴衣柜和声音均正常",
+  "userReportedNormal": {
+    "existingCampusAccountLogin": true,
+    "partnerVisible": true,
+    "wardrobeLoaded": true,
+    "musicAudible": true
+  },
+  "scopeLimits": {
+    "coverInstallationProcessSeparatelyInspected": false,
+    "quantitativeClickLatencyMeasured": false,
+    "intermittentTimeoutEliminated": false,
+    "allHuaweiModelsVerified": false,
+    "otherPhonesVerified": false,
+    "nativeServiceOriginSwitchAndRestartVerified": false,
+    "underwaterEffectsSeparatelyVerified": false,
+    "completeGameFlowsVerified": false,
+    "iosVerified": false,
+    "cloudDeploymentVerified": false,
+    "originalDataMigrationVerified": false
+  },
+  "previousEvidence": {
+    "signedApkAndCompleteDownload": "apk-verification-2026-10-30.json",
+    "sourceRegression": "source-verification.json",
+    "priorV012SlowClicksAndNetworkSampling": "summary.json",
+    "historicalEvidenceTimestampsPreserved": true
+  },
+  "documentationOnlyFollowUp": {
+    "newPackageBuilt": false,
+    "servicesRestarted": false,
+    "originalDatabaseAccessed": false,
+    "businessSourceChanged": false,
+    "credentialsCollected": false,
+    "localBusinessTestsRepeated": false
+  },
+  "notes": "The confirmation establishes only the four reported functions on this Huawei phone and version. It does not close performance/timeout, native connection-switch/restart, complete gameplay, other-device, iOS or production-cloud acceptance. No username, password, token, private endpoint or device identifier is included."
+}

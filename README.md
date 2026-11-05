@@ -1,37 +1,31 @@
 # 校园生活广场 · App 项目
 
-**2026-11-05 C系统私信通知增量**：手机通知开关、会话绑定、推送队列与uni-push 2签名桥源码已补充；配置交接见[手机系统通知](docs/app-system-push.md)。本增量未部署、未生成安装包或完成真机验收，原安装包不会自动更新。下方10月30日记录保留当时发布状态，用户报告的后续CloudBase部署尚未在此工作区验证。
-
-**Android 0.1.3/code103测试包已生成（2026-10-30）**：名称「校园生活广场」和原兔子图标保留，冷启动小屋相关读取由7次减至4次。23:49:22官方打包成功；27项包内检查、原身份/旧证书与v1/v2验签、提交时完整app-service.js指纹匹配通过，23:51:42完整公网下载SHA一致。[APK证据](docs/assets/app-latency-2026-10-30/apk-verification-2026-10-30.json)与[557项源码CI](https://github.com/yangfengqin406/group-project/actions/runs/41076830383)可查。新包手机卡顿/超时、声音及实际切源重启仍待验；未上架商店，iOS无IPA。
-
-**后端仍在电脑**：原账号、帖子、珍珠/衣柜与上传保存在维护电脑的SQLite/文件目录，临时HTTPS仅转发请求。已准备无真实数据的0.1.3服务器部署包并通过11项隔离HTTP及校园数据重启验收，[来源与SHA](docs/assets/server-package-2026-10-30/verification.json)可查；尚未购买/部署云服务器或迁移原账号，电脑停止后当前服务仍不可用。
-
-面向校园的互助与生活信息应用，提供求助、搭子、二手和失物信息，以像素小镇、虚拟伙伴和装扮形成温暖的使用体验。使用 **uni-app + Vue 3 + JavaScript**，真实服务采用 **Node.js 22 + SQLite**。团队为 A（杨凤琴）、B（孙瑞）、C（姜澜）。
+面向校园的互助与生活信息应用，提供求助、搭子、二手和失物信息，以像素小镇、虚拟伙伴和装扮形成温暖的使用体验。使用 **uni-app + Vue 3 + JavaScript**，本机后端使用 Node.js 22 和 SQLite，公网课程环境使用 CloudBase。团队为 A（杨凤琴）、B（孙瑞）、C（姜澜）。
 
 **交付方向（2026-10-29）**：以 Android / iOS App 为主，H5 用于开发、课堂展示及备用访问；暂停微信小程序正式发布。现有微信源码和构建暂保留作兼容回归，本次不删除功能或调整构建依赖。
 
 **[团队周报（监督查看）](docs/weekly-log.md)** · [main 固定周报入口](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [验证记录](docs/verification.md)
 
-## 当前交付状态
+## 当前交付状态（2026-11-05）
 
 | 项目 | 已完成与证据 | 仍待完成 |
 | --- | --- | --- |
-| Android | 0.1.3签名APK、27项核验及原身份/证书、完整编译指纹和完整公网下载SHA匹配；[最终证据](docs/assets/app-latency-2026-10-30/apk-verification-2026-10-30.json) | 新包真机卡顿/超时、声音与实际切源重启待验，未上架商店 |
-| iPhone | 独立0.1.3 Android/iOS编译预检通过，[源码证据](docs/assets/app-latency-2026-10-30/source-verification.json)可查 | Apple会员/签名及分发未完成，无IPA |
-| 真实后端 | 原库账号/上传保留，0.1.3无数据部署包及11项隔离HTTP验收通过；[部署记录](docs/deployment.md) | 当前SQLite与上传仍在电脑，未云部署/迁库；固定HTTPS、运维和手机完整验收待完成 |
-| H5 备用 | [main 阶段演示](https://yangfengqin406.github.io/group-project/#/)；可在本机连接真实服务 | GitHub Pages 使用虚构本机演示数据，不能替代真实多人后端 |
+| Android | 当前已验签并公开分发 **0.1.4（code104）**，默认连接 CloudBase。应用身份与原签名匹配，29 项包内检查及完整下载哈希通过。[下载页](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/app-download.html) · [验证证据](docs/assets/app-cloudbase-2026-11-05/verification.json) | **0.1.5（code105）** 为本次源码整合版本，签名、分发和真机状态见[验证记录](docs/verification.md)。应用商店分发待办 |
+| iPhone | 0.1.4 对应 iOS 编译预检通过，iPhone 可通过浏览器使用课程版。[验证证据](docs/assets/app-cloudbase-2026-11-05/verification.json) | Apple 会员、签名与原生安装分发待办 |
+| 真实后端 | CloudBase 已部署并核验原账号、帖子、私信、回执和上传。公网临时账号通过登录、互助、图片权限与私信验收。[部署与验证](docs/cloudbase-deployment.md) | 课程环境的长期运营、关机与多台真机验收另行记录 |
+| H5 备用 | [CloudBase 课程版](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/#/)连接真实后端，[GitHub Pages 阶段演示](https://yangfengqin406.github.io/group-project/#/)使用本机虚构数据 | 线上前台私信体验随各自发布版本更新 |
 
 ## 最近合并与分支边界
 
-- **B（孙瑞）**：[PR #43](https://github.com/yangfengqin406/group-project/pull/43) 已合入 main。搭子发帖使用五类必选按钮，发布/检索共用分类；技能求助仍可自由输入，历史分类兼容。属于 B 对搭子模块的协作，不改写 A 的原模块归属。
-- **C（姜澜）**：[PR #44](https://github.com/yangfengqin406/group-project/pull/44) 已合入 main。前台约每5秒检查私信，底栏/广场未读角标、可点击/收起的提示及聊天自动更新已接入，保留草稿和历史；关闭应用后不提供离线推送。
-- **A（杨凤琴）**：[PR #42](https://github.com/yangfengqin406/group-project/pull/42) 已合入 A 的 `codex/a-plaza-partner-pets`：完整互助、珍珠激励、本人待办、原画风融合及 App 适配。[PR #45](https://github.com/yangfengqin406/group-project/pull/45) 申请将 A 合入 main，当前有合并冲突，尚未完成。main 当前还不能使用 A 新增的 `build:app` 脚本；也不能把 A 的520项测试视为含 B/C 新变更的整合验收。
+- **A（杨凤琴）**负责互助、珍珠、App 适配和三方整合。main 已包含互助、本人待办、衣柜直接兑换和 App 构建，以及 0.1.3 减少冷启动小屋重复读取的代码。[PR #45](https://github.com/yangfengqin406/group-project/pull/45) · [PR #47](https://github.com/yangfengqin406/group-project/pull/47)
+- **B（孙瑞）**负责二手、账号和个人资料，并协作统一搭子发布和检索的五类选项，保留技能求助自由输入和历史分类兼容。[PR #43](https://github.com/yangfengqin406/group-project/pull/43)
+- **C（姜澜）**负责私信与失物。main 已包含前台未读检查、可点击提醒、自动刷新，以及手机系统通知开关、设备绑定和推送桥源码。CloudBase 课程环境尚未启用离线推送。[PR #44](https://github.com/yangfengqin406/group-project/pull/44) · [PR #48](https://github.com/yangfengqin406/group-project/pull/48) · [系统通知配置](docs/app-system-push.md)
 
-公开发帖与完成互助奖励、衣柜取消通关兑换门槛及原卡片内嵌互助/珍珠，均以 [A 分支设计](https://github.com/yangfengqin406/group-project/blob/4ca2a416985a075c53a2c0a0a58bda5600f3cd89/docs/superpowers/specs/2026-10-27-campus-contribution-design.md)和[效果图](https://github.com/yangfengqin406/group-project/blob/4ca2a416985a075c53a2c0a0a58bda5600f3cd89/docs/assets/original-style-integration-2026-10-28/home-original-desktop.png)为准，待 PR #45 整合后才成为 main 功能。旧 APK 和已运行服务不会因合并源码自动更新。
+[PR #49](https://github.com/yangfengqin406/group-project/pull/49) 汇总已部署的 CloudBase 适配源码及最新广场私信体验。新消息提示位于广场操作栏上方，私信入口显示红色未读数，阅读后按会话扣减，归零后隐藏。A（杨凤琴）负责集成，私信原功能归 C（姜澜）。[团队周报](docs/weekly-log.md) · [验证记录](docs/verification.md)
 
 ## App 构建与安装
 
-App 源码及[完整步骤](https://github.com/yangfengqin406/group-project/blob/4ca2a416985a075c53a2c0a0a58bda5600f3cd89/docs/app-release-2026-10-27.md)目前在 A 分支。下面的编译命令仅在包含 App 适配的分支执行，需先使用 Node.js **22.22.0** 并安装依赖：
+App 构建使用 Node.js **22.22.0**。先安装依赖，再填写实际服务地址和 DCloud AppID。[完整打包步骤](docs/app-release-2026-10-27.md)
 
 ```powershell
 npm ci
@@ -40,7 +34,7 @@ $env:CAMPUS_DCLOUD_APP_ID='__UNI__YOUR_OWN_ID'
 npm run build:app
 ```
 
-实际服务地址和AppID留在本机私有配置。命令输出为 `dist/app/<时间戳>/` 中的HBuilderX源码项目及Android/iOS编译资源，**不是签名安装包**。本轮另经云打包生成0.1.3签名APK，并通过完整公网下载哈希核对；编译、验签、真机与iOS签名分发按[交付记录](docs/app-release-2026-10-27.md)分别登记。
+构建配置留在本机。命令输出为 `dist/app/<时间戳>/` 中的 HBuilderX 源码项目及 Android/iOS 编译资源，签名安装包由 HBuilderX 另行生成。[App 交付记录](docs/app-release-2026-10-27.md)
 
 ## 开发与 H5 备用
 
@@ -59,11 +53,11 @@ App 和真实 H5 共用后端。面向不同网络的手机访问时，后端需
 
 - 四栋业务房子为二手集市、找搭子、失物招领和自己的家；消息属于底部栏目。跨模块联系进入同一个消息中心，并保留原内容链接。
 - 真实版支持独立账号、头像/物品图片、公开资料、本人发布/收藏、二手闲置与求购、预约交接、搭子邀请及失物评论/归还。参考估价是类别/成色规则，不冒充图片识别。
-- 虚拟伙伴支持四种预设、命名配色和原创正背面PNG/像素画稿，衣柜七类共23件；钓鱼、三关潜水及存档已接入真实服务。贡献奖励和直接兑换的新规则见上方 A 分支状态。
+- 虚拟伙伴支持四种预设、命名配色和原创正背面 PNG/像素画稿，衣柜七类共 23 件。钓鱼、三关潜水及存档已接入真实服务，贡献奖励与衣柜直接兑换见[需求](docs/requirements.md)。
 - 歇脚亭提供三人真实访客斗地主，无机器人填位或货币下注；需独立牌桌服务，三台物理设备仍待验收。
-- 校园活动目前是明确标注的虚构样例，未接入真实活动报名。应用后台/关闭后的系统推送未实现。
+- 校园活动目前是明确标注的虚构样例，未接入真实活动报名。后台私信推送的开通条件和验收流程见[手机系统通知](docs/app-system-push.md)。
 - [10～11分钟演讲稿与操作流程](docs/showcase-10min-2026-10-27.md)、[部署候选与展示包](docs/release-2026-10-27.md)保留；现场使用前按实际版本重新排练。
-- [项目头像](docs/assets/app-avatar-2026-10-25/app-avatar-v1.png)、[场景素材记录](docs/plaza-assets.md)、[音乐署名与许可](docs/music-credits.md)可查。已安装0.1.0的声音问题仍待新版包验证，不能用浏览器有声代替 App 真机结果。
+- 11 月 1 日，用户确认华为手机的 0.1.3 能登录，伙伴、衣柜和背景音乐正常。[设备反馈](docs/assets/app-latency-2026-10-30/device-feedback-2026-11-01.json) · [项目头像](docs/assets/app-avatar-2026-10-25/app-avatar-v1.png) · [场景素材](docs/plaza-assets.md) · [音乐许可](docs/music-credits.md)
 
 ## 目录与三人分工
 
@@ -95,7 +89,7 @@ npm run check:mp-styles
 npm run check:mp-quality
 ```
 
-当前 main 保留上述 H5/微信回归；App 编译预检在 App 适配分支使用 `npm run build:app`。H5 产物位于 `dist/build/h5`，微信兼容产物位于 `dist/build/mp-weixin`。构建成功、签名安装、真机验收和正式分发分别记录，不互相替代。产物、数据库、私有配置、证书和 node_modules 不提交，package-lock.json 必须保留。
+H5 产物位于 `dist/build/h5`，微信兼容产物位于 `dist/build/mp-weixin`，App 编译预检使用 `npm run build:app`。构建、签名、真机和分发结果分别记录。提交时保留 `package-lock.json`，构建产物、数据库、私有配置、证书和 `node_modules` 保留在本机。
 
 <details>
 <summary>微信历史开发说明（暂停正式发布，保留兼容）</summary>

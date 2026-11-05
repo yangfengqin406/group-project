@@ -13,7 +13,7 @@
 1. 现有 Node22 + SQLite 服务（也可运行在 CloudBase 云托管容器）使用本增量 `backend/campus`。配置环境变量 `CAMPUS_PUSH_BRIDGE_URL` 和至少32字符随机值 `CAMPUS_PUSH_BRIDGE_SECRET` 后重启；从服务管理器/容器环境注入，`campus:serve`不会自行加载.env。secret只放后端，不得设置为VITE_、写进前端或提交仓库。
 2. 在项目的 uniCloud 空间上传 `uniCloud-aliyun/cloudfunctions/campus-system-push`，启用自带的 `uni-cloud-push` 扩展库，并配置URL化HTTPS入口。桥函数环境设置相同secret及原 `CAMPUS_PUSH_APP_ID=__UNI__...`；不要另建一个AppID。代码中的 aliyun 是空间目录选择，不要求把业务后端迁移到阿里云；如果团队选择uniCloud腾讯云空间，将同一函数/数据库定义导入对应空间。
 3. 创建 `campus-push-receipts`（随仓库提供schema，客户端读写全部拒绝）。按[官方部署要求](https://uniapp.dcloud.net.cn/unipush-v2.html)准备扩展库依赖的 `opendb-tempdata`、`opendb-device`、`uni-id-device`，保持官方schema权限。业务账号仍使用原系统，推送按经过业务鉴权绑定的CID定向发送，不依赖uni-id登录。
-4. 现有常驻服务每5秒扫描持久队列，单实例内避免并发重复；生产只安排一个该队列worker。CloudBase如果使用纯云函数而非这套常驻Node服务，应由后端负责人把同事务入队与定时排队处理接到实际存储适配器/定时触发器，不在函数内依赖setInterval。当前仓库没有其生产适配器，不能把本机SQLite测试记为CloudBase已接通。
+4. 现有常驻服务每5秒扫描持久队列，单实例内避免并发重复；生产只安排一个该队列worker。当前 CloudBase 课程版为 HTTP 函数，请求内使用短生命周期引擎，显式关闭常驻推送桥。启用离线推送需将事务入队和定时处理接入实际持久层与触发器，另行联调厂商通道和 APNs。现有源码与测试不能视为 CloudBase 已接通系统推送。
 5. 任务默认一小时内有效，5秒起指数退避、最多8次；每次发送前复查参与者、公开内容、账号、屏蔽、设备会话与未读位置。已读、关闭、失效绑定丢弃，注销清理设备及收件队列。桥用HMAC-SHA256和两分钟时间窗鉴权、按request_id持久去重；已发送但回执丢失时保守标记不确定，不换ID重复轰炸。后台记录accepted表示平台受理，不等于手机已展示。
 
 桥收据只含任务摘要ID、状态和创建时间。生产可按运维规则清理七天前的收据和终态队列；不要清理仍需排查的不确定任务。两套云服务的开通/费用由负责人按团队实际账户确认，本次没有购买或部署。
