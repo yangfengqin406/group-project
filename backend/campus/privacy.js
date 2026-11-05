@@ -86,7 +86,7 @@ export function createPrivacyService({ store, accounts, uploadsDir }) {
         store.insert(CLEANUP, { id: randomUUID(), filePath, createdAt: now })
         remove('campus.uploads', image.id)
       }
-      for (const collection of ['campus.sessions', 'campus.favorites', BLOCKS, 'notifications', 'reports']) {
+      for (const collection of ['campus.sessions', 'campus.favorites', 'campus.pushDevices', 'campus.pushJobs', BLOCKS, 'notifications', 'reports']) {
         for (const item of rows(collection)) {
           if ([item.userId, item.ownerId, item.recipientId, item.reporterId, item.blockedUserId].includes(me.id)) remove(collection, item.id)
         }

@@ -37,7 +37,7 @@ export const C_METHODS = new Set([
 ])
 
 export function createCService({ store, getUser, getExternalContent, getUploadByUrl, trustedUploadOrigins = [], assertCanContact = () => {},
-  canContactHelpApplicant = () => false, now = () => new Date().toISOString(), awardContribution = () => undefined }) {
+  canContactHelpApplicant = () => false, now = () => new Date().toISOString(), awardContribution = () => undefined, enqueuePush = () => {} }) {
   requireThat(store && typeof getUser === 'function', 'SERVICE_UNAVAILABLE', '必须接入服务端存储和账号适配')
   const user = (id) => sync(getUser(id))
   const publicUser = (id) => ({ ...profile(user(id)), id })
@@ -280,10 +280,11 @@ export function createCService({ store, getUser, getExternalContent, getUploadBy
       requireThat(item.visibility === 'public', 'FORBIDDEN', '原内容已转为私有，不能继续留言')
       const m = store.insert('messages', { id: randomUUID(), conversationId: c.id, senderId: userId, body, createdAt: now() })
       c.activeAt = m.createdAt; store.update('conversations', c)
-      for (const recipientId of c.participantIds) if (recipientId !== userId) notify({
-        recipientId, eventId: `message:${m.id}`, title: '收到一条联系消息',
-        contentType: c.contentType, contentId: c.contentId, conversationId: c.id
-      })
+      for (const recipientId of c.participantIds) if (recipientId !== userId) {
+        notify({ recipientId, eventId: `message:${m.id}`, title: '收到一条联系消息',
+          contentType: c.contentType, contentId: c.contentId, conversationId: c.id })
+        sync(enqueuePush({ message: m, recipientId }))
+      }
       store.saveReceipt(userId, method, key, fingerprint, m)
       return m
     }

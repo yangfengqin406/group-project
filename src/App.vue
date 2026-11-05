@@ -4,6 +4,9 @@ import { restoreIdentity } from './services/transport.js'
 import { soundscape } from './services/soundscape.js'
 import { session } from './utils/session.js'
 import { messageAlerts } from './services/message-alerts.js'
+// #ifdef APP-PLUS
+import { systemPush } from './services/system-push.js'
+// #endif
 
 let foreground = false
 function resume() {
@@ -14,6 +17,10 @@ function resume() {
 }
 export default {
   onLaunch() {
+    // #ifdef APP-PLUS
+    systemPush.start()
+    watch(() => session.user, () => { void systemPush.changed() })
+    // #endif
     watch(() => session.user?.id, () => { messageAlerts.reset(); resume() })
     restoreIdentity().catch(() => {})
     // #ifdef H5
@@ -25,7 +32,12 @@ export default {
     })
     // #endif
   },
-  onShow() { foreground = true; resume() },
+  onShow() {
+    foreground = true; resume()
+    // #ifdef APP-PLUS
+    void systemPush.resume()
+    // #endif
+  },
   onHide() {
     foreground = false
     messageAlerts.stop()

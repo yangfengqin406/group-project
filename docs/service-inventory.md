@@ -94,3 +94,6 @@ A（杨凤琴）完成真实钓鱼、三关潜水、七槽衣柜、珍珠与原�
 | event.createPlan | A | 仅预留，未实现 |
 | appraisal.estimate | B | 本机真实 SQLite + 权限/事务已接；已纳入 HTTP 与联合回归，公网及物理设备/微信真机另验 |
 | subscription.send | C | C服务明确NOT_IMPLEMENTED，真实模板/服务端发送及真机未完成 |
+# 2026-11-05 C手机通知增量
+
+`src/services/push.js`提供push.status/bind/unbind；`system-push.js`编排原生权限/CID/通知点击及真实RPC。`backend/campus/push.js`负责鉴权绑定和持久排队，通过HMAC签名HTTPS桥调用uni-push 2。桥函数位于uniCloud-aliyun/cloudfunctions/campus-system-push；现有业务库位置不变。配置缺失明确返回未配置，不模拟成功。本轮未部署至用户CloudBase，签名打包/厂商配置与物理设备仍待团队，见[交接](app-system-push.md)。

@@ -170,5 +170,5 @@ export function createAccounts({ store, uploadsDir, uploadOrigin }) {
     need(actual.length === expected.length && timingSafeEqual(actual, expected), 'UNAUTHENTICATED', '密码不正确，账号未注销')
     return me
   }
-  return { invoke, authenticate, getUser, publicUser, getUpload, getUploadByUrl, receiveUpload, verifyPassword }
+  return { invoke, authenticate, getUser, publicUser, getUpload, getUploadByUrl, receiveUpload, verifyPassword, sessionForToken }
 }

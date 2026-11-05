@@ -297,3 +297,12 @@ Plan 增加 startAt/endAt/capacity/memberIds；Market 增加 priceCents。时间
 `market.getCandidates({id})` 返回本人商品预约分页（含 buyer/seller）；`reservation.respond({reservationId,accept:boolean})` 由卖家确认/拒绝，`reservation.complete({reservationId})` 由买卖任一方完成已确认预约，重复操作结果一致。新增 `rooms/account/index` 分包账号页面用于独立账号注册/登录；401 业务错误转向该页，退出会话撤销服务端令牌。
 
 本地 `help.getCandidates({helpId})` 仅供本人公开进行中的求助，按同校区真实账号 `skillTags` 与 `category` 忽略大小写完全一致匹配，返回账号与规则理由；不代表 AI 能力评估。`pet.get/save` 将预设外观保存到当前账号，游戏奖励暂不接入校园数据库。
+# 2026-11-05 App 系统私信通知（C，源码交接）
+
+新增真实 RPC `push.status {}` → `{ configured }`、`push.bind { clientId, platform }` → `{ enabled: true }`、`push.unbind { clientId }` → `{ enabled: false }`。仅登录用户可调用，platform 为 android/ios；绑定归属来自服务端会话，不接受客户端 userId。演示模式不模拟推送成功。客户端在消息页主动开启权限，登录恢复/前台恢复时更新绑定；点击通知经当前账号与 conversation.get 权限核验后进入既有聊天路由。
+
+私信与每设备推送任务同事务落库；后台任务在事务提交后发送，失败有界重试，不影响私信成功；发送前复查会话、未读、屏蔽、账号及绑定会话有效性。通知使用固定文案，不传聊天正文。已读/登出/注销/设备换号后的过期任务丢弃。
+
+采用 uni-push 2 原生通道；现有业务后端（包括 CloudBase 托管容器）通过服务端签名 HTTPS 调用独立 uniCloud 推送桥，不迁移账号/业务数据库。服务端私有配置 `CAMPUS_PUSH_BRIDGE_URL`、`CAMPUS_PUSH_BRIDGE_SECRET`；桥函数使用同一 secret 及 `CAMPUS_PUSH_APP_ID`。不允许放入 VITE_。桥仅接受 HMAC 签名/短时效/唯一请求，不能公开任意群发。
+
+构建新增 `CAMPUS_APP_PUSH=true`，须先开通原 AppID 的 uni-push 2 并配置对应厂商通道/APNs。只在生成的 HBuilderX 项目启用 Push 模块与离线能力；未开通时不能盲目云打包。App 系统通知与微信订阅分开；H5/微信不引入原生推送。[源码交接与剩余配置](app-system-push.md)。

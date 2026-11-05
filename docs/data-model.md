@@ -98,3 +98,6 @@ Cast 仅持有 waiting/hooked 状态：抛竿后约 1.4～2.5 秒咬钩，咬钩
 | Operation receipt | 每访客最近256次成功写操作的operationId、规范化参数指纹和深拷贝结果；同编号不同参数冲突，超出窗口不承诺长期重放 |
 
 phase为bidding/playing/finished，正常回合20秒，超时/离线明确切为托管，可回来接手。结束桌10分钟后清理，活动旧局最长30分钟后清理且不编造胜负；服务重启即丢失全部会话、排队、牌桌及操作回执。该内存模型不提供数据库持久化、多实例事务或生产校园权限，不与珍珠/装扮结算关联。
+# 2026-11-05 App推送增量
+
+真实后端新增 `campus.pushDevices`：CID摘要id、clientId、当前服务端userId/sessionId、平台、绑定revision、enabled、更新时间；不保存明文登录令牌。`campus.pushJobs`：消息/会话/收件账号、设备及revision、pending/accepted/discarded/failed、尝试次数、下次执行时间、创建时间。任务与私信同事务写入；幂等id由消息、设备与绑定版本构成。注销同步清理该账号设备及收件任务。uniCloud `campus-push-receipts`只保存任务摘要id、sending/accepted及创建时间，客户端读写拒绝；推送不保存私信正文。详见[交接](app-system-push.md)。

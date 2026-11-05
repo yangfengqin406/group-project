@@ -1,4 +1,8 @@
 {
+  "push": {
+    "owner": "C",
+    "methods": ["status", "bind", "unbind"]
+  },
   "auth": {
     "owner": "B",
     "methods": ["login", "register", "logout", "deleteAccount"]

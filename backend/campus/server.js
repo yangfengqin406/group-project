@@ -6,6 +6,7 @@ import { openCStore } from '../c/store.js'
 import { createCampusService } from './service.js'
 import { localAddresses } from './network.js'
 import { publicAccess } from './public-access.js'
+import { createPushBridge } from './push.js'
 import { createLandlordServer } from '../../server/landlord/index.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -64,7 +65,8 @@ export function createCampusServer(options = {}) {
   const store = options.store || openCStore(resolve(dataDir, 'campus.sqlite'))
   const trustedUploadOrigins = []
   const service = createCampusService({
-    store, uploadsDir: resolve(dataDir, 'uploads'), uploadOrigin: '', trustedUploadOrigins
+    store, uploadsDir: resolve(dataDir, 'uploads'), uploadOrigin: '', trustedUploadOrigins,
+    pushProvider: options.pushProvider ?? createPushBridge()
   })
   const server = createLandlordServer({ ...options, staticRoot: options.staticRoot || resolve(ROOT, 'dist/local/campus-h5') })
   const [fallback] = server.listeners('request')
@@ -167,7 +169,10 @@ export function createCampusServer(options = {}) {
       reply(known ? error.code : 'SERVICE_UNAVAILABLE', known ? error.message : '服务暂时不可用，请稍后重试')
     }
   })
-  server.once('close', () => { if (!options.store) store.close() })
+  // Durable queue survives restart. Network delivery never runs in a write transaction.
+  const pushTimer = setInterval(() => service.push.flush().catch(() => options.onError?.({ code: 'PUSH_QUEUE_FAILURE' })), 5000)
+  pushTimer.unref()
+  server.once('close', () => { clearInterval(pushTimer); service.push.stop(); if (!options.store) store.close() })
   server.campusService = service
   return server
 }

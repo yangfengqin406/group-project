@@ -2,6 +2,9 @@
   <view class="page village-page village-messages">
     <VillageHeader kind="home" title="邻里信箱" subtitle="每一次联系，都从一件校园小事开始。" compact />
     <DemoNotice />
+    <!-- #ifdef APP-PLUS -->
+    <AppPushSettings />
+    <!-- #endif -->
     <view class="row">
       <view class="section-title">消息中心</view>
       <button class="secondary" :disabled="loading || busy" @tap="load">刷新</button>
@@ -148,6 +151,9 @@ import {
 import { runInvitationOperation } from '../../utils/invitation-operations.js'
 import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
+// #ifdef APP-PLUS
+import AppPushSettings from '../../components/AppPushSettings.vue'
+// #endif
 import EmptyState from '../../components/EmptyState.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'
 import { requestSubscription } from '../../platform/subscription.js'

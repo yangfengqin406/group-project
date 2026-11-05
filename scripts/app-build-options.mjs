@@ -18,11 +18,13 @@ export function appBuildOptions(env = process.env) {
     if (!policy || policy.protocol !== 'https:' || policy.username || policy.password) throw new Error('隐私政策必须是有效HTTPS地址')
   }
   const release = env.CAMPUS_APP_RELEASE === 'true'
+  const push = env.CAMPUS_APP_PUSH === 'true'
+  if (push && !appId) throw new Error('启用手机推送须配置已开通 uni-push 2 的 CAMPUS_DCLOUD_APP_ID')
   if (release && (origin.protocol !== 'https:' || !appId || !contactEmail || !privacyUrl))
     throw new Error('正式发布构建须配置HTTPS后端、真实DCloud AppID、联系邮箱及隐私政策地址')
   return {
     origin: origin.origin, appId, bound: Boolean(appId), contactEmail, privacyUrl,
     apiBaseUrl: `${origin.origin}/api`, gameBaseUrl: `${origin.origin}/game`,
-    release
+    release, push
   }
 }
