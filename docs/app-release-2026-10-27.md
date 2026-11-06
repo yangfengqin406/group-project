@@ -1,5 +1,11 @@
 # Android / iOS App 适配与交付
 
+## 2026-11-06 Android 0.1.6 启动修复
+
+0.1.6（code106）修复 0.1.5 在未打入原生 Push 时仍发起推送调用的问题。启动、账号变更和返回前台仍可恢复站内私信检查，广场保留新私信提醒和红色未读数。锁屏和退出后的系统通知需接入厂商通道与 CloudBase 任务处理。
+
+Android APK 沿用原证书和包名，35 项验包通过。公网完整下载 26,485,343 字节，SHA-256 为 `f63acf2ff8ecd2d33bef3e4a87e5f097b1566d5a103da8863c9409fb3daa3a8d`。下载页已切换并核对链接，真机覆盖安装仍待验。[下载页](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/app-download.html) · [源码 PR #52](https://github.com/yangfengqin406/group-project/pull/52)。
+
 ## 2026-11-06 Android 0.1.5 公开下载与真实 H5
 
 已更新 CloudBase 的真实账号 H5、安卓下载页及二维码。H5 与 Android 共用现有 CloudBase 账号和数据。GitHub Pages 按演示配置构建，数据保存在浏览器本机。
