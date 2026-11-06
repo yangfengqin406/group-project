@@ -14,6 +14,7 @@
 
 | 日期 | 执行成员 | 实际更新与成果证据 | 实际验证、剩余工作与合并状态 |
 | --- | --- | --- | --- |
+| 11月6日 | A（杨凤琴），安卓 Push 启动弹窗修复 | 0.1.6 使打包开关同时控制原生 Push 模块、初始化和手机通知设置。保留私信弹窗与红色未读数，原消息业务归 C（姜澜）。[验证记录](verification.md) | 本机 656 项通过、1 项 Windows 符号链接跳过，H5、微信兼容和两种 Push 配置的 Android/iOS 编译通过。35 项验包、公开下载哈希和下载页均通过。[PR #52](https://github.com/yangfengqin406/group-project/pull/52)。锁屏通知和真机覆盖安装待验。 |
 | 11月6日 | A（杨凤琴），CloudBase H5 与 Android 0.1.5 公开交付 | 更新 CloudBase 真实账号 H5、安卓下载页和二维码，README 区分 CloudBase H5 与 GitHub Pages 本机演示。[交付记录](app-release-2026-10-27.md) | 核对线上 H5 含新版角标、下载页指向 0.1.5、二维码可解码；26,485,343 字节 APK 公网下载哈希一致，健康检查 OK。[验收摘要](assets/app-cloudbase-2026-11-05/verification-v015-public.json)。真机覆盖安装和 iOS 签名待验。 |
 | 11月5日 | A（杨凤琴），团队同步与广场私信体验 | 从团队 main 同步 A/B/C 源码。在 `codex/team-sync-cloudbase-20261105` 加入 CloudBase 适配和交付证据，将私信提示移到广场操作栏上方，并显示红色未读角标。私信原功能归 C（姜澜）。 | [PR #49](https://github.com/yangfengqin406/group-project/pull/49) 已合入 main（`b967ddb`）。本机 655 项通过、1 项 Windows 符号链接跳过；双账号 H5 验证收起不标读、提示不挡按钮，角标从 2 变 1 再隐藏。[CI](https://github.com/yangfengqin406/group-project/actions/runs/42048293352)及[公开 H5 演示更新](https://github.com/yangfengqin406/group-project/actions/runs/42050864083)通过。 |
 | 11月5日 | A（杨凤琴），Android 0.1.5 签名交付 | 使用团队整合版与原 DCloud 云端证书生成 Android 0.1.5（code105），包内包含新版广场私信角标及原 CloudBase 服务配置。[交付记录](app-release-2026-10-27.md) | 30 项包内检查通过，原包名和证书一致。APK 已本地交付，公开下载页仍是 0.1.4。真机覆盖安装、离线推送及 iOS 分发待办。 |

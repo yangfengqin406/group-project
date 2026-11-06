@@ -3,7 +3,7 @@
     <VillageHeader kind="home" title="邻里信箱" subtitle="每一次联系，都从一件校园小事开始。" compact />
     <DemoNotice />
     <!-- #ifdef APP-PLUS -->
-    <AppPushSettings />
+    <AppPushSettings v-if="appSystemPushEnabled" />
     <!-- #endif -->
     <view class="row">
       <view class="section-title">消息中心</view>
@@ -153,6 +153,7 @@ import { errorText } from '../../utils/errors.js'
 import DemoNotice from '../../components/DemoNotice.vue'
 // #ifdef APP-PLUS
 import AppPushSettings from '../../components/AppPushSettings.vue'
+import { appSystemPushEnabled } from '../../platform/app-build-capabilities.js'
 // #endif
 import EmptyState from '../../components/EmptyState.vue'
 import VillageHeader from '../../components/village/VillageHeader.vue'

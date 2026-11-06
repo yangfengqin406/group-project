@@ -5,6 +5,7 @@ import { soundscape } from './services/soundscape.js'
 import { session } from './utils/session.js'
 import { messageAlerts } from './services/message-alerts.js'
 // #ifdef APP-PLUS
+import { appSystemPushEnabled } from './platform/app-build-capabilities.js'
 import { systemPush } from './services/system-push.js'
 // #endif
 
@@ -18,8 +19,10 @@ function resume() {
 export default {
   onLaunch() {
     // #ifdef APP-PLUS
-    systemPush.start()
-    watch(() => session.user, () => { void systemPush.changed() })
+    if (appSystemPushEnabled) {
+      systemPush.start()
+      watch(() => session.user, () => { void systemPush.changed() })
+    }
     // #endif
     watch(() => session.user?.id, () => { messageAlerts.reset(); resume() })
     restoreIdentity().catch(() => {})
@@ -35,7 +38,7 @@ export default {
   onShow() {
     foreground = true; resume()
     // #ifdef APP-PLUS
-    void systemPush.resume()
+    if (appSystemPushEnabled) void systemPush.resume()
     // #endif
   },
   onHide() {
