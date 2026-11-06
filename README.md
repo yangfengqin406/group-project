@@ -6,14 +6,16 @@
 
 **[团队周报（监督查看）](docs/weekly-log.md)** · [main 固定周报入口](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [验证记录](docs/verification.md)
 
-## 当前交付状态（2026-11-05）
+**使用原账号请打开 [CloudBase H5](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/#/)。** Android 与该页面共用 CloudBase 后端。[GitHub Pages 演示](https://yangfengqin406.github.io/group-project/#/)使用本机虚构数据。
+
+## 当前交付状态（2026-11-06）
 
 | 项目 | 已完成与证据 | 仍待完成 |
 | --- | --- | --- |
-| Android | 最新已验签安装包为 **0.1.5（code105）**，默认连接 CloudBase，包含新版广场私信角标，沿用原应用签名。[交付与校验](docs/app-release-2026-10-27.md) | 当前[公开下载页](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/app-download.html)仍提供 0.1.4；0.1.5 本地交付，真机覆盖安装及应用商店分发待办 |
+| Android | **0.1.5（code105）** 已验签，默认连接 CloudBase，包含新版广场私信角标，沿用原应用签名。公网安装包已完整下载并核对哈希。[安卓下载页](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/app-download.html) · [下载二维码](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/campus-plaza-0.1.5-download-qr.png) · [交付与校验](docs/app-release-2026-10-27.md) | 真机覆盖安装及应用商店分发待办 |
 | iPhone | 0.1.4 对应 iOS 编译预检通过，iPhone 可通过浏览器使用课程版。[验证证据](docs/assets/app-cloudbase-2026-11-05/verification.json) | Apple 会员、签名与原生安装分发待办 |
 | 真实后端 | CloudBase 已部署并核验原账号、帖子、私信、回执和上传。公网临时账号通过登录、互助、图片权限与私信验收。[部署与验证](docs/cloudbase-deployment.md) | 课程环境的长期运营、关机与多台真机验收另行记录 |
-| H5 备用 | [CloudBase 课程版](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/#/)连接真实后端，[GitHub Pages 阶段演示](https://yangfengqin406.github.io/group-project/#/)使用本机虚构数据 | 线上前台私信体验随各自发布版本更新 |
+| H5 备用 | [CloudBase H5](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/#/)与 Android 共用账号和数据，已更新广场私信角标。[GitHub Pages 阶段演示](https://yangfengqin406.github.io/group-project/#/)使用本机虚构数据 | 真机浏览器体验另行验收 |
 
 ## 最近合并与分支边界
 

@@ -1,0 +1,16 @@
+{
+  "verifiedAt": "2026-11-06T02:20:42.064Z",
+  "version": "0.1.5",
+  "versionCode": 105,
+  "apkBytes": 26485343,
+  "apkSha256": "f14a86b0aa6556ee86b0f05cc5a1edd27f536f4b7863aa521ee7e4d6b80946db",
+  "fullPublicApkDownloadVerified": true,
+  "downloadPageVerified": true,
+  "qrImageSha256": "c57510f2ce4e444928de17053e7bd44acaa45f70e0dd862b555966038c71c327",
+  "realH5FilesVerified": true,
+  "plazaUnreadBadgeVerified": true,
+  "runtimeFilesMatch": 59,
+  "cloudbaseHealth": "OK",
+  "deploymentProfile": "course-test",
+  "qrDecodedAtOriginalAndHalfSize": true
+}
