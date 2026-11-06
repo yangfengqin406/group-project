@@ -1,12 +1,18 @@
 # Android / iOS App 适配与交付
 
+## 2026-11-06 Android 0.1.5 公开下载与真实 H5
+
+已更新 CloudBase 的真实账号 H5、安卓下载页及二维码。H5 与 Android 共用现有 CloudBase 账号和数据。GitHub Pages 按演示配置构建，数据保存在浏览器本机。
+
+公网下载的 0.1.5 APK 为 26,485,343 字节，SHA-256 与验签记录一致；线上下载页、二维码和 H5 资源逐一核验。下载页与二维码可直接分享。[真实 H5](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/#/) · [安卓下载页](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/app-download.html) · [二维码](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/campus-plaza-0.1.5-download-qr.png) · [公开核验](assets/app-cloudbase-2026-11-05/verification-v015-public.json)。
+
 ## 2026-11-05 Android 0.1.5 签名包
 
 A（杨凤琴）用已合入 main 的 [PR #49](https://github.com/yangfengqin406/group-project/pull/49) 产品源码生成 `campus-plaza-0.1.5-android.apk`（code105）。应用默认连接现有 CloudBase，包内包含广场私信提示及红色未读角标。Android 原包名和证书与 0.1.4 一致，支持沿用签名的覆盖安装；实际真机覆盖安装待验。
 
 30 项检查通过，包括 v1/v2 签名、提交的前端编译文件与包内文件匹配、CloudBase 连接、4 张启动图标和 8 个音频。文件 26,485,343 字节，SHA-256 为 `f14a86b0aa6556ee86b0f05cc5a1edd27f536f4b7863aa521ee7e4d6b80946db`。[核验摘要](assets/app-cloudbase-2026-11-05/verification-v015.json)。
 
-0.1.5 为本地签名交付，CloudBase 公开下载页仍提供 0.1.4。线上账号和数据未迁移或清空。iOS 编译资源已验证，尚无签名 IPA；课程环境的系统离线推送未启用。
+11 月 5 日完成本地签名交付，当时公开下载页仍提供 0.1.4。iOS 编译资源已验证，尚无签名 IPA。课程环境的系统离线推送未启用。
 
 ## 2026-11-05 Android 0.1.4 默认连接 CloudBase
 

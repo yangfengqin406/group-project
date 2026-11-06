@@ -1,5 +1,9 @@
 # 交付验证记录
 
+## 2026-11-06 CloudBase 真实 H5 和 0.1.5 下载
+
+从现网备份核对发布包的 59 个服务端文件，SHA-256 逐一一致。本次使用 CloudBase 仅代码更新发布 H5 静态资源、安卓下载页和二维码。公网重新拉取页面、H5 入口及广场脚本、二维码图，哈希与待发资源一致，广场脚本包含新版未读角标，`/api/health` 返回 CloudBase 课程环境 OK。0.1.5 APK 已完整下载，字节数和 SHA-256 与验签记录一致。二维码在原尺寸及半尺寸均解码至下载页。真机覆盖安装未在此次复验执行。[公开核验摘要](assets/app-cloudbase-2026-11-05/verification-v015-public.json)。
+
 ## 2026-11-05 团队整合与 0.1.5
 
 从团队 main `5232340` 整合已部署的 CloudBase 适配及广场私信改动，保留 A/B/C 已合并成果和 C（姜澜）的原生推送源码。Node 22 本机执行 656 项自动测试：655 通过、0 失败、1 项 Windows 符号链接测试跳过。结构检查 17 页、90 处调用；H5、CloudBase 部署包、微信兼容构建、Android/iOS 编译资源均完成。微信检查 37 份 WXSS 零问题，定向质量通过，主包原始大小 2,095,402 字节（预算 2,097,152 字节）。
@@ -8,7 +12,7 @@
 
 [PR #49](https://github.com/yangfengqin406/group-project/pull/49) 已合入 main（`b967ddb`），[PR CI](https://github.com/yangfengqin406/group-project/actions/runs/42048293352)、[主分支 CI](https://github.com/yangfengqin406/group-project/actions/runs/42050864351)及[公开 H5 演示](https://github.com/yangfengqin406/group-project/actions/runs/42050864083)均通过。线上 H5 静态资源实查含新版未读角标，CloudBase 健康检查返回 OK。
 
-Android 0.1.5 已签名，30 项验包通过，签名与 0.1.4 一致，包内确认新版角标。当前公开下载页仍是 0.1.4，详见[App 交付记录](app-release-2026-10-27.md)。原生真机覆盖安装、锁屏/退出推送和 iOS 安装仍需单独验收。
+Android 0.1.5 已签名，30 项验包通过，签名与 0.1.4 一致，包内确认新版角标。11 月 5 日为本地交付，公开下载见 11 月 6 日记录。原生真机覆盖安装、锁屏/退出推送和 iOS 安装仍需单独验收。[App 交付记录](app-release-2026-10-27.md)。
 
 ## 2026-11-05 C手机系统私信通知源码
 

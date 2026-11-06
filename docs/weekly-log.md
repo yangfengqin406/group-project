@@ -1,6 +1,6 @@
 # 团队周报（监督查看）
 
-更新至：2026-11-05（北京时间） · 汇总负责人：A（杨凤琴）
+更新至：2026-11-06（北京时间） · 汇总负责人：A（杨凤琴）
 
 团队成员：**A（杨凤琴）、B（孙瑞）、C（姜澜）**。以下分别记录本人负责的业务、协作整合和待完成工作。
 
@@ -14,6 +14,7 @@
 
 | 日期 | 执行成员 | 实际更新与成果证据 | 实际验证、剩余工作与合并状态 |
 | --- | --- | --- | --- |
+| 11月6日 | A（杨凤琴），CloudBase H5 与 Android 0.1.5 公开交付 | 更新 CloudBase 真实账号 H5、安卓下载页和二维码，README 区分 CloudBase H5 与 GitHub Pages 本机演示。[交付记录](app-release-2026-10-27.md) | 核对线上 H5 含新版角标、下载页指向 0.1.5、二维码可解码；26,485,343 字节 APK 公网下载哈希一致，健康检查 OK。[验收摘要](assets/app-cloudbase-2026-11-05/verification-v015-public.json)。真机覆盖安装和 iOS 签名待验。 |
 | 11月5日 | A（杨凤琴），团队同步与广场私信体验 | 从团队 main 同步 A/B/C 源码。在 `codex/team-sync-cloudbase-20261105` 加入 CloudBase 适配和交付证据，将私信提示移到广场操作栏上方，并显示红色未读角标。私信原功能归 C（姜澜）。 | [PR #49](https://github.com/yangfengqin406/group-project/pull/49) 已合入 main（`b967ddb`）。本机 655 项通过、1 项 Windows 符号链接跳过；双账号 H5 验证收起不标读、提示不挡按钮，角标从 2 变 1 再隐藏。[CI](https://github.com/yangfengqin406/group-project/actions/runs/42048293352)及[公开 H5 演示更新](https://github.com/yangfengqin406/group-project/actions/runs/42050864083)通过。 |
 | 11月5日 | A（杨凤琴），Android 0.1.5 签名交付 | 使用团队整合版与原 DCloud 云端证书生成 Android 0.1.5（code105），包内包含新版广场私信角标及原 CloudBase 服务配置。[交付记录](app-release-2026-10-27.md) | 30 项包内检查通过，原包名和证书一致。APK 已本地交付，公开下载页仍是 0.1.4。真机覆盖安装、离线推送及 iOS 分发待办。 |
 | 11月5日 | A（杨凤琴），CloudBase 课程版与 Android 0.1.4 | CloudBase 已部署并迁移原账号、会话、帖子及图片。0.1.4（code104）签名 APK 默认连接 CloudBase，使用原应用身份。B（孙瑞）账号与 C（姜澜）私信业务归属保留。[部署](cloudbase-deployment.md) · [APK 验证](assets/app-cloudbase-2026-11-05/verification.json) | 迁移逐条核验 61 条记录、12 条用户记录、6 条幂等回执和 3 张图片。公网临时账号通过注册、私信、权限和上传验收。0.1.4 通过 29 项包内检查及完整下载哈希核验。新包覆盖安装、关机与多台真机验收待办 |
