@@ -35,6 +35,8 @@ if (options.push) {
   android.permissions = [...(android.permissions || []), '<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>']
 }
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n')
+fs.writeFileSync(path.join(input, 'platform/app-build-capabilities.js'),
+  `export const appSystemPushEnabled = ${options.push}\n`)
 // HBuilderX recompiles this project without the invoking shell's environment.
 // Bake only public transport settings into the ignored staging copy so its
 // cloud build cannot accidentally use the source default mock adapter.

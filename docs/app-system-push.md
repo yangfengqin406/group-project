@@ -21,7 +21,7 @@
 ## App负责人
 
 1. 使用原 AppID、Android包名/签名和iOS Bundle ID，在DCloud后台开通 **uni-push 2**；后台填对应厂商配置。用户此前使用华为，优先核对华为HMS、包名、SHA256签名及agconnect-services.json；其他厂商按实际机型申请，iOS须配置有效APNs推送证书及描述文件。应用未开通不能勾Push就直接云打包。
-2. 既有生成脚本增加 `CAMPUS_APP_PUSH=true`；配置原有 `CAMPUS_APP_ORIGIN`、`CAMPUS_DCLOUD_APP_ID` 后由负责人执行既有build:app流程。脚本只在忽略的生成项目中启用Push模块、uni-push version2/offline、Android通知权限及iOS manual。若直接在HBuilderX维护项目，也需手动勾选 **uni-push 2 + 离线推送**，保留上述设置；仅在线推送不满足本需求。
+2. 设置 `CAMPUS_APP_PUSH=true` 和原有 `CAMPUS_APP_ORIGIN`、`CAMPUS_DCLOUD_APP_ID` 后运行 `npm run build:app`，再用 HBuilderX 打开生成工程。生成脚本同时设置原生模块、离线推送和前端能力开关。未启用时，App 跳过系统 Push 初始化和消息页的手机通知设置，继续检查前台未读；启用时保留冷启动通知点击监听。HBuilderX 用生成工程重新编译。仅手动修改清单会使前端能力与模块配置不一致。
 3. 保留 `nativeResources/android/AndroidManifest.xml` 的关闭自动请求meta-data（官方要求HBuilderX5.22以上），由页面按钮控制Android权限。更旧的基座可能自行在启动时询问，不得声称已实现相同时机控制。标准运行基座不代表安装包，需使用包含Push模块的正式签名包或自定义基座。
 4. 按团队发布流程核对推送SDK/厂商隐私清单及厂商消息分类权益。设备上的横幅、声音、锁屏、勿扰模式由系统控制；普通权限不代表可绕过系统设置或强制停止限制。未配置厂商通道时不能宣称杀进程后仍可靠收到。
 
