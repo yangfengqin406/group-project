@@ -6,7 +6,7 @@
 
 **[团队周报（监督查看）](docs/weekly-log.md)** · [main 固定周报入口](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [验证记录](docs/verification.md) · **[0.1.9源码、部署包与H5交付](docs/releases/android-0.1.9-handoff.md)**
 
-**0.1.9源码与部署包交付（2026-11-18）。** 完整源码、已部署运行时和同源H5归档说明随交付PR同步到main，源码定位`android-0.1.9-source`，原APK标签不移动；SHA清单与ZIP统一放在[发布页](https://github.com/yangfengqin406/group-project/releases/tag/android-0.1.9)。本地731项测试730通过/1项Windows权限跳过，H5/微信/App预检和微信预算检查通过。本轮按用户选择不访问CloudBase，真实H5仅提供[既有入口](https://golden-tahr-d5gk8koz72e46de2a-1530477186.ap-shanghai.app.tcloudbase.com/#/)，打开使用仍会消耗额度，未复核当前在线状态。[完整交付说明](docs/releases/android-0.1.9-handoff.md)。
+**0.1.9源码与部署包交付（2026-11-18）。** 完整源码、已部署运行时和同源H5归档说明通过[PR #53](https://github.com/yangfengqin406/group-project/pull/53)同步到main，源码定位`android-0.1.9-source`，原APK标签不移动；SHA清单与ZIP统一放在[发布页](https://github.com/yangfengqin406/group-project/releases/tag/android-0.1.9)。本地731项测试730通过/1项Windows权限跳过，H5/微信/App预检和微信预算检查通过。本轮按用户选择不访问CloudBase，真实H5仅提供[既有入口](https://golden-tahr-d5gk8koz72e46de2a-1530477186.ap-shanghai.app.tcloudbase.com/#/)，打开使用仍会消耗额度，未复核当前在线状态。[完整交付说明](docs/releases/android-0.1.9-handoff.md)。
 
 **Android 0.1.9/code109与配套后端已更新（2026-11-14）。** 原证书APK的51项静态检查及v1/v2验签通过，GitHub安装包与二维码已发布；匿名完整下载的27,841,362字节及SHA-256与验签一致。新环境仅更新现有1个API，1次健康和18次真实RPC通过，测试账号已注销；未重新初始化或迁移数据。手机需覆盖安装0.1.9，前台提醒与红点仍待真机验收，后台/锁屏通知未启用；源码和文档未提交、未合main。[下载APK](https://github.com/yangfengqin406/group-project/releases/download/android-0.1.9/campus-plaza-0.1.9-android.apk) · [发布页与二维码](https://github.com/yangfengqin406/group-project/releases/tag/android-0.1.9) · [交付验证](docs/verification.md#2026-11-14-安卓019与配套后端交付)。
 

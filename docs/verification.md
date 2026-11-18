@@ -10,7 +10,7 @@
 
 与019候选核对src335、backend29、server3份业务文件一致；冻结原生工程仅有已审过的4处公开构建配置注入差异。已部署runtime的63份共享源码一致，302项原文件大小/SHA全部匹配。运行时ZIP为306文件（302原+4说明/模板/许可），3675060字节，SHA256 `2b234923a2d4fa4bc82b233bb0a91022d95394bf614e6a28dc827a4e85c2a4db`；H5 ZIP为240文件（237原+3说明/许可），3527396字节，SHA256 `e7a414e8899cff387b5adda69df8f013d1094ca6ce7030cee4f9b3318c18153b`。逐项解压CRC/SHA、bootstrap可执行权限和凭据/私有路径排除均通过，重复生成哈希相同。Git源码归档采用仓库行尾规范，业务源码按LF规范化核对；源码ZIP最终哈希放在包外SHA清单，避免循环自哈希。
 
-源码tag为`android-0.1.9-source`，不移动原APK标签；代码、接口/协作/部署/验收文档、README交付入口与唯一周报通过同一PR同步main。审阅分支不视为已合并，实际状态见交付PR；[使用说明及附件入口](releases/android-0.1.9-handoff.md)。本轮CloudBase请求0次，未部署、重打包、初始化或变更业务数据；物理Android验收、后台/锁屏通知与iOS签名分发仍未完成。以下日期均为原阶段记录。
+源码tag为`android-0.1.9-source`，不移动原APK标签；代码、接口/协作/部署/验收文档、README交付入口与唯一周报通过同一PR同步main。审阅分支不视为已合并，实际状态见[PR #53](https://github.com/yangfengqin406/group-project/pull/53)；[使用说明及附件入口](releases/android-0.1.9-handoff.md)。本轮CloudBase请求0次，未部署、重打包、初始化或变更业务数据；物理Android验收、后台/锁屏通知与iOS签名分发仍未完成。以下日期均为原阶段记录。
 
 ## 2026-11-14 安卓0.1.9与配套后端交付
 

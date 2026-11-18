@@ -1,6 +1,6 @@
 # Android 0.1.9 源码、运行时与 H5 交付
 
-整理日期：2026-11-18（北京时间）。Android版本为0.1.9/code109；源码归档tag为`android-0.1.9-source`，与原APK标签`android-0.1.9`分开，原标签不移动。代码与文档通过交付分支`codex/release-019-source-handoff-20261118`的同一PR同步到main；审阅阶段以PR实际合并状态为准。[源码标签](https://github.com/yangfengqin406/group-project/tree/android-0.1.9-source) · [全部交付附件](https://github.com/yangfengqin406/group-project/releases/tag/android-0.1.9)。
+整理日期：2026-11-18（北京时间）。Android版本为0.1.9/code109；源码归档tag为`android-0.1.9-source`，与原APK标签`android-0.1.9`分开，原标签不移动。代码与文档通过交付分支`codex/release-019-source-handoff-20261118`的[PR #53](https://github.com/yangfengqin406/group-project/pull/53)同步到main；在main分支查看本记录时即已随该PR合入，审阅分支阶段以PR实际状态为准。[源码标签](https://github.com/yangfengqin406/group-project/tree/android-0.1.9-source) · [全部交付附件](https://github.com/yangfengqin406/group-project/releases/tag/android-0.1.9)。
 
 ## 交付文件
 
