@@ -163,7 +163,13 @@ function bridgeFixture() {
 test('uniCloud bridge rejects forged signatures, stale requests and untargeted broadcasts', async () => {
   const f = bridgeFixture()
   const bad = f.request(); bad.headers['X-Campus-Signature'] = 'b'.repeat(64)
-  assert.equal((await f.handler(bad)).statusCode, 403)
+  const denied = await f.handler(bad)
+  assert.equal(denied.statusCode, 403)
+  // Without the documented integration flag, uniCloud returns a 200 wrapper
+  // instead of this denial and the real HTTP bridge cannot interpret its code.
+  assert.equal(denied.mpserverlessComposedResponse, true)
+  assert.equal(denied.isBase64Encoded, false)
+  assert.equal(JSON.parse(denied.body).code, 'FORBIDDEN')
   assert.equal((await f.handler(f.request({ timestamp: 1 }))).statusCode, 400)
   assert.equal((await f.handler(f.request({ message: { title: 'broadcast' } }))).statusCode, 400)
   assert.equal(f.sent.length, 0)

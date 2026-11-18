@@ -113,11 +113,27 @@ function dispatchInternal(db, method, p, now) {
     owner: user(item.ownerId)
   })
   const all = () => Object.values(db.contents).flat()
+  const conversationRead = (c) => {
+    const value = db.conversationReads[JSON.stringify([me().id, c.id])]
+    // Existing demo snapshots stored only the last displayed message id.
+    return typeof value === 'string' ? { throughMessageId: value } : value || {}
+  }
   const unreadMessages = (c) => {
-    const through = db.conversationReads[JSON.stringify([me().id, c.id])]
+    const through = conversationRead(c).throughMessageId
     const position = through ? db.messages.findIndex((m) => m.id === through) : -1
     return db.messages.filter((m, index) => index > position && m.conversationId === c.id && m.senderId !== me().id)
   }
+  const unreadState = (c, messages = unreadMessages(c)) => {
+    const unreadContact = Boolean(c.contactRequest && c.contactRequest.senderId !== me().id &&
+      conversationRead(c).contactRequestId !== c.contactRequest.id)
+    return { unreadCount: messages.length || Number(unreadContact), unreadContact }
+  }
+  const latestMessage = (c) => db.messages.filter((m) => m.conversationId === c.id).reduce(
+    (latest, m) => !latest || Date.parse(m.createdAt) >= Date.parse(latest.createdAt) ? m : latest, null)
+  const conversationSummary = (c, lastMessage = latestMessage(c)) => ({
+    ...clone(c), contactRequest: c.contactRequest ? clone(c.contactRequest) : null,
+    ...unreadState(c), peer: user(c.participantIds.find((id) => id !== me().id)), lastMessage: clone(lastMessage)
+  })
   const note = (recipientId, title, type, id, conversationId) =>
     db.notifications.unshift({
       id: makeId('note'),
@@ -845,52 +861,60 @@ function dispatchInternal(db, method, p, now) {
         c.participantIds.includes(me().id) &&
         c.participantIds.includes(p.peerUserId)
     )
-    if (existing) return clone(existing)
+    if (existing) return conversationSummary(existing)
+    const createdAt = new Date(now).toISOString()
     const conversation = {
       id: makeId('conversation'),
       participantIds: [me().id, p.peerUserId].sort(),
       contentType: p.contentType,
       contentId: p.contentId,
       contentTitle: item.title,
-      createdAt: new Date().toISOString()
+      createdAt,
+      contactRequest: { id: makeId('contact'), senderId: me().id, createdAt }
     }
     db.conversations.unshift(conversation)
-    return clone(conversation)
+    return conversationSummary(conversation)
   }
   if (method === 'conversation.unread') {
     const items = db.conversations.filter((c) => c.participantIds.includes(me().id)).flatMap((c) => {
       const unread = unreadMessages(c)
-      return unread.length ? [{ ...c, unreadCount: unread.length, peer: user(c.participantIds.find((id) => id !== me().id)), lastMessage: unread.at(-1) }] : []
-    }).sort((a, b) => db.messages.indexOf(b.lastMessage) - db.messages.indexOf(a.lastMessage))
+      const summary = conversationSummary(c, unread.at(-1) || null)
+      return summary.unreadCount ? [summary] : []
+    }).sort((a, b) => Date.parse(b.lastMessage?.createdAt || b.contactRequest?.createdAt || b.createdAt) -
+      Date.parse(a.lastMessage?.createdAt || a.contactRequest?.createdAt || a.createdAt))
     return clone({ total: items.reduce((sum, c) => sum + c.unreadCount, 0), items })
   }
   if (method === 'conversation.markRead') {
     const c = db.conversations.find((c) => c.id === p.conversationId)
     requireThat(c, 'NOT_FOUND', '会话不存在')
     requireThat(c.participantIds.includes(me().id), 'FORBIDDEN', '无权访问这段会话')
+    const contactOnly = p.throughContactId !== undefined
+    requireThat(contactOnly !== (p.throughMessageId !== undefined), 'INVALID_ARGUMENT', '请选择已展示的联系事件或文字消息标读')
+    const key = JSON.stringify([me().id, c.id])
+    const previousRead = conversationRead(c)
+    if (contactOnly) {
+      requireThat(typeof p.throughContactId === 'string' && c.contactRequest?.id === p.throughContactId,
+        'INVALID_ARGUMENT', '联系事件不属于这段会话')
+      db.conversationReads[key] = { ...previousRead, contactRequestId: c.contactRequest.id }
+      return unreadState(c)
+    }
     const index = db.messages.findIndex((m) => m.id === p.throughMessageId && m.conversationId === c.id)
     requireThat(index >= 0, 'INVALID_ARGUMENT', '已读消息不属于这段会话')
-    const key = JSON.stringify([me().id, c.id])
-    const previous = db.messages.findIndex((m) => m.id === db.conversationReads[key])
-    if (index > previous) db.conversationReads[key] = p.throughMessageId
+    const previous = db.messages.findIndex((m) => m.id === previousRead.throughMessageId)
+    db.conversationReads[key] = { ...previousRead,
+      ...(index > previous ? { throughMessageId: p.throughMessageId } : {}),
+      ...(c.contactRequest ? { contactRequestId: c.contactRequest.id } : {}) }
     const readIds = new Set(db.messages.slice(0, index + 1).filter((m) => m.conversationId === c.id).map((m) => m.id))
     for (const n of db.notifications) {
       if (n.recipientId === me().id && n.messageId && readIds.has(n.messageId)) n.read = true
     }
-    return { unreadCount: unreadMessages(c).length }
+    return unreadState(c)
   }
   if (method === 'conversation.get') {
     const c = db.conversations.find((c) => c.id === p.id)
     requireThat(c, 'NOT_FOUND', '会话不存在')
     requireThat(c.participantIds.includes(me().id), 'FORBIDDEN', '无权访问这段会话')
-    return {
-      ...clone(c),
-      unreadCount: unreadMessages(c).length,
-      peer: user(c.participantIds.find((id) => id !== me().id)),
-      lastMessage: clone(db.messages.filter((m) => m.conversationId === c.id).reduce(
-        (latest, m) => !latest || Date.parse(m.createdAt) >= Date.parse(latest.createdAt) ? m : latest, null
-      ))
-    }
+    return conversationSummary(c)
   }
   if (method === 'conversation.list') {
     const userId = me().id
@@ -917,12 +941,7 @@ function dispatchInternal(db, method, p, now) {
         }
       })
       .sort((a, b) => b.activeAt - a.activeAt || a.index - b.index)
-      .map(({ conversation, lastMessage }) => ({
-        ...conversation,
-        unreadCount: unreadMessages(conversation).length,
-        peer: user(conversation.participantIds.find((id) => id !== userId)),
-        lastMessage
-      }))
+      .map(({ conversation, lastMessage }) => conversationSummary(conversation, lastMessage))
     return list(ordered)
   }
   if (method === 'message.list' || method === 'message.send') {

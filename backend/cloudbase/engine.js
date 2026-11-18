@@ -65,7 +65,7 @@ function consumeAuthLimit(state, input, store, now) {
       body: Buffer.from(JSON.stringify({ code: 'RATE_LIMITED', message: '尝试过于频繁，请一分钟后再试', data: null, requestId: randomUUID() })) }
 }
 
-export function createCloudEngine({ files, publicOrigin, staticRoot, now = () => Date.now() }) {
+export function createCloudEngine({ files, publicOrigin, staticRoot, now = () => Date.now(), pushProvider = null }) {
   const origin = new URL(publicOrigin)
   if (origin.protocol !== 'https:' || origin.origin !== publicOrigin) throw new Error('CloudBase requires a fixed HTTPS origin')
   return {
@@ -102,7 +102,7 @@ export function createCloudEngine({ files, publicOrigin, staticRoot, now = () =>
         if (!limited) server = createCampusServer({ store, dataDir: directory, publicOrigin, staticRoot,
           // The request-private store is saved only after the response is
           // prepared. A separate worker must read committed state to send push.
-          pushProvider: null, service: game, tickMs: 2_147_483_647,
+          pushProvider, runPushWorker: false, service: game, tickMs: 2_147_483_647,
           async readUploadFile(image) {
             const entry = state.files[image.id]
             if (!entry || entry.size !== image.size) throw fail('SERVICE_UNAVAILABLE', '云端图片尚未迁移')
@@ -150,7 +150,21 @@ export function createCloudEngine({ files, publicOrigin, staticRoot, now = () =>
   }
 }
 
-export function createCloudCoordinator({ repository, engine, files, retries = 3 }) {
+export function createCloudCoordinator({ repository, engine, files, retries = 3, pushWakeup = null, onPushError = () => {} }) {
+  async function wakeCommitted(before, after) {
+    if (!pushWakeup) return
+    const previous = new Set(before.snapshot.records.filter(row => row.collection === 'campus.pushJobs').map(row => row.id))
+    const added = after.snapshot.records.filter(row => row.collection === 'campus.pushJobs' && !previous.has(row.id))
+      .filter(row => JSON.parse(row.data).status === 'pending').map(row => row.id)
+    const batches = []
+    for (let index = 0; index < added.length; index += 5) batches.push(added.slice(index, index + 5))
+    const results = await Promise.allSettled(batches.map(batch => Promise.resolve().then(() => pushWakeup.wake(batch))))
+    if (results.some(result => result.status === 'rejected')) {
+      // The private message is committed. The recovery trigger will find its
+      // durable job, so a provider outage must not turn sending into a failure.
+      try { onPushError({ code: 'PUSH_WAKEUP_PENDING' }) } catch { /* Keep the committed response. */ }
+    }
+  }
   return {
     async dispatch(input) {
       for (let attempt = 0; attempt <= retries; attempt++) {
@@ -160,6 +174,10 @@ export function createCloudCoordinator({ repository, engine, files, retries = 3 
         if (isDeepStrictEqual(before, result.state)) return result.response
         try {
           await repository.compareAndSwap(before.version, result.state)
+          try { await wakeCommitted(before, result.state) }
+          catch {
+            try { onPushError({ code: 'PUSH_WAKEUP_PENDING' }) } catch { /* Keep the committed response. */ }
+          }
           return result.response
         } catch (error) {
           // An uncertain commit may already reference newly uploaded objects.

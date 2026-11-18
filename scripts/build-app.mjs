@@ -29,7 +29,7 @@ manifest.description = '校园生活信息、互助与虚拟伙伴'
 if (options.push) {
   manifest['app-plus'].modules.Push = {}
   manifest['app-plus'].distribute.sdkConfigs = { ...manifest['app-plus'].distribute.sdkConfigs,
-    push: { unipush: { version: '2', offline: true } } }
+    push: { unipush: { version: '2', offline: true, hms: {} } } }
   manifest['app-plus'].distribute.ios.pushRegisterMode = 'manual'
   const android = manifest['app-plus'].distribute.android
   android.permissions = [...(android.permissions || []), '<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>']

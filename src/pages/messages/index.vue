@@ -10,7 +10,7 @@
       <button class="secondary" :disabled="loading || busy" @tap="load">刷新</button>
     </view>
     <view class="subtitle">二手、失物、搭子和互助的联系都在这里</view>
-    <view v-if="messageAlerts.state.total" class="unread-summary">你有 {{ messageAlerts.state.total }} 条未读私信，点击会话查看</view>
+    <view v-if="totalUnread" class="unread-summary">你有 {{ totalUnread }} 条未读联系，点击会话查看</view>
     <view v-if="messageAlerts.state.error" class="muted">{{ messageAlerts.state.error }}</view>
     <view class="message-tools">
       <view class="source-tabs">
@@ -20,9 +20,12 @@
           class="source-tab"
           :class="{ selected: source === option.value }"
           @tap="setSource(option.value)"
+          :aria-label="sourceLabel(option)"
+          :aria-pressed="source === option.value"
           :disabled="busy"
         >
           {{ option.label }}
+          <text v-if="sourceUnreadCount(option.value)" class="source-unread-dot" aria-hidden="true" />
         </button>
       </view>
       <button class="secondary subscribe-button" @tap="subscribe">
@@ -96,7 +99,7 @@
       <text class="muted">
         {{ contentNames[c.contentType] }} · {{ peerName(c) }} · 保留原内容链接
       </text>
-      <view class="last-message">{{ c.lastMessage?.body || '还没有留言，来打个招呼吧。' }}</view>
+      <view class="last-message">{{ conversationPreview(c) }}</view>
       <text v-if="c.lastMessage" class="muted">{{ formatTime(c.lastMessage.createdAt) }}</text>
     </view>
     <EmptyState
@@ -138,7 +141,7 @@
   </view>
 </template>
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { invitation, conversation, notification, plan } from '../../services/index.js'
 import { session } from '../../utils/session.js'
@@ -168,6 +171,13 @@ const invitations = ref([]),
   conversationCursor = ref(null),
   noteCursor = ref(null)
 const source = ref('')
+const fallbackUnread = ref([])
+// Shared state reconciles unread polls and inbox responses by request ticket.
+// Keep page-only counts for adapters without that shared reconciliation hook.
+const hasUnreadState = () => messageAlerts.state.hasSnapshot === true || messageAlerts.state.hasKnownUnread === true
+const unreadItems = computed(() => hasUnreadState()
+  ? messageAlerts.state.items : fallbackUnread.value)
+const totalUnread = computed(() => sourceUnreadCount(''))
 const subscriptionTip = ref('')
 let loadVersion = 0
 let visible = false
@@ -199,6 +209,7 @@ async function load({ preserveError = false } = {}) {
   const current = () => version === loadVersion && userId === session.user?.id && requestedSource === source.value
   loading.value = true
   if (!preserveError) error.value = ''
+  const unreadTicket = messageAlerts.captureRead?.()
   try {
     const [i, c, n] = await Promise.all([
       invitation.list(),
@@ -206,9 +217,11 @@ async function load({ preserveError = false } = {}) {
       notification.list()
     ])
     if (!current()) return
+    messageAlerts.observeConversations?.(c.items, unreadTicket)
     invitations.value = i.items
     inviteCursor.value = i.nextCursor
     conversations.value = c.items
+    rememberUnread(c.items, requestedSource, !c.nextCursor)
     conversationCursor.value = c.nextCursor
     notifications.value = n.items
     noteCursor.value = n.nextCursor
@@ -237,9 +250,14 @@ async function more(service, items, cursor) {
   try {
     const params = { cursor: cursor.value }
     if (service === conversation && requestedSource) params.contentType = requestedSource
+    const unreadTicket = service === conversation ? messageAlerts.captureRead?.() : undefined
     const r = await service.list(params)
     if (service === invitation) r.items = await withSummaries(r.items, current)
     if (!current()) return
+    if (service === conversation) {
+      messageAlerts.observeConversations?.(r.items, unreadTicket)
+      rememberUnread(r.items, requestedSource)
+    }
     const known = new Set(items.value.map((item) => item.id))
     items.value.push(...r.items.filter((item) => !known.has(item.id)))
     cursor.value = r.nextCursor
@@ -267,7 +285,38 @@ function peerName(conversation) {
     : '联系会话'
 }
 function unreadCount(c) {
-  return messageAlerts.state.items.find((item) => item.id === c.id)?.unreadCount || 0
+  const item = hasUnreadState()
+    ? messageAlerts.state.items.find((entry) => entry.id === c.id) : c
+  return unreadValue(item)
+}
+function unreadValue(item) {
+  return Number.isSafeInteger(item?.unreadCount) && item.unreadCount > 0
+    ? item.unreadCount : item?.unreadContact ? 1 : 0
+}
+function rememberUnread(items, contentType, complete = false) {
+  if (hasUnreadState()) return
+  const previous = complete ? fallbackUnread.value.filter(item =>
+    contentType && item.contentType !== contentType) : fallbackUnread.value
+  const byId = new Map(previous.map(item => [item.id, item]))
+  for (const item of items) byId.set(item.id, {
+    id: item.id, contentType: item.contentType,
+    unreadCount: item.unreadCount, unreadContact: item.unreadContact
+  })
+  fallbackUnread.value = [...byId.values()]
+}
+function sourceUnreadCount(contentType) {
+  return unreadItems.value.reduce((sum, item) =>
+    sum + (!contentType || item.contentType === contentType ? unreadValue(item) : 0), 0)
+}
+function sourceLabel(option) {
+  const count = sourceUnreadCount(option.value)
+  return count ? `${option.label}，${count} 条未读` : option.label
+}
+function conversationPreview(c) {
+  if (c.lastMessage?.body) return c.lastMessage.body
+  if (c.contactRequest) return c.contactRequest.senderId === session.user?.id
+    ? '已发起联系，等待对方回复。' : '对方想联系这条发布，点击回复。'
+  return '还没有留言，来打个招呼吧。'
 }
 async function subscribe() {
   subscriptionTip.value = ''
@@ -343,6 +392,7 @@ function clearMessages() {
   invitations.value = []
   conversations.value = []
   notifications.value = []
+  fallbackUnread.value = []
   inviteCursor.value = conversationCursor.value = noteCursor.value = null
 }
 watch(() => session.user?.id, () => {
@@ -394,6 +444,7 @@ onUnload(() => {
   border-radius: 14rpx;
 }
 .source-tab {
+  position: relative;
   flex: 1;
   min-width: 100rpx;
   min-height: 44px;
@@ -401,6 +452,15 @@ onUnload(() => {
   color: #65765f;
   background: transparent;
   white-space: nowrap;
+}
+.source-unread-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: #b84b40;
+  vertical-align: middle;
 }
 .source-tab.selected {
   color: #304a3a;

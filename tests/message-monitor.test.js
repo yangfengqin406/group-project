@@ -62,3 +62,68 @@ test('网络错误保留未读、不伪造成功并延后重试；标读后旧�
   f.state.total = 0; f.requests[2].resolve({ total: 100, items: [item('stale')] }); await stale
   assert.equal(f.state.total, 0); assert.equal(f.timers.size, 1)
 })
+
+test('首次联系无需伪造留言也能提醒，收起后不重复，首条文字仍可提醒', async () => {
+  const f = fixture()
+  const contact = { id: 'c1', contentType: 'market', unreadCount: 1, unreadContact: true,
+    contactRequest: { id: 'contact-1', senderId: 'buyer', createdAt: '2026-11-13T00:00:00Z' }, lastMessage: null }
+  const first = f.monitor.start(); await flush()
+  f.requests[0].resolve({ total: 1, items: [contact] }); await first
+  assert.equal(f.state.banner.contactRequest.id, 'contact-1')
+  assert.equal(f.state.hasSnapshot, true)
+  const revision = f.state.revision
+  f.monitor.dismiss()
+  const again = f.monitor.refresh(); await flush()
+  f.requests[1].resolve({ total: 1, items: [contact] }); await again
+  assert.equal(f.state.banner, null)
+  assert.equal(f.state.revision, revision)
+  const message = f.monitor.refresh(); await flush()
+  f.requests[2].resolve({ total: 1, items: [{ ...contact, lastMessage: { id: 'm1', body: '想了解一下' } }] }); await message
+  assert.equal(f.state.banner.lastMessage.id, 'm1')
+  assert.equal(f.state.revision, revision + 1)
+  f.monitor.reset()
+  assert.equal(f.state.hasSnapshot, false)
+})
+
+test('未登录时已开始的监控，再次前台启动后可读取新身份且不叠加定时器', async () => {
+  const f = fixture(); f.account(null)
+  await f.monitor.start()
+  assert.equal(f.requests.length, 0)
+  f.account('a')
+  const resumed = f.monitor.start(); await flush()
+  assert.equal(f.requests.length, 1)
+  f.requests[0].resolve({ total: 1, items: [item()] }); await resumed
+  await f.monitor.start()
+  assert.equal(f.requests.length, 1)
+  assert.equal(f.timers.size, 1)
+  f.monitor.stop()
+})
+
+test('较新的会话列表可更新共享角标，不能被较早轮询覆盖，标读后的旧列表也不得复活', async () => {
+  const f = fixture(), first = f.monitor.start(); await flush()
+  f.requests[0].resolve({ total: 0, items: [] }); await first
+  const stale = f.monitor.refresh(); await flush()
+  const ticket = f.monitor.captureRead()
+  assert.equal(f.monitor.observeConversations([item('new-from-list')], ticket), true)
+  assert.equal(f.state.total, 1)
+  assert.equal(f.state.banner.lastMessage.id, 'new-from-list')
+  f.requests[1].resolve({ total: 0, items: [] }); await stale
+  assert.equal(f.state.total, 1)
+  assert.equal(f.timers.size, 1)
+  const beforeRead = f.monitor.captureRead()
+  f.monitor.invalidate()
+  assert.equal(f.monitor.observeConversations([item('stale-list')], beforeRead), false)
+  f.account('b'); f.monitor.reset(); const other = f.monitor.start(); await flush()
+  f.requests[2].resolve({ total: 0, items: [] }); await other
+  assert.equal(f.monitor.observeConversations([item('other-account')], ticket), false)
+  f.monitor.stop()
+})
+
+test('完整未读快照在列表请求期间完成后，旧列表不能覆盖该快照', async () => {
+  const f = fixture(), first = f.monitor.start(); await flush()
+  const ticket = f.monitor.captureRead()
+  f.requests[0].resolve({ total: 0, items: [] }); await first
+  assert.equal(f.monitor.observeConversations([item('old')], ticket), false)
+  assert.equal(f.state.total, 0)
+  f.monitor.stop()
+})

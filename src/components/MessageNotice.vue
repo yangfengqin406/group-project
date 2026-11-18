@@ -1,19 +1,20 @@
 <template>
   <view v-if="visible && alerts.banner" class="message-notice" :class="{ 'notice-above-actions': aboveActions }" role="status" aria-live="polite">
     <button class="message-notice-open" @tap.stop="messageAlerts.open(alerts.banner.id)">
-      <text class="notice-heading">{{ alerts.banner.peer?.nickname || '同学' }} 发来新私信</text>
-      <text class="notice-preview">{{ alerts.banner.lastMessage?.body }}</text>
+      <text class="notice-heading">{{ alerts.banner.peer?.nickname || '同学' }} {{ contactOnly ? '发起了联系' : '发来新私信' }}</text>
+      <text class="notice-preview">{{ contactOnly ? `关于「${alerts.banner.contentTitle || '校园发布'}」的新联系` : alerts.banner.lastMessage?.body }}</text>
       <text class="notice-action">点击查看 · {{ alerts.total > 99 ? '99+' : alerts.total }} 条未读 →</text>
     </button>
     <button class="message-notice-close" aria-label="收起新私信提示" @tap.stop="messageAlerts.dismiss()">×</button>
   </view>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app'
 import { messageAlerts } from '../services/message-alerts.js'
 defineProps({ aboveActions: Boolean })
 const alerts = messageAlerts.state
+const contactOnly = computed(() => Boolean(alerts.banner?.unreadContact && !alerts.banner.lastMessage))
 const visible = ref(false)
 onShow(() => { visible.value = true })
 onHide(() => { visible.value = false })

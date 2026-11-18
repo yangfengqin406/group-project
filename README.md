@@ -4,24 +4,32 @@
 
 **交付方向（2026-10-29）**：以 Android / iOS App 为主，H5 用于开发、课堂展示及备用访问；暂停微信小程序正式发布。现有微信源码和构建暂保留作兼容回归，本次不删除功能或调整构建依赖。
 
-**[团队周报（监督查看）](docs/weekly-log.md)** · [main 固定周报入口](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [验证记录](docs/verification.md)
+**[团队周报（监督查看）](docs/weekly-log.md)** · [main 固定周报入口](https://github.com/yangfengqin406/group-project/blob/main/docs/weekly-log.md) · [验证记录](docs/verification.md) · **[0.1.9源码、部署包与H5交付](docs/releases/android-0.1.9-handoff.md)**
 
-**使用原账号请打开 [CloudBase H5](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/#/)。** Android 与该页面共用 CloudBase 后端。[GitHub Pages 演示](https://yangfengqin406.github.io/group-project/#/)使用本机虚构数据。
+**0.1.9源码与部署包交付（2026-11-18）。** 完整源码、已部署运行时和同源H5归档说明随交付PR同步到main，源码定位`android-0.1.9-source`，原APK标签不移动；SHA清单与ZIP统一放在[发布页](https://github.com/yangfengqin406/group-project/releases/tag/android-0.1.9)。本地731项测试730通过/1项Windows权限跳过，H5/微信/App预检和微信预算检查通过。本轮按用户选择不访问CloudBase，真实H5仅提供[既有入口](https://golden-tahr-d5gk8koz72e46de2a-1530477186.ap-shanghai.app.tcloudbase.com/#/)，打开使用仍会消耗额度，未复核当前在线状态。[完整交付说明](docs/releases/android-0.1.9-handoff.md)。
 
-## 当前交付状态（2026-11-06）
+**Android 0.1.9/code109与配套后端已更新（2026-11-14）。** 原证书APK的51项静态检查及v1/v2验签通过，GitHub安装包与二维码已发布；匿名完整下载的27,841,362字节及SHA-256与验签一致。新环境仅更新现有1个API，1次健康和18次真实RPC通过，测试账号已注销；未重新初始化或迁移数据。手机需覆盖安装0.1.9，前台提醒与红点仍待真机验收，后台/锁屏通知未启用；源码和文档未提交、未合main。[下载APK](https://github.com/yangfengqin406/group-project/releases/download/android-0.1.9/campus-plaza-0.1.9-android.apk) · [发布页与二维码](https://github.com/yangfengqin406/group-project/releases/tag/android-0.1.9) · [交付验证](docs/verification.md#2026-11-14-安卓019与配套后端交付)。
+
+**11月13日本地修复阶段（历史）：首次联系与前台红点已补齐本地实现，候选0.1.9/code109。** 首次联系、文字私信及各来源未读提示分别处理；该本地阶段CloudBase请求0次，当时尚未部署修复或生成新版APK。该记录与14日另行授权的配套交付分开；后台/锁屏通知仍未启用。[本地验证](docs/verification.md#2026-11-13-首次联系与前台红点修复)。
+
+**新 CloudBase 课程环境已按空库方案恢复服务（2026-11-13）。** Android 0.1.8 无需重打包，需重新注册；曾保存旧测试地址的手机先选择“恢复默认地址”。公开健康检查200、十八次真实业务 RPC 通过，覆盖伙伴保存重登读回、衣柜和双向私信；两名测试账号已注销。旧账号和数据未迁入，实际手机操作仍待验收，后台/锁屏通知未启用。[本轮验收](docs/assets/cloudbase-fresh-start-2026-11-13/verification.json) · [连接步骤](docs/cloudbase-deployment.md)。[GitHub Pages 演示](https://yangfengqin406.github.io/group-project/#/)仍使用本机虚构数据。
+
+## 2026-11-11 停服记录（旧环境历史）
+
+11 月 9 日，CloudBase 通知处理已部署，19 项真实双账号私信检查通过。11 月 11 日，免费体验版当期 3,000 点用完，健康检查和下载页均返回 HTTP 410。已暂停每 10 分钟的通知恢复扫描，超限按量关闭。Android 0.1.7 修正版已用原证书打包并通过 45 项静态检查，安装包已在本地交付目录。公开下载更新和真机锁屏送达待课程环境恢复后验证。源码在 `codex/cloudbase-system-push-20261107`，待提交 PR。 [本轮进度与配置](docs/app-system-push.md)
 
 | 项目 | 已完成与证据 | 仍待完成 |
 | --- | --- | --- |
-| Android | **0.1.6（code106）** 已验签，修复启动时调用缺失的 Push 模块。默认连接 CloudBase，保留前台私信提示和红色未读数。公网安装包已完整下载并核对哈希。[安卓下载页](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/app-download.html) · [交付与校验](docs/app-release-2026-10-27.md) | 真机覆盖安装、锁屏通知及应用商店分发待办 |
-| iPhone | 0.1.4 对应 iOS 编译预检通过，iPhone 可通过浏览器使用课程版。[验证证据](docs/assets/app-cloudbase-2026-11-05/verification.json) | Apple 会员、签名与原生安装分发待办 |
-| 真实后端 | CloudBase 已部署并核验原账号、帖子、私信、回执和上传。公网临时账号通过登录、互助、图片权限与私信验收。[部署与验证](docs/cloudbase-deployment.md) | 课程环境的长期运营、关机与多台真机验收另行记录 |
-| H5 备用 | [CloudBase H5](https://happy-catfish-d6gyn3ykcd75cb823-1522847218.ap-shanghai.app.tcloudbase.com/#/)与 Android 共用账号和数据，已更新广场私信角标。[GitHub Pages 阶段演示](https://yangfengqin406.github.io/group-project/#/)使用本机虚构数据 | 真机浏览器体验另行验收 |
+| Android | **0.1.7（code107）** 修正版已完成 DCloud 云打包，原证书、手动通知权限和华为推送 SDK 均通过包内检查。下载页当前返回 HTTP 410。 [验包记录](docs/verification.md) | 公开下载更新、真机覆盖安装与锁屏通知 |
+| iPhone | 0.1.4 对应 iOS 编译预检通过。课程版浏览器入口依赖当前暂停的 CloudBase 环境。 [验证证据](docs/assets/app-cloudbase-2026-11-05/verification.json) | Apple 会员、签名与原生安装分发 |
+| 真实后端 | CloudBase 已部署。11 月 9 日公网临时账号通过双向私信及未读验收，11 月 11 日超限停服。 [验证记录](docs/verification.md) | 服务恢复后重新核对登录、私信与系统通知 |
+| H5 备用 | GitHub Pages 阶段演示使用本机虚构数据。 [打开演示](https://yangfengqin406.github.io/group-project/#/) | 原账号课程版待 CloudBase 恢复后复验 |
 
 ## 最近合并与分支边界
 
 - **A（杨凤琴）**负责互助、珍珠、App 适配和三方整合。main 已包含互助、本人待办、衣柜直接兑换和 App 构建，以及 0.1.3 减少冷启动小屋重复读取的代码。[PR #45](https://github.com/yangfengqin406/group-project/pull/45) · [PR #47](https://github.com/yangfengqin406/group-project/pull/47)
 - **B（孙瑞）**负责二手、账号和个人资料，并协作统一搭子发布和检索的五类选项，保留技能求助自由输入和历史分类兼容。[PR #43](https://github.com/yangfengqin406/group-project/pull/43)
-- **C（姜澜）**负责私信与失物。main 已包含前台未读检查、可点击提醒、自动刷新，以及手机系统通知开关、设备绑定和推送桥源码。CloudBase 课程环境尚未启用离线推送。[PR #44](https://github.com/yangfengqin406/group-project/pull/44) · [PR #48](https://github.com/yangfengqin406/group-project/pull/48) · [系统通知配置](docs/app-system-push.md)
+- **C（姜澜）**负责私信与失物。main 已包含前台未读检查、可点击提醒、自动刷新，以及手机系统通知开关、设备绑定和推送桥源码。A（杨凤琴）已将云端通知处理接入课程环境，真机送达待验。[PR #44](https://github.com/yangfengqin406/group-project/pull/44) · [PR #48](https://github.com/yangfengqin406/group-project/pull/48) · [系统通知配置](docs/app-system-push.md)
 
 [PR #49](https://github.com/yangfengqin406/group-project/pull/49) 汇总已部署的 CloudBase 适配源码及最新广场私信体验。新消息提示位于广场操作栏上方，私信入口显示红色未读数，阅读后按会话扣减，归零后隐藏。A（杨凤琴）负责集成，私信原功能归 C（姜澜）。[团队周报](docs/weekly-log.md) · [验证记录](docs/verification.md)
 
