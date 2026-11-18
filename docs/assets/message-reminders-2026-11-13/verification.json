@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-13",
+  "stage": "published-and-anonymous-download-verified",
+  "androidCandidate": {
+    "version": "0.1.9",
+    "code": 109,
+    "androidCompiled": true,
+    "iosCompiled": true,
+    "signedApk": true,
+    "ipa": false,
+    "appServiceSha256": "e718d8febc291291cb0666d7a1eedecc5031ec2a4cdf0d8cc773334579fea4d4",
+    "apkBytes": 27841362,
+    "apkSha256": "3a3d733c6c33bbafb62135e4df269b752ae7eaa7b6e1c0f42f7fbd0cf1d46c0a",
+    "staticChecks": 51,
+    "allStaticChecksPassed": true,
+    "originalSigningCertificate": true,
+    "v1Verified": true,
+    "v2Verified": true,
+    "packagedServiceMatchesOfficialCompilation": true
+  },
+  "sourceTests": {
+    "total": 724,
+    "passed": 723,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "Windows symbolic link permission"
+  },
+  "structure": {
+    "pages": 17,
+    "serviceCallLocations": 90
+  },
+  "h5Build": true,
+  "mpWeixinBuild": true,
+  "behavior": {
+    "firstContactCreatesUnread": true,
+    "repeatedOpenDoesNotRepeatContact": true,
+    "noFabricatedUserMessage": true,
+    "contactAndTextNotDoubleCounted": true,
+    "contactReadDoesNotClearConcurrentText": true,
+    "sourceCategoryDots": true,
+    "sharedPlazaAndTabBadges": true,
+    "newerListMayUpdateUnread": true,
+    "olderListAndPollCannotUndoRead": true,
+    "accountAndVisibilityGuards": true
+  },
+  "localBrowser": {
+    "passed": true,
+    "viewport": "390x844",
+    "checks": [
+      "Actual contact-author button without sending text produced owner banner, plaza/private-message badge 1, and bottom message badge 1; zero text messages were fabricated",
+      "Dismissed contact-only banner did not reappear after the next foreground poll; unread badge remained",
+      "Only all/market source dots appeared; switching filters did not erase them; opening the empty contact chat cleared them",
+      "A later actual text message in the same conversation generated a new banner and red badge; reading it cleared unread",
+      "A separate lost-found contact only marked all/lost-found categories, and all indicators cleared after opening that empty chat"
+    ],
+    "browserErrors": [],
+    "cloudRequests": 0
+  },
+  "cloudBaseRequestsInThisFix": 0,
+  "newBackendDeployed": true,
+  "newNativePackageSubmitted": true,
+  "physicalDeviceVerified": false,
+  "systemPushEnabled": false,
+  "backgroundWorkersEnabled": false,
+  "remaining": [
+    "Physical Android phone acceptance",
+    "Review source/documentation and merge into main"
+  ],
+  "sourceHashes": {
+    "backend/c/service.js": "faa075e25511b9f6d6d2825f59e316d043b18c94b9148b8426645ff483c3047c",
+    "src/mock/engine.js": "160b29d791d1578aba97e92634fecd74d6718de2cd50111a236308f680927d8f",
+    "src/utils/message-monitor.js": "7d49b278feaa5aa163a57d511293d1edd7a0a907ad071f9051a1dc71c54f89e7",
+    "src/services/message-alerts.js": "09be47e9395f919e7b19f8b786915c5c25dc3345477f36ef940769eba31f236a",
+    "src/pages/messages/chat.vue": "4a4f0ba3643850d2d5f51d7458d24ec565d22f84f054daf9cab40c47592014d9",
+    "src/pages/messages/index.vue": "945db64284775a50132439561ef77ecc1fdca9cd58e7ed3ae7e7d58868a0ec51",
+    "src/components/MessageNotice.vue": "44fff24bfe399630efced67804981b604d6532967832327fe9502487f84d80b7"
+  },
+  "completedDateCst": "2026-11-14",
+  "nativeSubmissionCount": 1,
+  "paidAcceleration": false,
+  "deployment": {
+    "completedAt": "2026-11-13T16:01:50.986Z",
+    "updateAttempts": 1,
+    "state": "Active",
+    "availableStatus": "Available",
+    "runtime": "Nodejs22.21",
+    "memoryMb": 256,
+    "timeoutSeconds": 3,
+    "sameEnvironmentAndPersistence": true,
+    "automaticRenewal": false,
+    "paidOverrun": false,
+    "scheduledTriggers": 0,
+    "pushWorkerEnabled": false,
+    "initializationOrMigration": false,
+    "currentAccountsAndDataPreserved": true,
+    "sourceFiles": 302,
+    "healthRequests": 0,
+    "businessRpcRequests": 0,
+    "providerCodeDownloadRequested": false,
+    "originalLocalSourceAvailable": true
+  },
+  "onlineSmoke": {
+    "passed": true,
+    "healthRequests": 1,
+    "rpcAttempts": 18,
+    "successfulRpc": 18,
+    "coverage": {
+      "health": true,
+      "twoDedicatedAccounts": true,
+      "firstContactUnread": true,
+      "firstContactMarkedRead": true,
+      "textUnread": true,
+      "bToARead": true,
+      "repeatedContactNoNewUnread": true,
+      "aToBRead": true,
+      "testPostClosed": true,
+      "accountBDeleted": true,
+      "accountADeleted": true
+    },
+    "cleanupPending": false
+  },
+  "cloudBaseRequestsInLocalPreparation": 0,
+  "cloudBaseUsageAfterExplicitApproval": {
+    "httpFunctionUpdates": 1,
+    "healthRequests": 1,
+    "businessRpc": 18,
+    "managementCliCommands": 4,
+    "automaticBusinessRetries": 0,
+    "exactResourcePoints": "Not measured; provider accounting may be delayed"
+  },
+  "publicDownloadVerified": true,
+  "publicDownload": {
+    "httpStatus": 200,
+    "anonymous": true,
+    "bytes": 27841362,
+    "sha256": "3a3d733c6c33bbafb62135e4df269b752ae7eaa7b6e1c0f42f7fbd0cf1d46c0a",
+    "url": "https://github.com/yangfengqin406/group-project/releases/download/android-0.1.9/campus-plaza-0.1.9-android.apk",
+    "fullDownloadVerified": true
+  },
+  "metadataPublication": {
+    "detailedReportUploaded": false,
+    "reason": "Public release limited to user-authorized APK and download QR; detailed records remain local"
+  }
+}

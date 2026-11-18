@@ -1,6 +1,6 @@
 'use strict'
 const { createHmac, timingSafeEqual } = require('crypto')
-const response = (statusCode, code) => ({ statusCode,
+const response = (statusCode, code) => ({ mpserverlessComposedResponse: true, isBase64Encoded: false, statusCode,
   headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, body: JSON.stringify({ code }) })
 
 // URLized uniCloud function: invoked only by our business server, never by an

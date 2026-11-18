@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-11-09T03:00:46.398Z",
+  "backendCutover": {
+    "deployedAndActive": true,
+    "originalDatabaseEnvironmentPreserved": true,
+    "originalRoleAndMemoryPreserved": true,
+    "httpTimeoutSeconds": 10
+  },
+  "twoAccountAcceptance": {
+    "passedChecks": 19,
+    "allChecksPassed": true,
+    "messageIdempotencyPassed": true,
+    "bidirectionalMessagesPassed": true,
+    "unreadAfterReading": [2, 1, 0],
+    "newTestAccountsCleanedUp": true
+  },
+  "worker": {
+    "active": true,
+    "authenticatedEmptyTaskPassed": true,
+    "processedTasks": 0
+  },
+  "recovery": {
+    "enabled": true,
+    "everyMinutes": 10,
+    "timerCount": 1,
+    "cronAndSignatureVerified": true
+  },
+  "publicResourcesAtCutover": {
+    "preservedResourceCount": 285,
+    "h5DownloadAndQrHashesMatch": true,
+    "publicApkVersion": "0.1.6"
+  },
+  "costControls": {
+    "trialPlan": true,
+    "autoRenewDisabled": true,
+    "overageDisabled": true
+  }
+}

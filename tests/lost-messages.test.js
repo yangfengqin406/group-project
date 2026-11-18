@@ -6,6 +6,68 @@ import { dispatch } from '../src/mock/engine.js'
 const failCode = (run, code) =>
   assert.throws(run, (error) => error.code === code)
 
+test('演示首次联系仅接收方未读，所有来源一致且重复打开不制造留言或新事件', () => {
+  const db = createSeed()
+  const sender = db.currentUserId
+  const targets = [['market', 'market_demo_lamp'], ['lost_found', 'lost_demo_key'], ['plan', 'plan_demo_b']]
+  for (const [contentType, contentId] of targets) {
+    const params = { contentType, contentId, peerUserId: 'user_demo_b' }
+    const opened = dispatch(db, 'conversation.open', params)
+    assert.equal(opened.contactRequest.senderId, sender)
+    assert.equal(opened.unreadContact, false)
+    assert.equal(dispatch(db, 'conversation.open', params).contactRequest.id, opened.contactRequest.id)
+  }
+  assert.equal(dispatch(db, 'conversation.unread').total, 0)
+  assert.equal(db.messages.length, 0)
+  assert.equal(db.notifications.length, 0)
+  db.currentUserId = 'user_demo_b'
+  const unread = dispatch(db, 'conversation.unread')
+  assert.equal(unread.total, targets.length)
+  assert.ok(unread.items.every(c => c.unreadContact && c.unreadCount === 1 && c.lastMessage === null))
+  const c = unread.items[0]
+  assert.equal(dispatch(db, 'conversation.get', { id: c.id }).unreadContact, true)
+  assert.ok(dispatch(db, 'conversation.list').items.every(c => c.unreadContact))
+  assert.deepEqual(dispatch(db, 'conversation.markRead', { conversationId: c.id, throughContactId: c.contactRequest.id }), { unreadCount: 0, unreadContact: false })
+  assert.equal(dispatch(db, 'conversation.unread').total, targets.length - 1)
+  db.currentUserId = 'user_demo_c'
+  failCode(() => dispatch(db, 'conversation.markRead', { conversationId: c.id, throughContactId: c.contactRequest.id }), 'FORBIDDEN')
+})
+
+test('演示确认首次联系不会读掉并发文字，文字确认联系且拒绝错误事件及混合参数', () => {
+  const db = createSeed(), sender = db.currentUserId
+  const c = dispatch(db, 'conversation.open', { contentType: 'market', contentId: 'market_demo_lamp', peerUserId: 'user_demo_b' })
+  const first = dispatch(db, 'message.send', { conversationId: c.id, body: '第一条', idempotencyKey: 'demo-contact-first' })
+  db.currentUserId = 'user_demo_b'
+  assert.equal(dispatch(db, 'conversation.unread').total, 1)
+  for (const params of [
+    { conversationId: c.id },
+    { conversationId: c.id, throughContactId: 'wrong-contact' },
+    { conversationId: c.id, throughContactId: c.contactRequest.id, throughMessageId: first.id }
+  ]) failCode(() => dispatch(db, 'conversation.markRead', params), 'INVALID_ARGUMENT')
+  assert.deepEqual(dispatch(db, 'conversation.markRead', { conversationId: c.id, throughContactId: c.contactRequest.id }), { unreadCount: 1, unreadContact: false })
+  db.currentUserId = sender
+  const second = dispatch(db, 'message.send', { conversationId: c.id, body: '后到的文字', idempotencyKey: 'demo-contact-second' })
+  db.currentUserId = 'user_demo_b'
+  assert.deepEqual(dispatch(db, 'conversation.markRead', { conversationId: c.id, throughMessageId: first.id }), { unreadCount: 1, unreadContact: false })
+  assert.equal(dispatch(db, 'conversation.unread').items[0].lastMessage.id, second.id)
+  assert.deepEqual(dispatch(db, 'conversation.markRead', { conversationId: c.id, throughMessageId: second.id }), { unreadCount: 0, unreadContact: false })
+})
+
+test('演示旧会话及字符串已读凭据兼容，文字标读也确认尚未读的首次联系', () => {
+  const db = createSeed()
+  const c = dispatch(db, 'conversation.open', { contentType: 'lost_found', contentId: 'lost_demo_key', peerUserId: 'user_demo_b' })
+  const first = dispatch(db, 'message.send', { conversationId: c.id, body: '旧凭据', idempotencyKey: 'demo-old-read' })
+  db.currentUserId = 'user_demo_b'
+  assert.deepEqual(dispatch(db, 'conversation.markRead', { conversationId: c.id, throughMessageId: first.id }), { unreadCount: 0, unreadContact: false })
+  const stored = db.conversations.find(item => item.id === c.id)
+  delete stored.contactRequest
+  db.conversationReads[JSON.stringify([db.currentUserId, c.id])] = first.id
+  assert.equal(dispatch(db, 'conversation.get', { id: c.id }).unreadContact, false)
+  assert.equal(dispatch(db, 'conversation.unread').total, 0)
+  db.currentUserId = 'user_demo_a'
+  assert.equal(dispatch(db, 'conversation.open', { contentType: 'lost_found', contentId: 'lost_demo_key', peerUserId: 'user_demo_b' }).contactRequest, null)
+})
+
 test('演示私信未读与真实接口一致：按身份隔离、快照标读且不误读后续新消息', () => {
   const db = createSeed()
   const c = dispatch(db, 'conversation.open', { contentType: 'lost_found', contentId: 'lost_demo_key', peerUserId: 'user_demo_b' })

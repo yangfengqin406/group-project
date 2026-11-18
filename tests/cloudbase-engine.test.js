@@ -8,7 +8,7 @@ import { createCloudHttpServer } from '../backend/cloudbase/http.js'
 
 const origin = 'https://campus-test.example'
 const bytes = readFileSync(new URL('../src/static/tabs/plaza.png', import.meta.url))
-function fixture({now}={}) {
+function fixture({now,pushProvider,pushWakeup}={}) {
   const initial = openCStore(':memory:')
   let state = { version:1, snapshot:exportSnapshot(initial), game:null, files:{}, cleanup:[] }
   initial.close()
@@ -25,8 +25,8 @@ function fixture({now}={}) {
       state = structuredClone({...next,version:version+1}); counters.commits++
     }
   }
-  const call = input => createCloudCoordinator({repository,files,
-    engine:createCloudEngine({files,publicOrigin:origin,staticRoot:process.cwd(),now})}).dispatch(input)
+  const call = input => createCloudCoordinator({repository,files,pushWakeup,
+    engine:createCloudEngine({files,publicOrigin:origin,staticRoot:process.cwd(),now,pushProvider})}).dispatch(input)
   async function rpc(method,params={},token='') {
     const response = await call({method:'POST',url:'/api/rpc',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body:Buffer.from(JSON.stringify({method,params}))})
     return JSON.parse(response.body)
@@ -85,6 +85,58 @@ test('CloudBase request engine does not initialize the long-lived push bridge',a
   const status=await f.rpc('push.status',{},user.token)
   assert.equal(status.code,'OK',status.message)
   assert.equal(status.data.configured,false)
+})
+
+async function pushFixture(wake) {
+  const outgoing = []
+  let f
+  const pushProvider = { async send(value) { outgoing.push(value) } }
+  f = fixture({ pushProvider, pushWakeup: { wake(ids) { return wake(ids, f) } } })
+  const alice = await f.register('push-alice'), bob = await f.register('push-bob')
+  const item = await f.rpc('market.create', { title:'教材', body:'校内交接', category:'教材', marketType:'sell',
+    priceCents:1000, condition:'九成新', handoverCampus:'校门口', visibility:'public' }, alice.token)
+  const chat = await f.rpc('conversation.open', { contentType:'market', contentId:item.data.id, peerUserId:alice.user.id }, bob.token)
+  const bound = await f.rpc('push.bind', { clientId:'cloud-push-device-001', platform:'android' }, alice.token)
+  assert.equal(bound.code, 'OK', bound.message)
+  const send = () => f.rpc('message.send', { conversationId:chat.data.id, body:'请问还在吗', idempotencyKey:'push-commit-1' }, bob.token)
+  return { ...f, send, outgoing }
+}
+
+test('CloudBase only wakes committed new push jobs and never runs the request-private sender', async () => {
+  const calls = []
+  const f = await pushFixture((ids, current) => {
+    assert.ok(ids.every(id => current.state().snapshot.records.some(row => row.collection === 'campus.pushJobs' && row.id === id)))
+    calls.push(ids)
+    return Promise.resolve({ accepted:true })
+  })
+  assert.equal((await f.send()).code, 'OK')
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0].length, 1)
+  assert.equal(f.outgoing.length, 0)
+  assert.equal((await f.send()).code, 'OK')
+  assert.equal(calls.length, 1)
+})
+
+test('CloudBase a failed asynchronous wakeup cannot undo a committed private message', async () => {
+  const f = await pushFixture(() => { throw new Error('simulated queue unavailable') })
+  assert.equal((await f.send()).code, 'OK')
+  assert.equal(f.state().snapshot.records.filter(row => row.collection === 'messages').length, 1)
+  const jobs = f.state().snapshot.records.filter(row => row.collection === 'campus.pushJobs').map(row => JSON.parse(row.data))
+  assert.equal(jobs.length, 1)
+  assert.equal(jobs[0].status, 'pending')
+})
+
+test('CloudBase an uncertain commit leaves recovery work without an unconfirmed wakeup', async () => {
+  const calls = []
+  const f = await pushFixture(ids => { calls.push(ids); return Promise.resolve({ accepted:true }) })
+  const save = f.repository.compareAndSwap
+  f.repository.compareAndSwap = async (version, next) => {
+    await save(version, next)
+    throw Object.assign(new Error('lost commit response'), { code:'CLOUD_STATE_COMMIT_UNCERTAIN' })
+  }
+  await assert.rejects(f.send(), { code:'CLOUD_STATE_COMMIT_UNCERTAIN' })
+  assert.equal(calls.length, 0)
+  assert.equal(f.state().snapshot.records.filter(row => row.collection === 'campus.pushJobs').length, 1)
 })
 
 test('CloudBase bridge: PostgreSQL JSONB key ordering does not turn unchanged reads into writes',async()=>{

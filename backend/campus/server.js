@@ -178,7 +178,7 @@ export function createCampusServer(options = {}) {
     }
   })
   // Durable queue survives restart. Network delivery never runs in a write transaction.
-  const pushTimer = pushProvider
+  const pushTimer = pushProvider && options.runPushWorker !== false
     ? setInterval(() => service.push.flush().catch(() => options.onError?.({ code: 'PUSH_QUEUE_FAILURE' })), 5000)
     : null
   pushTimer?.unref()

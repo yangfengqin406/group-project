@@ -74,22 +74,27 @@ export function createPushService({ store, accounts, canDeliver, provider = null
         createdAt: now(), nextAt: now() })
     }
   }
+  function prepareDelivery(job) {
+    const device = store.get(DEVICES, job.deviceId)
+    const messageRow = rows('messages', 'id = ?', [job.messageId], 1)[0]
+    const read = store.get('conversationReads', JSON.stringify([job.recipientId, job.conversationId]))?.seq || 0
+    const eligible = device?.enabled && device.revision === job.revision && device.userId === job.recipientId && sessionAlive(device) &&
+      messageRow && messageRow.seq > read && now() - job.createdAt < 3600000 && canDeliver(job, messageRow.value)
+    if (!eligible) return null
+    return { push_clientid: device.clientId, title: '校园生活广场', content: '你收到一条新私信，点击查看',
+      payload: { type: 'private-message', conversationId: job.conversationId, recipientId: job.recipientId, messageId: job.messageId },
+      request_id: job.id.slice(0, 32), force_notification: true,
+      settings: { ttl: Math.max(1000, 3600000 - (now() - job.createdAt)) },
+      options: { android: { '/notification/channel_id': 'campus_private_messages_v1' } } }
+  }
   async function dispatch() {
     const due = rows(JOBS, "json_extract(data, '$.status') = 'pending' AND json_extract(data, '$.nextAt') <= ?", [now()], 50)
     for (const { value: job } of due) {
       if (stopped) return
-      const device = store.get(DEVICES, job.deviceId)
-      const messageRow = rows('messages', 'id = ?', [job.messageId], 1)[0]
-      const read = store.get('conversationReads', JSON.stringify([job.recipientId, job.conversationId]))?.seq || 0
-      const eligible = device?.enabled && device.revision === job.revision && device.userId === job.recipientId && sessionAlive(device) &&
-        messageRow && messageRow.seq > read && now() - job.createdAt < 3600000 && canDeliver(job, messageRow.value)
-      if (!eligible) { store.update(JOBS, { ...job, status: 'discarded' }); continue }
-      const payload = { type: 'private-message', conversationId: job.conversationId, recipientId: job.recipientId, messageId: job.messageId }
+      const message = prepareDelivery(job)
+      if (!message) { store.update(JOBS, { ...job, status: 'discarded' }); continue }
       try {
-        await provider.send({ push_clientid: device.clientId, title: '校园生活广场', content: '你收到一条新私信，点击查看',
-          payload, request_id: job.id.slice(0, 32), force_notification: true,
-          settings: { ttl: Math.max(1000, 3600000 - (now() - job.createdAt)) },
-          options: { android: { '/notification/channel_id': 'campus_private_messages_v1' } } })
+        await provider.send(message)
         if (!stopped) store.update(JOBS, { ...job, status: 'accepted', attempts: job.attempts + 1 })
       } catch {
         // No provider bodies, device identifiers, tokens or message text in logs.
@@ -103,5 +108,5 @@ export function createPushService({ store, accounts, canDeliver, provider = null
     if (!running) running = dispatch().finally(() => { running = null })
     return running
   }
-  return { invoke, enqueue, flush, stop() { stopped = true } }
+  return { invoke, enqueue, prepareDelivery, flush, stop() { stopped = true } }
 }

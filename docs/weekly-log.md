@@ -1,6 +1,6 @@
 # 团队周报（监督查看）
 
-更新至：2026-11-06（北京时间） · 汇总负责人：A（杨凤琴）
+更新至：2026-11-18（北京时间） · 汇总负责人：A（杨凤琴）
 
 团队成员：**A（杨凤琴）、B（孙瑞）、C（姜澜）**。以下分别记录本人负责的业务、协作整合和待完成工作。
 
@@ -10,10 +10,28 @@
 
 11 月 5 日核对 main `5232340`，已包含 A（杨凤琴）的互助和 App 适配、A 的 0.1.3 性能修复、B（孙瑞）的搭子分类协作及 C（姜澜）的手机系统私信通知源码。各阶段验收沿用对应记录，下方历史合并状态以当时为准。[PR #45](https://github.com/yangfengqin406/group-project/pull/45) · [PR #47](https://github.com/yangfengqin406/group-project/pull/47) · [PR #43](https://github.com/yangfengqin406/group-project/pull/43) · [PR #48](https://github.com/yangfengqin406/group-project/pull/48)
 
-## 本周：2026-11-02—2026-11-08
+## 本周：2026-11-16—2026-11-22
 
 | 日期 | 执行成员 | 实际更新与成果证据 | 实际验证、剩余工作与合并状态 |
 | --- | --- | --- | --- |
+| 11月18日 | A（杨凤琴），0.1.9源码归档与文档交付 | 归档完整源码、302项原运行文件与同源H5，新增固定[交付说明](releases/android-0.1.9-handoff.md)，补Node22构建、App身份注入、许可、安装/部署/回退及真实H5与Pages演示区别。仅微信产物缩短scope标记以恢复原2MiB预算；不裁素材、不改019业务源码。B（孙瑞）账号/二手和C（姜澜）私信原成果归属保持。 | 本轮check17页/90调用、731项测试730通过/1项Windows跳过，H5/微信及Android/iOS预检通过；37WXSS零问题，主包2095270字节。运行时302项逐文件SHA一致；ZIP解压/CRC/凭据排除检查通过。源码tag `android-0.1.9-source`及ZIP/SHA清单定位本次交付。工作分支`codex/release-019-source-handoff-20261118`；在main分支查看本记录时，代码、文档及周报已随[PR #53](https://github.com/yangfengqin406/group-project/pull/53)同步；审阅分支阶段尚未合并，以PR实际状态为准。本轮CloudBase请求0次，未重打包或部署；手机、锁屏通知及iOS分发仍待验。[验证](verification.md#2026-11-18-019源码与部署包归档) |
+
+## 2026-11-09—2026-11-15
+
+| 日期 | 执行成员 | 实际更新与成果证据 | 实际验证、剩余工作与合并状态 |
+| --- | --- | --- | --- |
+| 11月14日 | A（杨凤琴），0.1.9签名包与配套后端交付 | 11月13日23:59唯一DCloud任务以原证书生成0.1.9/code109，51项APK检查及v1/v2验签通过；GitHub APK与二维码已发布，匿名完整下载的字节及SHA一致。14日另经授权仅更新新环境现有1个API，不重新初始化或迁移数据。B（孙瑞）账号/二手及C（姜澜）私信原归属保持。[交付验证](verification.md#2026-11-14-安卓019与配套后端交付) · [下载与二维码](https://github.com/yangfengqin406/group-project/releases/tag/android-0.1.9) | 本地724项测试中723通过、1项Windows跳过，H5/微信及Android/iOS预检、隔离浏览器五组流程通过。云端1次健康和18次RPC通过，含首次联系/文字/重复open/双方标读，测试账号已注销；超额按量、自动续费、定时扫描及推送工作器仍关闭。手机前台与红点待验，后台/锁屏通知未启用。源码/文档在 `codex/cloudbase-system-push-20261107`，未提交、未合main；main周报同步待文档PR。 |
+| 11月13日 | A（杨凤琴），首次联系与前台红点本地修复 | 协作修复C（姜澜）原私信模块：首次联系使用独立事件，后续文字仍单独提醒；补齐前台监控唤醒、来源分类红点和列表回执与全局未读的竞态保护。B（孙瑞）二手/账号及C（姜澜）私信原成果归属保持。[验证记录](verification.md#2026-11-13-首次联系与前台红点修复) · [证据](assets/message-reminders-2026-11-13/verification.json) | 最终check17页/90调用、724项测试中723通过/1项Windows权限跳过，H5/微信兼容及Android/iOS编译预检通过；候选0.1.9/code109尚未生成APK/IPA或部署修复。隔离浏览器五组流程通过、异常0；手机仍待验。本修复轮CloudBase请求0次，后台推送未启用。分支 `codex/cloudbase-system-push-20261107`，本轮未提交、未合入main；main周报同步待文档PR。 |
+| 11月13日 | A（杨凤琴），安卓0.1.8新环境空库恢复 | 用户选择不迁移旧数据，并同意本轮使用新环境免费额度。已部署1个HTTP API，未启用定时器或系统推送工作器，超额按量和自动续费保持关闭；旧环境数据未迁移、未删除。B（孙瑞）账号/二手与C（姜澜）私信原业务归属保持。[验证与用量边界](verification.md#2026-11-13-新课程环境空库恢复) | Node22实测703项测试通过、1项Windows符号链接测试跳过，H5/微信兼容构建通过；公网1次健康检查HTTP200及18次业务RPC通过，覆盖伙伴保存/重新登录读回、衣柜、双向私信，测试账号已注销。0.1.8手机新注册/登录与伙伴实际显示、Wi-Fi/流量仍待验，后台/锁屏通知未启用。候选分支 `codex/cloudbase-system-push-20261107`，本次记录未提交、未合入main；main唯一周报同步待文档PR。 |
+| 11月11日 | A（杨凤琴），安卓权限复验与云端停服排查 | 修正 `AndroidManifest.xml` 路径后，09:54:58 以原云端证书重打包成功。0.1.7（code107）APK 已本地交付，45 项静态检查全通过。CloudBase 当期 3,000 点耗尽，健康检查和下载页实测 HTTP 410，每 10 分钟的恢复扫描已关闭。 [验证记录](verification.md) | 703 项测试通过、1 项 Windows 跳过，H5 和微信兼容构建通过。CloudBase 超限按量关闭。待确认额度刷新，恢复后再更新公开下载并验收真机锁屏送达。工作分支 `codex/cloudbase-system-push-20261107` 待提交 PR、未合入 main。 |
+| 11月9日 | A（杨凤琴），系统通知现网切换 | 整合 C（姜澜）的私信通知成果，切换 CloudBase 通知处理，开启每 10 分钟恢复任务。复核四张通知表结构、权限和设备唯一索引。DCloud 显示 0.1.7 使用云端证书打包成功。 [验证记录](verification.md) | 19 项真实双账号验收通过，原数据库配置和账号保留，验收用账号已注销。公开下载为 0.1.6，新 APK 待下载验签和发布，华为锁屏送达待真机验收。工作分支 `codex/cloudbase-system-push-20261107` 待提交 PR、未合入 main。 |
+
+## 2026-11-02—2026-11-08
+
+| 日期 | 执行成员 | 实际更新与成果证据 | 实际验证、剩余工作与合并状态 |
+| --- | --- | --- | --- |
+| 11月8日 | A（杨凤琴），通知部署与华为 SDK 续验 | 整合 C（姜澜）原私信通知，实际部署 uniCloud 签名桥与 CloudBase 独立工作器；修 HTTP 响应标记及华为打包选项遗漏，原账号数据保留。四张通知表已创建，恢复触发器已创建但保持关闭，现网业务函数未切换。[配置与边界](app-system-push.md) | 真实桥请求403/400拒绝、工作器空任务数据库探针与角色异步受理通过，临时权限探针已删除；无真实通知发送。最终check17页/90处、704项中703通过/1项Windows跳过，H5/微信兼容和修后Android/iOS编译通过。表权限/索引复核、官方重新登录、0.1.7签名包和双手机锁屏验收待办，公开仍0.1.6。`codex/cloudbase-system-push-20261107`本机未提交PR/未合main。[验证记录](verification.md)。本轮费用0元，无充值/保证金/自动续费；免费期需后续手动维护。 |
+| 11月7日 | A（杨凤琴），CloudBase 系统通知接入 | 协作整合 C（姜澜）原私信推送，完成 CloudBase 持久任务租约、提交后异步唤醒、定向签名及有限补发源码；原 App 的 uni-push 2 与华为 Android 厂商配置实际保存成功。更新通知隐私说明，0.1.7 候选 Android/iOS 编译预检通过。[配置与边界](app-system-push.md) | 全套 Node22 测试703项通过、1项跳过；补发限额调整后定向24项再通过。H5、微信兼容和结构检查通过。工作分支 `codex/cloudbase-system-push-20261107`，尚未提交 PR/合入 main；云端发送处理、签名 APK 和锁屏双手机验收待办。[验证](verification.md)。未充值、交保证金或启用自动续费/超额付费。 |
 | 11月6日 | A（杨凤琴），安卓 Push 启动弹窗修复 | 0.1.6 使打包开关同时控制原生 Push 模块、初始化和手机通知设置。保留私信弹窗与红色未读数，原消息业务归 C（姜澜）。[验证记录](verification.md) | 本机 656 项通过、1 项 Windows 符号链接跳过，H5、微信兼容和两种 Push 配置的 Android/iOS 编译通过。35 项验包、公开下载哈希和下载页均通过。[PR #52](https://github.com/yangfengqin406/group-project/pull/52)。锁屏通知和真机覆盖安装待验。 |
 | 11月6日 | A（杨凤琴），CloudBase H5 与 Android 0.1.5 公开交付 | 更新 CloudBase 真实账号 H5、安卓下载页和二维码，README 区分 CloudBase H5 与 GitHub Pages 本机演示。[交付记录](app-release-2026-10-27.md) | 核对线上 H5 含新版角标、下载页指向 0.1.5、二维码可解码；26,485,343 字节 APK 公网下载哈希一致，健康检查 OK。[验收摘要](assets/app-cloudbase-2026-11-05/verification-v015-public.json)。真机覆盖安装和 iOS 签名待验。 |
 | 11月5日 | A（杨凤琴），团队同步与广场私信体验 | 从团队 main 同步 A/B/C 源码。在 `codex/team-sync-cloudbase-20261105` 加入 CloudBase 适配和交付证据，将私信提示移到广场操作栏上方，并显示红色未读角标。私信原功能归 C（姜澜）。 | [PR #49](https://github.com/yangfengqin406/group-project/pull/49) 已合入 main（`b967ddb`）。本机 655 项通过、1 项 Windows 符号链接跳过；双账号 H5 验证收起不标读、提示不挡按钮，角标从 2 变 1 再隐藏。[CI](https://github.com/yangfengqin406/group-project/actions/runs/42048293352)及[公开 H5 演示更新](https://github.com/yangfengqin406/group-project/actions/runs/42050864083)通过。 |

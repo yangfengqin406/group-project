@@ -142,9 +142,17 @@ async function load(reset, { background = false } = {}) {
     items.value = [...(preserve ? items.value : []), ...r.items.filter((item) => !known.has(item.id))]
       .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
     if (!background) cursor.value = r.nextCursor
-    if (reset && r.items.length && visible && messageAlerts.state.foreground) {
-      const result = await conversation.markRead({ conversationId: id.value, throughMessageId: r.items[0].id })
-      if (currentRequest() && visible) messageAlerts.acknowledged(id.value, result.unreadCount)
+    const contactId = current.value?.unreadContact && current.value.contactRequest?.id
+    if (reset && (r.items.length || contactId) && visible && messageAlerts.state.foreground) {
+      const through = r.items.length ? { throughMessageId: r.items[0].id } : { throughContactId: contactId }
+      const result = await conversation.markRead({ conversationId: id.value, ...through })
+      if (currentRequest() && visible) {
+        if (current.value && result.unreadContact === false) current.value.unreadContact = false
+        messageAlerts.acknowledged(id.value, result.unreadCount, {
+          ...current.value, unreadContact: result.unreadContact ?? current.value?.unreadContact,
+          lastMessage: r.items[0] || current.value?.lastMessage || null
+        })
+      }
     }
   } catch (e) {
     if (currentRequest()) error.value = errorText(e)

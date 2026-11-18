@@ -51,6 +51,69 @@ function fixture(t) {
 }
 const fails = (run, code) => assert.throws(run, { code })
 
+test('首次联系是独立未读事件：仅接收者可见、重复打开不重复提醒且重启后保留', (t) => {
+  const f = fixture(t), opened = f.open()
+  assert.equal(opened.contactRequest.senderId, 'bob')
+  assert.equal(opened.unreadContact, false)
+  assert.equal(opened.unreadCount, 0)
+  const recipient = f.call('conversation.get', { id: opened.id })
+  assert.equal(recipient.unreadContact, true)
+  assert.equal(recipient.unreadCount, 1)
+  assert.equal(recipient.lastMessage, null)
+  assert.deepEqual(f.open().contactRequest, opened.contactRequest)
+  assert.equal(f.call('conversation.unread').total, 1)
+  assert.equal(f.call('conversation.unread', {}, 'bob').total, 0)
+  assert.equal(f.call('conversation.unread', {}, 'eve').total, 0)
+  assert.equal(f.call('conversation.list').items[0].unreadContact, true)
+  assert.equal(f.call('message.list', { conversationId: opened.id }).items.length, 0)
+  assert.equal(f.call('notification.list').items.length, 0)
+  f.reopen()
+  assert.equal(f.call('conversation.unread').items[0].contactRequest.id, opened.contactRequest.id)
+})
+
+test('首次联系与文字合并计数，确认联系不能清除并发文字，文字标读仍只推进已展示位置', (t) => {
+  const f = fixture(t), c = f.open()
+  const first = f.call('message.send', { conversationId: c.id, body: '第一条', idempotencyKey: 'contact-first' }, 'bob')
+  assert.equal(f.call('conversation.unread').total, 1)
+  assert.equal(f.call('conversation.unread').items[0].unreadContact, true)
+  const contactRead = f.call('conversation.markRead', { conversationId: c.id, throughContactId: c.contactRequest.id })
+  assert.deepEqual(contactRead, { unreadCount: 1, unreadContact: false })
+  const second = f.call('message.send', { conversationId: c.id, body: '并发新文字', idempotencyKey: 'contact-second' }, 'bob')
+  assert.deepEqual(f.call('conversation.markRead', { conversationId: c.id, throughMessageId: first.id }), { unreadCount: 1, unreadContact: false })
+  assert.equal(f.call('conversation.unread').items[0].lastMessage.id, second.id)
+  assert.deepEqual(f.call('conversation.markRead', { conversationId: c.id, throughMessageId: second.id }), { unreadCount: 0, unreadContact: false })
+  assert.deepEqual(f.call('conversation.markRead', { conversationId: c.id, throughMessageId: first.id }), { unreadCount: 0, unreadContact: false })
+  assert.equal(f.open().contactRequest.id, c.contactRequest.id)
+  assert.equal(f.call('conversation.unread').total, 0)
+})
+
+test('首次联系标读验证参与者、事件归属和二选一参数；文字标读同时确认该联系', (t) => {
+  const f = fixture(t), c = f.open(), other = f.open('plan')
+  fails(() => f.call('conversation.markRead', { conversationId: c.id, throughContactId: c.contactRequest.id }, 'eve'), 'FORBIDDEN')
+  for (const params of [
+    { conversationId: c.id },
+    { conversationId: c.id, throughContactId: other.contactRequest.id },
+    { conversationId: c.id, throughContactId: c.contactRequest.id, throughMessageId: 'not-a-message' }
+  ]) fails(() => f.call('conversation.markRead', params), 'INVALID_ARGUMENT')
+  assert.equal(f.call('conversation.unread').total, 2)
+  const message = f.call('message.send', { conversationId: c.id, body: '联系文字', idempotencyKey: 'contact-ack' }, 'bob')
+  assert.deepEqual(f.call('conversation.markRead', { conversationId: c.id, throughMessageId: message.id }), { unreadCount: 0, unreadContact: false })
+  assert.equal(f.call('conversation.unread').total, 1)
+  assert.deepEqual(f.call('conversation.markRead', { conversationId: other.id, throughContactId: other.contactRequest.id }), { unreadCount: 0, unreadContact: false })
+})
+
+test('没有首次联系字段的旧会话继续按文字未读，重复打开不补造联系事件', (t) => {
+  const f = fixture(t), opened = f.open(), legacy = f.store.get('conversations', opened.id)
+  delete legacy.contactRequest
+  f.store.update('conversations', legacy)
+  assert.equal(f.call('conversation.get', { id: legacy.id }).unreadContact, false)
+  assert.equal(f.open().contactRequest, null)
+  assert.equal(f.call('conversation.unread').total, 0)
+  const message = f.call('message.send', { conversationId: legacy.id, body: '旧会话新文字', idempotencyKey: 'legacy-contact' }, 'bob')
+  assert.equal(f.call('conversation.unread').total, 1)
+  assert.deepEqual(f.call('conversation.markRead', { conversationId: legacy.id, throughMessageId: message.id }), { unreadCount: 0, unreadContact: false })
+})
+
 test('私信未读按账号持久保存，标读只推进到已展示消息，新到/其他会话不被清除', (t) => {
   const f = fixture(t), c = f.open(), other = f.open('plan')
   const send = (id, key, userId = 'bob') => f.call('message.send', { conversationId: id, body: key, idempotencyKey: key }, userId)

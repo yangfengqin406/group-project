@@ -1,0 +1,100 @@
+{
+  "date": "2026-11-13",
+  "recordedAt": "2026-11-13T09:23:49.891Z",
+  "androidVersion": "0.1.8",
+  "versionCode": 108,
+  "userDecision": "Start fresh in new environment; do not migrate or delete old environment",
+  "status": "backend-deployed-and-public-api-verified",
+  "deployment": {
+    "httpFunctions": 1,
+    "functionState": "Active",
+    "availableState": "Available",
+    "runtime": "Nodejs22.21",
+    "memoryMb": 256,
+    "timeoutSeconds": 3,
+    "rootRouteBound": true,
+    "runtimeEnvironmentReadbackMatches": true,
+    "sourceFileCount": 302,
+    "entrySha256": "a19aef938cd74ef9fbd8e92f42aba695b5916558b44f088edf4ed1b170ce5314"
+  },
+  "initialState": {
+    "businessRecords": 0,
+    "receipts": 0,
+    "userFiles": 0,
+    "stateVersion": 1,
+    "exactReadback": true
+  },
+  "privacy": {
+    "tableRowLevelSecurity": true,
+    "runtimeRoleOnly": true,
+    "privateBucketPublic": false,
+    "anonymousDatabaseStatus": 401
+  },
+  "billingProtection": {
+    "isAutoRenew": false,
+    "enableOverrun": false,
+    "freeResourcePointsConsumed": true,
+    "exactPoints": "Not measured; provider usage reporting may be delayed",
+    "scheduledTriggers": 0,
+    "pushRecoveryWorkerEnabled": false
+  },
+  "authorizedPublicRequestLimits": {
+    "health": 2,
+    "businessRpc": 20
+  },
+  "actualRequests": {
+    "health": 1,
+    "businessRpc": 18,
+    "managementCliCommands": 7,
+    "directPersistenceAndBucketHttpRequests": 6,
+    "internalPlatformCalls": "CLI deployment includes internal provider calls; the CLI-command count is not a total cloud API count",
+    "automaticBusinessRetries": 0
+  },
+  "publicVerification": {
+    "healthStatus": 200,
+    "persistence": "cloudbase",
+    "successfulRpc": 18,
+    "twoDedicatedAccounts": true,
+    "petRead": true,
+    "petSaved": true,
+    "reloginSameAccount": true,
+    "petPersistsAfterLogin": true,
+    "wardrobeRead": true,
+    "petIsolated": true,
+    "publicPostCreated": true,
+    "conversationOpened": true,
+    "bToARead": true,
+    "aToBRead": true,
+    "testPostClosed": true,
+    "accountBDeleted": true,
+    "accountADeleted": true,
+    "cleanupPending": false
+  },
+  "sourceChecks": {
+    "pages": 17,
+    "serviceCallLocations": 90,
+    "tests": {
+      "total": 704,
+      "passed": 703,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "Windows symbolic link permission"
+    },
+    "h5Build": true,
+    "mpWeixinBuild": true,
+    "noProductSourceChangesInThisRecovery": true
+  },
+  "androidRebuildRequired": false,
+  "physicalDeviceVerified": false,
+  "iosIpa": false,
+  "lockScreenNotificationsEnabled": false,
+  "oldEnvironmentReadOrChangedDuringAuthorizedDeployment": false,
+  "committedInThisRecovery": false,
+  "mergedIntoMainInThisRecovery": false,
+  "remaining": [
+    "Phone restores default address and registers a new account",
+    "Phone verifies partner over Wi-Fi and mobile data",
+    "System and lock-screen notifications require separate approval and verification",
+    "Local documentation changes await review and merge"
+  ]
+}
